@@ -1,0 +1,7 @@
+fatalnie
+bardzo źle
+źle
+średnio
+dobrze
+bardzo dobrze
+fantastycznie

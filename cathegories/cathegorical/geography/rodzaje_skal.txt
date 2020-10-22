@@ -1,0 +1,13 @@
+# 2
+granit
+bazalt
+pumeks
+piaskowiec
+wapień
+gips
+marmur
+gnejs
+łupek
+kwarcyt
+
+
