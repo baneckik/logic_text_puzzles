@@ -1,0 +1,8 @@
+# 4
+telewizor
+komputer
+lodówka
+zamrażarka
+pralka
+zmywarka
+kuchenka

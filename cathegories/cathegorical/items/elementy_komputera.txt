@@ -1,0 +1,12 @@
+# 3
+komputer
+ekran
+myszka
+klawiatura
+mikrofon
+kamerka
+touchpad
+drukarka
+ksero
+laptop
+skaner

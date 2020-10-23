@@ -1,0 +1,12 @@
+# 4
+salon
+przedpokój
+korytarz
+kuchnia
+toaleta
+łazienka
+sypialnia
+garaż
+strych
+poddasze
+piwnica
