@@ -1,0 +1,19 @@
+# 4
+zachodnio-pomorskie
+pomorskie
+warmińsko-mazurskie
+podlaskie
+lubuskie
+wielkopolskie
+kujawsko-pomorskie
+mazowieckie
+lubelskie
+dolnośląskie
+śląskie
+opolskie
+łódzkie
+świętokrzyskie
+małopolskie
+podkarpackie
+
+

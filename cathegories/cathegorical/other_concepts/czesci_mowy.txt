@@ -1,0 +1,11 @@
+# 1
+rzeczownik
+czasownik
+przymiotnik
+zaimek
+liczebnik
+przysłówek
+przyimek
+wykrzyknik
+partykuła
+spójnik

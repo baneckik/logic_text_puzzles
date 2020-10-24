@@ -1,0 +1,8 @@
+# 5
+dodawanie
+odejmowanie
+mnożenie
+dzielenie
+potęgowanie
+pierwiastkowanie
+logarytmowanie

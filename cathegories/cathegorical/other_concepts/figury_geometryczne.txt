@@ -1,0 +1,24 @@
+# 5
+koło
+okrąg
+torus
+sfera
+elipsa
+elipsoida
+kwadrat
+prostokąt
+romb
+równoległobok
+trapez
+trójkąt
+pięciokąt
+sześciokąt
+parabola
+hiperbola
+prosta
+punkt
+wektor
+stożek
+graniastosłup
+ostrosłup
+
