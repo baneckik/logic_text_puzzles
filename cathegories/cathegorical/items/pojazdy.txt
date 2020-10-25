@@ -1,0 +1,22 @@
+# 5
+samochód
+karetka
+wóz strażacki
+furgonetka
+tir
+ciężarówka
+van
+samolot
+awionetka
+szybowiec
+helikopter
+statek
+poduszkowiec
+wodolot
+quad
+rower
+motocykl
+limuzyna
+pickup
+kombi
+SUV

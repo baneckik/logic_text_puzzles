@@ -4,3 +4,4 @@ mozaika
 deski
 płytki ceramiczne
 dywan
+wykładzina

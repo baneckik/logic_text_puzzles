@@ -1,0 +1,8 @@
+# 4
+obrazki logiczne
+sudoku
+architekty
+wielokropki
+piramidy
+łamigłówki
+kakuro

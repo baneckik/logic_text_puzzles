@@ -27,3 +27,4 @@ bateria
 budzik
 zegarek
 lupa
+sprężyna
