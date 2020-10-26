@@ -1,22 +1,21 @@
 # 1
 analiza
 algebra
-statystyka
-probabilistyka
+anatomia
+elektronika
 ekonomia
-prawoznawstwo
+fizyka
+filozofia
+historia kultury
+histologia
 język obcy
+lektorat
+prawoznawstwo
 prawo cywilne
 prawo karne
-seminarium
+probabilistyka
 sądownictwo
-prawoznawstwo
-historia kultury
-lektorat
-fizyka
+statystyka
+seminarium
 mechanika
-elektronika
-filozofia
-anatomia
-histologia
-
+muzykologia
