@@ -135,6 +135,23 @@ def grid_concile2(self):
                                 self.grid_insert(K2,i2,K1,j,2)
                         break
 
+def grid_concile3(self):
+    # conciliation no 3
+    K = self.K
+    k = self.k
+    for key in self.grid:
+        K1 = int(key.split(",")[0])
+        K2 = int(key.split(",")[1])
+        for i in range(k):
+            for j in range(k):
+                if self.grid[key][i,j]==1:
+                    for K3 in range(K):
+                        if K3!=K2 and K3!=K1:
+                            for j2 in range(k):
+                                if self.get_grid_value(K1, i, K3, j2)==2:
+                                    self.grid_insert(K2, j, K3, j2, "X")
+                                if self.get_grid_value(K2, j, K3, j2)==2:
+                                    self.grid_insert(K1, i, K3, j2, "X")
     
 # --------------------- class definition ------------------------------
     
@@ -152,5 +169,5 @@ class puzzle:
     count_x_in_line = count_x_in_line
     grid_concile1 = grid_concile1
     grid_concile2 = grid_concile2
-    
+    grid_concile3 = grid_concile3
     
