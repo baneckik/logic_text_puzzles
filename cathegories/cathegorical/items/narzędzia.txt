@@ -12,4 +12,5 @@ wiertarka
 scyzoryk
 miarka
 łom
+dłuto
 
