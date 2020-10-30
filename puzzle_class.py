@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import generating_cathegories_functions as funs
 
 # ------------------ class methods ----------------------------
 
@@ -231,7 +232,38 @@ def grid_concile5(self):
                                             if i4!=i1 and i4!=i2 and i4!=i3:
                                                 self.grid_insert(K1, i4, K2, j, "X")
 
-        
+def is_grid_completed(self):
+    for box in self.grid.values():
+        for i in range(self.k):
+            for j in range(self.k):
+                if box[i, j]==0:
+                    return False
+    return True                                                   
+
+def is_grid_contradictory(self):
+    for box in self.grid.values():
+        for i in range(self.k):
+            o_count = 0
+            x_count = 0
+            for j in range(self.k):
+                if box[i, j]==1:
+                    o_count += 1
+                if box[i, j]==2:
+                    x_count += 1
+            if o_count>1 or x_count==self.k:
+                return True
+        for j in range(self.k):
+            o_count = 0
+            x_count = 0
+            for i in range(self.k):
+                if box[i, j]==1:
+                    o_count += 1
+                if box[i, j]==2:
+                    x_count += 1
+            if o_count>1 or x_count==self.k:
+                return True
+    return False
+
 # --------------------- class definition ------------------------------
     
 class puzzle:
@@ -241,11 +273,14 @@ class puzzle:
         self.grid = { str(i)+","+str(j): np.zeros((k,k)) for i in range(K) for j in range(K) if i<j }
         self.changed = False
         self.solved = False
+        self.cathegories = funs.losuj_kategorie(K, k, 3, np.random.randint(1002))
         
     get_grid_value = get_grid_value
     grid_insert = grid_insert
     print_grid = print_grid
     clear_grid = clear_grid
+    is_grid_completed = is_grid_completed
+    is_grid_contradictory = is_grid_contradictory
     
     is_line_completed = is_line_completed
     count_x_in_line = count_x_in_line
