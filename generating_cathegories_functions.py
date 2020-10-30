@@ -10,17 +10,40 @@ def losuj_schemat_cat(seed=0, ile=1, przedmiotow_w_kategorii=5):
     if ile<1:
         return []
     
-    available_cats = []
-    for path in Path('cathegories/cathegorical').rglob('*.txt'):
-        kat = pd.read_csv(path, header=None)
-        if kat.shape[0]-1 >= przedmiotow_w_kategorii:
-            available_cats.append(path)
-        
-    if len(available_cats)<ile:
-        raise Exception("Nie można znaleźć "+str(ile)+" kategorii porządkowych dla " \
-                        +str(przedmiotow_w_kategorii)+" przedmiotów w kategorii!")
+    # losowanie folderów
+    foldery_wagi = [("activities",3),("geography",3),("items",5),("names",10),("nature",4),("other_concepts",5),("special_names",8)]
+    podstawy = [ fw[0] for fw in foldery_wagi ]
+    wagi_folder = [ fw[1] for fw in foldery_wagi ]
+    wagi_folder = [ w/sum(wagi_folder) for w in wagi_folder ]
     
-    chosen = np.random.choice(available_cats, ile, replace=False)
+    if przedmiotow_w_kategorii<6:
+        if np.random.uniform(0,1)<0.75:
+            foldery = np.random.choice(podstawy, ile, p=wagi_folder, replace=False)
+        else:
+            foldery = np.random.choice(podstawy, ile, p=wagi_folder, replace=True)
+    else:
+        foldery = np.random.choice(podstawy, ile, p=wagi_folder, replace=True)
+      
+    # drawing cathegories from folders
+    chosen = []
+    for folder in np.unique(foldery):
+        available_cats = []
+        available_weights = []
+        for path in Path('cathegories/cathegorical/'+folder).rglob('*.txt'):
+            kat = pd.read_csv(path, header=None)
+            if kat.shape[0]-1 >= przedmiotow_w_kategorii:
+                available_cats.append(path)
+                available_weights.append(int(kat.iloc[0,0].split(" ")[-1]))
+        available_weights = [ w/sum(available_weights) for w in available_weights ]
+        
+        # number of cathegories to draw from this folder
+        ile_kat = sum([f==folder for f in foldery])
+        if len(available_cats)<ile_kat:
+            raise Exception("Nie można znaleźć "+str(ile)+" kategorii porządkowych dla " \
+                            +str(przedmiotow_w_kategorii)+" przedmiotów w kategorii!")
+
+        chosen += list( np.random.choice(available_cats, ile_kat, p=available_weights, replace=False) )
+        
     chosen_out = []
     for c in chosen:
         kat = pd.read_csv(c, header=None)
