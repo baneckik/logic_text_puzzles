@@ -232,6 +232,96 @@ def grid_concile5(self):
                                             if i4!=i1 and i4!=i2 and i4!=i3:
                                                 self.grid_insert(K1, i4, K2, j, "X")
 
+def grid_concile(self):
+    self.changed = True
+    while self.changed == True:
+        self.changed = False
+        self.grid_concile1()
+        self.grid_concile2()
+        self.grid_concile3()
+        self.grid_concile4()
+        self.grid_concile5()
+    
+                                                
+def add_clue1(self):
+    no_of_x = np.random.choice([1,2,3], 1, p=[0.8, 0.15, 0.05])
+    K = self.K
+    k = self.k
+    key_list = np.random.choice(range(K*(K-1)//2), K*(K-1)//2, replace=False)
+    i_list = np.random.choice(range(k), k, replace=False)
+    j_list = np.random.choice(range(k), k, replace=False)
+    
+    boxes = []
+    for key in self.grid:
+        boxes.append(key)
+        
+    for key in key_list:
+        K1 = int(boxes[key].split(",")[0])
+        K2 = int(boxes[key].split(",")[1])
+        for i in i_list:
+            for j in j_list:
+                if self.get_grid_value(K1, i, K2, j)==0:
+                    if no_of_x==1:
+                        self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j})
+                        return
+                    other_i = []
+                    other_j = []
+                    for i2 in range(k):
+                        if self.get_grid_value(K1, i2, K2, j)==0 and i2!=i:
+                            other_i.append(i2)
+                    for j2 in range(k):
+                        if self.get_grid_value(K1, i, K2, j2)==0 and j2!=j:
+                            other_j.append(j2)
+                    if len(other_i)<=no_of_x-1 and len(other_j)<=no_of_x-1:
+                        self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j})
+                        return
+                    elif len(other_i)>no_of_x-1 and len(other_j)>no_of_x-1:
+                        if np.random.randint(2)==0:
+                            to_fill = np.random.choice(other_i, no_of_x-1, replace=False)
+                            if no_of_x==2:
+                                self.clues.append({"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]})
+                                return
+                            else:
+                                self.clues.append({"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0], "i4":to_fill[1]})
+                                return
+                        else:
+                            to_fill = np.random.choice(other_j, no_of_x-1, replace=False)
+                            if no_of_x==2:
+                                self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]})
+                                return
+                            else:
+                                self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0], "i4":to_fill[1]})
+                                return
+                    elif len(other_i)>no_of_x-1:
+                        to_fill = np.random.choice(other_i, no_of_x-1, replace=False)
+                        if no_of_x==2:
+                            self.clues.append({"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]})
+                            return
+                        else:
+                            self.clues.append({"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0], "i4":to_fill[1]})
+                            return
+                    else:
+                        to_fill = np.random.choice(other_j, no_of_x-1, replace=False)
+                        if no_of_x==2:
+                            self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]})
+                            return
+                        else:
+                            self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0], "i4":to_fill[1]})
+                            return
+
+def use_clue1(self, c):
+    if self.clues[c]["typ"]!=1:
+        raise(Exception("Wrong clue type provided!"))
+    if len(self.clues)<=c:
+        raise(Exception("Wrong clue id provided!"))
+    clue = self.clues[c]
+    self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X")
+    if "i3" in clue:
+        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i3"], "X")
+        if "i4" in clue:
+              self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i4"], "X")
+              
+              
 def is_grid_completed(self):
     for box in self.grid.values():
         for i in range(self.k):
@@ -274,6 +364,7 @@ class puzzle:
         self.changed = False
         self.solved = False
         self.cathegories = funs.losuj_kategorie(K, k, 3, np.random.randint(1002))
+        self.clues = []
         
     get_grid_value = get_grid_value
     grid_insert = grid_insert
@@ -289,4 +380,7 @@ class puzzle:
     grid_concile3 = grid_concile3
     grid_concile4 = grid_concile4
     grid_concile5 = grid_concile5
+    grid_concile = grid_concile
     
+    add_clue1 = add_clue1
+    use_clue1 = use_clue1
