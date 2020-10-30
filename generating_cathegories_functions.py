@@ -248,7 +248,7 @@ def losuj_interpretacje_num(values, seed=0):
         interpretacje.append( ("@ EUR",5) )
         interpretacje.append( ("@ USD",5) )
         interpretacje.append( ("@ CHF",2) )
-        interpretacje.append( ("@ denarów",5) )
+        interpretacje.append( ("@ denarów",2) )
         interpretacje.append( ("@ koron",5) )
         
     if czy_calk(values) and czy_mniejsze_od(values, 2040) and czy_wieksze_od(values, 1300):
