@@ -13,8 +13,7 @@ def losuj_schemat_cat(seed=0, ile=1, przedmiotow_w_kategorii=5):
     available_cats = []
     for path in Path('cathegories/cathegorical').rglob('*.txt'):
         kat = pd.read_csv(path, header=None)
-        #kat.columns = [path.name.split(".")[0]]
-        if kat.shape[0]>=przedmiotow_w_kategorii:
+        if kat.shape[0]-1 >= przedmiotow_w_kategorii:
             available_cats.append(path)
         
     if len(available_cats)<ile:
@@ -25,6 +24,7 @@ def losuj_schemat_cat(seed=0, ile=1, przedmiotow_w_kategorii=5):
     chosen_out = []
     for c in chosen:
         kat = pd.read_csv(c, header=None)
+        kat.drop(kat.head(1).index, inplace=True)
         names = list(np.random.choice(kat.iloc[:,0], przedmiotow_w_kategorii, replace=False))
         chosen_out.append(names)
     
@@ -67,7 +67,7 @@ def losuj_schemat_num(seed=0, przedmiotow_w_kategorii=5):
     # ---------------------- wybór schematu i pierwszego wyrazu=n*p ---------------------------------
     
     # (schemat, jego_waga)
-    typy_schematu_wagi = [ ("ciag_arytmetyczny", 10), ("ciag_geometryczny", 4), ("ciag_rosnacy", 10)]
+    typy_schematu_wagi = [ ("ciag_arytmetyczny", 10), ("ciag_geometryczny", 2), ("ciag_rosnacy", 6)]
     typy = [ t[0] for t in typy_schematu_wagi ]
     wagi_typow = [ t[1] for t in typy_schematu_wagi ]
     wagi_typow = [ w/sum(wagi_typow) for w in wagi_typow ]
@@ -112,7 +112,7 @@ def losuj_schemat_num(seed=0, przedmiotow_w_kategorii=5):
         r = np.random.choice(incrementy, 1, p=wagi_incrementow)[0]
         values = [ n*p+k*r for k in range(przedmiotow_w_kategorii) ]
     elif schemat=="ciag_geometryczny":
-        mnozniki_wagi = [ (0.5,10), (2,10), (3,5), (4,4), (5,5), (10,10)]
+        mnozniki_wagi = [ (0.5,10), (2,10), (3,5), (4,4), (5,3), (10,2)]
         # ograniczenia na wartości mnożnika
         if (n*p)%8!=0: 
             mnozniki_wagi = [ mw for mw in mnozniki_wagi if mw[0]>=2 ]
@@ -220,7 +220,7 @@ def losuj_interpretacje_num(values, seed=0):
         interpretacje.append( ("@ klocków",5) )
         interpretacje.append( ("@ punktów",5) )
         interpretacje.append( ("@ gwiazd",5) )
-        interpretacje.append( ("@ puzzli",5) )
+        interpretacje.append( ("@ puzzli",2) )
         interpretacje.append( ("@ złotych",25) )
         interpretacje.append( ("@ EUR",5) )
         interpretacje.append( ("@ USD",5) )
