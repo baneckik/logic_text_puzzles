@@ -11,7 +11,7 @@ def losuj_schemat_cat(seed=0, ile=1, przedmiotow_w_kategorii=5):
         return []
     
     # losowanie folderów
-    foldery_wagi = [("activities",3),("geography",3),("items",5),("names",10),("nature",4),("other_concepts",5),("special_names",8)]
+    foldery_wagi = [("activities",3),("geography",3),("items",5),("names",12),("nature",4),("other_concepts",5),("special_names",6)]
     podstawy = [ fw[0] for fw in foldery_wagi ]
     wagi_folder = [ fw[1] for fw in foldery_wagi ]
     wagi_folder = [ w/sum(wagi_folder) for w in wagi_folder ]
@@ -147,7 +147,7 @@ def losuj_schemat_num(seed=0, przedmiotow_w_kategorii=5):
         wagi_mnoznikow = [ i[1] for i in mnozniki_wagi ]
         wagi_mnoznikow = [ w/sum(wagi_mnoznikow) for w in wagi_mnoznikow ]
         r = np.random.choice(mnozniki, 1, p=wagi_mnoznikow)[0]
-        values = [ n*p*(r**k) for k in range(przedmiotow_w_kategorii) ]
+        values = list(np.sort([ n*p*(r**k) for k in range(przedmiotow_w_kategorii) ]))
         
     elif schemat=="ciag_rosnacy":
         r = np.random.choice([n*p, 2*n*p], przedmiotow_w_kategorii, p=[0.5, 0.5])
@@ -247,7 +247,7 @@ def losuj_interpretacje_num(values, seed=0):
         interpretacje.append( ("@ punktów",5) )
         interpretacje.append( ("@ gwiazd",4) )
         interpretacje.append( ("@ puzzli",2) )
-        interpretacje.append( ("@ złotych",25) )
+        interpretacje.append( ("@ zł",25) )
         interpretacje.append( ("@ EUR",5) )
         interpretacje.append( ("@ USD",5) )
         interpretacje.append( ("@ CHF",2) )
@@ -276,8 +276,8 @@ def losuj_interpretacje_num(values, seed=0):
         interpretacje.append( ("@ kg",15) )
     
     if czy_dodatnie(values) and czy_mniejsze_od(values, 1000):
-        interpretacje.append( ("@ litrów",15) )
-        interpretacje.append( ("@ metrów",15) )
+        interpretacje.append( ("@ l",15) )
+        interpretacje.append( ("@ m",15) )
         
     if czy_dodatnie(values) and czy_mniejsze_od(values, 11):
         interpretacje.append( ("@ szklanki",15) )
