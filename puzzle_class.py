@@ -354,6 +354,10 @@ def is_grid_contradictory(self):
                 return True
     return False
 
+def set_seed(self, seed):
+    self.seed = seed
+    np.random.seed(self.seed)
+
 # --------------------- class definition ------------------------------
     
 class puzzle:
@@ -363,8 +367,9 @@ class puzzle:
         self.grid = { str(i)+","+str(j): np.zeros((k,k)) for i in range(K) for j in range(K) if i<j }
         self.changed = False
         self.solved = False
-        self.cathegories = funs.losuj_kategorie(K, k, 3, np.random.randint(1002))
+        self.cathegories = []
         self.clues = []
+        self.seed = 0
         
     get_grid_value = get_grid_value
     grid_insert = grid_insert
@@ -372,6 +377,7 @@ class puzzle:
     clear_grid = clear_grid
     is_grid_completed = is_grid_completed
     is_grid_contradictory = is_grid_contradictory
+    set_seed = set_seed
     
     is_line_completed = is_line_completed
     count_x_in_line = count_x_in_line

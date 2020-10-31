@@ -120,7 +120,7 @@ def losuj_schemat_num(seed=0, przedmiotow_w_kategorii=5):
     r = 0
     if schemat=="ciag_arytmetyczny":
         incrementy_wagi = [ (0.5,10), (1,40), (1.5,5), (2,15), (2.5,5), (3,5), (4,5), (5,10), (10,10), \
-                           (15,4), (25,10), (50,10), (100,10), (200,6), (250,6), (500,10), (1000,10)]
+                           (15,4), (25,10), (50,10), (100,8), (200,6), (250,3), (500,5), (1000,5)]
         # ograniczenia na wartości incrementu
         if n*p>=-5 and n*p<=10: 
             incrementy_wagi = [ iw for iw in incrementy_wagi if iw[0]<=10 ]
@@ -134,6 +134,7 @@ def losuj_schemat_num(seed=0, przedmiotow_w_kategorii=5):
         wagi_incrementow = [ w/sum(wagi_incrementow) for w in wagi_incrementow ]
         r = np.random.choice(incrementy, 1, p=wagi_incrementow)[0]
         values = [ n*p+k*r for k in range(przedmiotow_w_kategorii) ]
+        
     elif schemat=="ciag_geometryczny":
         mnozniki_wagi = [ (0.5,10), (2,10), (3,5), (4,4), (5,3), (10,2)]
         # ograniczenia na wartości mnożnika
@@ -147,9 +148,11 @@ def losuj_schemat_num(seed=0, przedmiotow_w_kategorii=5):
         wagi_mnoznikow = [ w/sum(wagi_mnoznikow) for w in wagi_mnoznikow ]
         r = np.random.choice(mnozniki, 1, p=wagi_mnoznikow)[0]
         values = [ n*p*(r**k) for k in range(przedmiotow_w_kategorii) ]
+        
     elif schemat=="ciag_rosnacy":
         r = np.random.choice([n*p, 2*n*p], przedmiotow_w_kategorii, p=[0.5, 0.5])
         values = [ n*p+sum(r[:k]) for k in range(przedmiotow_w_kategorii) ]
+        
     if not isinstance(r, np.ndarray) and r==0:
         raise Exception("Nie udało się wygenerować mnożnika/incrementu r!\nParametry to: p="+str(p)+", n="+str(n)+", schemat="+str(schemat[0]))
         
@@ -242,7 +245,7 @@ def losuj_interpretacje_num(values, seed=0):
         interpretacje.append( ("@ rok/lata", 25) )
         interpretacje.append( ("@ klocków",5) )
         interpretacje.append( ("@ punktów",5) )
-        interpretacje.append( ("@ gwiazd",5) )
+        interpretacje.append( ("@ gwiazd",4) )
         interpretacje.append( ("@ puzzli",2) )
         interpretacje.append( ("@ złotych",25) )
         interpretacje.append( ("@ EUR",5) )
@@ -366,5 +369,55 @@ def losuj_kategorie(K, k, gwiazdki, seed=0):
     
     return wylosowane   
 
+# ----------------------------------------- INNE FUNKCJE ---------------------------------------------
 
+def get_string_name(kategorie, K1, i1, replace_polish=False):
+    if kategorie[K1][0]=='cathegorical' or kategorie[K1][0]=='ordinal':
+        name = kategorie[K1][1][i1]
+    else :
+        number = str(kategorie[K1][1][i1])
+        if number.endswith(".0"):
+            number = number[:-2] 
+        if "@" in kategorie[K1][3]:
+            a = kategorie[K1][3].split("@")
+            name = number.join(a)
+        else:
+            name = number
+    
+    if replace_polish:
+        if "ł" in name:
+            name = "l".join(name.split("ł"))
+        if "Ł" in name:
+            name = "L".join(name.split("Ł"))
+        if "ś" in name:
+            name = "s".join(name.split("ś"))
+        if "Ś" in name:
+            name = "S".join(name.split("Ś"))
+        if "ć" in name:
+            name = "c".join(name.split("ć"))
+        if "Ć" in name:
+            name = "C".join(name.split("Ć"))
+        if "ą" in name:
+            name = "a".join(name.split("ą"))
+        if "ę" in name:
+            name = "e".join(name.split("ę"))
+        if "ż" in name:
+            name = "z".join(name.split("ż"))
+        if "ź" in name:
+            name = "z".join(name.split("ź"))
+        if "Ż" in name:
+            name = "Z".join(name.split("Ż"))
+        if "Ź" in name:
+            name = "Z".join(name.split("Ź"))
+        if "ń" in name:
+            name = "n".join(name.split("ń"))
+            
+    return name
+
+def do_cathegories_repeat(cathegories):
+    all_cats = []
+    for i, cat in enumerate(cathegories):
+        cats_i = [ get_string_name(cathegories, i, j) for j in range(len(cat[1])) ]
+        all_cats += cats_i
+    return len(all_cats) != len(set(all_cats))
 

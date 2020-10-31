@@ -15,22 +15,11 @@ from puzzle_class import puzzle
 
 # --------------------------------------- auxiliary functions ----------------------------------
 
-def get_string_name(kategorie, K1, i1):
-    if kategorie[K1][0]=='cathegorical' or kategorie[K1][0]=='ordinal':
-        return kategorie[K1][1][i1]
-    number = str(kategorie[K1][1][i1])
-    if number.endswith(".0"):
-        number = number[:-2] 
-    if "@" in kategorie[K1][3]:
-        a = kategorie[K1][3].split("@")
-        name = number.join(a)
-        return name
-    else:
-        return number
-
 def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
     normal_font = "sans-serif"
     special_font = "Times-Bold"
+    replace_polish = True
+    
     if clue["typ"]==1:
         x = X
         text0 = str(no+1)+". "
@@ -39,7 +28,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text0, normal_font, width) 
         x += textWidth + 1
 
-        text1 = get_string_name(kategorie, clue["K1"], clue["i1"])
+        text1 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text1)
         textWidth = stringWidth(text1, special_font, width) 
@@ -52,7 +41,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
             textWidth = stringWidth(text2, normal_font, width) 
             x += textWidth + 1
             
-            text3 = get_string_name(kategorie, clue["K2"], clue["i2"])
+            text3 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
             c.setFont(special_font, width)
             c.drawString(x, Y, text3)
         else:
@@ -62,7 +51,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
             textWidth = stringWidth(text2, normal_font, width) 
             x += textWidth + 1
 
-            text3 = get_string_name(kategorie, clue["K2"], clue["i2"])
+            text3 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
             c.setFont(special_font, width)
             c.drawString(x, Y, text3)
             textWidth = stringWidth(text3, special_font, width) 
@@ -74,7 +63,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
             textWidth = stringWidth(text4, normal_font, width) 
             x += textWidth + 1
 
-            text5 = get_string_name(kategorie, clue["K2"], clue["i3"])
+            text5 = funs.get_string_name(kategorie, clue["K2"], clue["i3"], replace_polish)
             c.setFont(special_font, width)
             c.drawString(x, Y, text5)
             textWidth = stringWidth(text5, special_font, width) 
@@ -86,15 +75,17 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
                 textWidth = stringWidth(text6, normal_font, width) 
                 x += textWidth + 1
 
-                text7 = get_string_name(kategorie, clue["K2"], clue["i4"])
+                text7 = funs.get_string_name(kategorie, clue["K2"], clue["i4"], replace_polish)
                 c.setFont(special_font, width)
                 c.drawString(x, Y, text7)
-            
-        #c.drawString(X, Y, str(no+1)+". "+wskaz) 
 
 # --------------------------------------- main printing function ----------------------------------
 
-def rysuj_zagadke(kategorie, clues, c, X = 30, Y = 30, box_size = 100, text_box_size = 150):
+def rysuj_zagadke(puzzle1, c,X = 30, Y = 30, box_size = 100, text_box_size = 150):
+    
+    kategorie = puzzle1.cathegories
+    clues = puzzle1.clues
+    seed = puzzle1.seed
     
     K_cat = (len(kategorie)) # liczba kategorii
     k_cat = len(kategorie[0][1]) # liczba obiektów z każdej kategorii
@@ -117,8 +108,14 @@ def rysuj_zagadke(kategorie, clues, c, X = 30, Y = 30, box_size = 100, text_box_
     Yc = 830
     odstep = 0.15
     c.setFont("sans-serif", width*0.5)
-    for i, clue in enumerate(clues):
-        rysuj_pytanie(kategorie, clue, c, Xc+odstep*width, Yc-width*i*0.5, i, width*0.5)
+    clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
+    for i in range(len(clues)):
+        rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width, Yc-width*i*0.5, i, width*0.5)
+    
+    c.drawString(X+text_box_size+box_size+10, Y, "seed: "+str(seed))
+    
+    c.setFont("sans-serif", width*0.4)
+    c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
     
     for i, kategoria in enumerate(kategorie):
         nazwy = [ str(k) for k in kategoria[1] ]
