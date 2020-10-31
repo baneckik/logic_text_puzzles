@@ -358,6 +358,18 @@ def set_seed(self, seed):
     self.seed = seed
     np.random.seed(self.seed)
 
+def draw_cathegories(self, diff=3):
+    if not diff in [2,3,4]:
+        raise Exception("Można losować zagadki tylko o liczbie gwiazdek równej 2, 3 albo 4!")
+    self.cathegories = funs.losuj_kategorie(self.K, self.k, diff, self.seed)
+    i = 0
+    i_max = 100
+    while funs.do_cathegories_repeat(self.cathegories):
+        self.cathegories = funs.losuj_kategorie(self.K, self.k, diff, self.seed)
+        i += 1
+        if i>i_max:
+            raise Exception("Cannot draw non-repeating cathegories!")
+            
 # --------------------- class definition ------------------------------
     
 class puzzle:
@@ -378,6 +390,7 @@ class puzzle:
     is_grid_completed = is_grid_completed
     is_grid_contradictory = is_grid_contradictory
     set_seed = set_seed
+    draw_cathegories = draw_cathegories
     
     is_line_completed = is_line_completed
     count_x_in_line = count_x_in_line
