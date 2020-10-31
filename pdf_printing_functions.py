@@ -81,7 +81,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
 
 # --------------------------------------- main printing function ----------------------------------
 
-def rysuj_zagadke(puzzle1, c,X = 30, Y = 30, box_size = 100, text_box_size = 150):
+def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = 100, text_box_size = 150):
     
     kategorie = puzzle1.cathegories
     clues = puzzle1.clues
@@ -93,7 +93,7 @@ def rysuj_zagadke(puzzle1, c,X = 30, Y = 30, box_size = 100, text_box_size = 150
     width = box_size/k_cat
 
     cm = 20
-
+    # ------------ drawing boxes
     c.setLineWidth(2)
     for row in range(N_rows):
         c.rect( X, Y+row*box_size, text_box_size+(row+1)*box_size, box_size)
@@ -104,19 +104,39 @@ def rysuj_zagadke(puzzle1, c,X = 30, Y = 30, box_size = 100, text_box_size = 150
             c.rect( X, Y+row*box_size, text_box_size+(row+1)*box_size, k*box_size/k_cat)
             c.rect( X+text_box_size+row*box_size, Y+row*box_size, k*box_size/k_cat, text_box_size+(N_rows-row)*box_size)
     
+    # ------------- drawing clues
     Xc = 30
     Yc = 830
     odstep = 0.15
     c.setFont("sans-serif", width*0.5)
-    clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
+    clue_order = range(len(clues))#np.random.choice(range(len(clues)), len(clues), replace=False)
     for i in range(len(clues)):
         rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width, Yc-width*i*0.5, i, width*0.5)
     
+    # ------------- drawing footnote and seed info
     c.drawString(X+text_box_size+box_size+10, Y, "seed: "+str(seed))
     
     c.setFont("sans-serif", width*0.4)
     c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
     
+    # ------------- typing cathegories names at the top
+    width2 = width*0.5
+    c.setFont("sans-serif", width2)
+    special_font = "Times-Bold"
+    Xc = 400
+    col = 0
+    for i in range(len(kategorie)):
+        c.setFont(special_font, width2)
+        text0 = "Kategoria "+str(i)+":"
+        nazwy = [ funs.get_string_name(kategorie, i, j, False) for j in range(len(kategorie[i][1])) ]
+        c.drawString(Xc, Yc-width2*col, text0)
+        c.setFont("sans-serif", width2)
+        textWidth = stringWidth(text0, special_font, width2) 
+        for name in nazwy:
+            c.drawString(Xc+textWidth+5, Yc-width2*col, name)
+            col += 1
+    
+    # ------------- typing cathegories names into boxes
     for i, kategoria in enumerate(kategorie):
         nazwy = [ str(k) for k in kategoria[1] ]
         if kategoria[0]=='numerical':
