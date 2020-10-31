@@ -2,6 +2,8 @@
 Asia
 Basia
 Krzyś
+Kubuś
+Marysia
 Ryś
 Kasia
 Ola
@@ -9,6 +11,5 @@ Piotruś
 Tomek
 Zosia
 Zuzia
-Kubuś
 Janek
 
