@@ -370,6 +370,27 @@ def draw_cathegories(self, diff=3):
         if i>i_max:
             raise Exception("Cannot draw non-repeating cathegories!")
             
+def try_to_solve(self):
+    for c in range(len(self.clues)):
+        self.use_clue1(c)
+    self.grid_concile()
+
+def try_to_restrict_clues(self):
+    clues_copy = self.clues
+    clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
+    clue_order = np.random.choice(clues1, len(clues1), replace=False)
+    to_restrict = []
+    for i in clue_order:
+        clues1_restricted = [ j for j in clues1 if j!=i ]
+        self.clear_grid()
+        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues1_restricted ]
+        self.try_to_solve()
+        if self.is_grid_completed() and not self.is_grid_contradictory():
+            to_restrict.append(i)
+            clues1 = clues1_restricted
+    print(to_restrict)
+    self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
+    
 # --------------------- class definition ------------------------------
     
 class puzzle:
@@ -403,3 +424,7 @@ class puzzle:
     
     add_clue1 = add_clue1
     use_clue1 = use_clue1
+    
+    try_to_solve = try_to_solve
+    try_to_restrict_clues = try_to_restrict_clues
+    
