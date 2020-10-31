@@ -102,7 +102,9 @@ def losuj_schemat_num(seed=0, przedmiotow_w_kategorii=5):
     # ograniczenia na wartości podstawy
     if schemat=="ciag_geometryczny": 
         podstawy_wagi = [ pw for pw in podstawy_wagi if abs(pw[0])<=10 and pw[0]!=0 ]
-
+    if schemat=="ciag_rosnacy": 
+        podstawy_wagi = [ pw for pw in podstawy_wagi if pw[0]!=0 ]
+        
     podstawy = [ pod[0] for pod in podstawy_wagi ]
     wagi_podstaw = [ pod[1] for pod in podstawy_wagi ]
     wagi_podstaw = [ w/sum(wagi_podstaw) for w in wagi_podstaw ]
