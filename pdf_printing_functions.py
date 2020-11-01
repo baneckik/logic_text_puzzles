@@ -81,14 +81,18 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
 
 # --------------------------------------- main printing function ----------------------------------
 
-def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = 100, text_box_size = 150):
+def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     
     kategorie = puzzle1.cathegories
     clues = puzzle1.clues
     seed = puzzle1.seed
+    K_cat = puzzle1.K # liczba kategorii
+    k_cat = puzzle1.k # liczba obiektów z każdej kategorii
     
-    K_cat = (len(kategorie)) # liczba kategorii
-    k_cat = len(kategorie[0][1]) # liczba obiektów z każdej kategorii
+    if box_size == None:
+        box_size = 450/(K_cat+0.5)
+    text_box_size = box_size*1.5
+    
     N_rows = K_cat-1
     width = box_size/k_cat
 
@@ -106,17 +110,30 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = 100, text_box_size = 15
     
     # ------------- drawing clues
     Xc = 30
-    Yc = 830
+    Yc = 800
     odstep = 0.15
-    c.setFont("sans-serif", width*0.5)
-    clue_order = range(len(clues))#np.random.choice(range(len(clues)), len(clues), replace=False)
+    width_clue = 10
+    c.setFont("sans-serif", width_clue)
+    clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
     for i in range(len(clues)):
-        rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width, Yc-width*i*0.5, i, width*0.5)
+        rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width, Yc-width*i*0.5, i, width_clue)
     
     # ------------- drawing footnote and seed info
-    c.drawString(X+text_box_size+box_size+10, Y, "seed: "+str(seed))
+    width_foot = 8
+    c.setFont("sans-serif", width_foot)
     
-    c.setFont("sans-serif", width*0.4)
+    if puzzle1.is_grid_contradictory():
+        c.setFillColorRGB(1,0,0)
+    c.drawString(X+text_box_size+box_size+10, Y+2*width_foot, "Contradictory: "+str(puzzle1.is_grid_contradictory()))
+    c.setFillColorRGB(0,0,0)
+    
+    if not puzzle1.is_grid_completed():
+        c.setFillColorRGB(1,0,0)
+    c.drawString(X+text_box_size+box_size+10, Y+width_foot, "Solvable: "+str(puzzle1.is_grid_completed()))
+    c.setFillColorRGB(0,0,0)
+    
+    c.drawString(X+text_box_size+box_size+10, Y, "seed: "+str(seed))
+
     c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
     
     # ------------- typing cathegories names at the top
