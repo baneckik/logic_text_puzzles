@@ -4,8 +4,7 @@ from pathlib import Path
 
 # ----------------------------------------- LOSOWANIE ZMIENNYCH KATEGORYCZNYCH ---------------------------------------------
 
-def losuj_schemat_cat(seed=0, ile=1, przedmiotow_w_kategorii=5):
-    np.random.seed(seed)
+def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
     
     if ile<1:
         return []
@@ -55,8 +54,7 @@ def losuj_schemat_cat(seed=0, ile=1, przedmiotow_w_kategorii=5):
 
 # ----------------------------------------- LOSOWANIE ZMIENNYCH PORZĄDKOWYCH ---------------------------------------------
 
-def losuj_schemat_porz(seed=0, ile=1, przedmiotow_w_kategorii=5):
-    np.random.seed(seed)
+def losuj_schemat_porz(ile=1, przedmiotow_w_kategorii=5):
     
     if ile<1:
         return []
@@ -84,8 +82,7 @@ def losuj_schemat_porz(seed=0, ile=1, przedmiotow_w_kategorii=5):
 
 # ----------------------------------------- LOSOWANIE ZMIENNYCH NUMERYCZNYCH ---------------------------------------------
 
-def losuj_schemat_num(seed=0, przedmiotow_w_kategorii=5):
-    np.random.seed(seed)
+def losuj_schemat_num(przedmiotow_w_kategorii=5):
     
     # ---------------------- wybór schematu i pierwszego wyrazu=n*p ---------------------------------
     
@@ -238,8 +235,7 @@ def czy_wieksze_od(values, C):
 def czy_zawieraja(values, C):
     return any([v==C for v in values])
 
-def losuj_interpretacje_num(values, seed=0):
-    np.random.seed(seed)
+def losuj_interpretacje_num(values):
     
     interpretacje = []
     
@@ -354,16 +350,16 @@ def losuj_kategorie(K, k, gwiazdki, seed=0):
     # losujemy konkretne kategorie
     wylosowane = []
     # zmienne kategoryczne:
-    wylosowane += losuj_schemat_cat(seed=seed, ile=licznosci[0], przedmiotow_w_kategorii=k) 
+    wylosowane += losuj_schemat_cat(ile=licznosci[0], przedmiotow_w_kategorii=k) 
     # zmienne porządkowe
-    wylosowane += losuj_schemat_porz(seed=seed, ile=licznosci[1], przedmiotow_w_kategorii=k) 
+    wylosowane += losuj_schemat_porz( ile=licznosci[1], przedmiotow_w_kategorii=k) 
     #zmienne numeryczne i ich interpretacje:
     interpretacje = []
     for i in range(licznosci[2]):
-        los = losuj_schemat_num(seed=seed+i, przedmiotow_w_kategorii=k)
+        los = losuj_schemat_num(przedmiotow_w_kategorii=k)
         # próbujemy wylosować interpretację, tak żeby się nie powtarzać
         for j in range(20):
-            los_interpret = losuj_interpretacje_num(los[1], seed=seed+i+j)
+            los_interpret = losuj_interpretacje_num(los[1])
             if not los_interpret[0] in interpretacje:
                 interpretacje.append(los_interpret[0])
                 break
