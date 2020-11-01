@@ -337,11 +337,20 @@ def add_clue2(self):
                     val3 = self.get_grid_value(K2, i2, K6, k-1)
                     val4 = self.get_grid_value(K3, i3, K6, k-2)
                     val5 = self.get_grid_value(K3, i3, K6, k-1)
+                    
                     values = [val0, val1, val2, val3, val4, val5]
+                    
+                    if K1!=K2:
+                        values.append(self.get_grid_value(K1, i1, K2, i2))
+                    if K1!=K3:
+                        values.append(self.get_grid_value(K1, i1, K3, i3))
+                    if K2!=K3:
+                        values.append(self.get_grid_value(K2, i2, K3, i3))
+                    
                     if any([val==1 for val in values]):
                         break
                     sum_of_free = sum([val==0 for val in values])
-                    if sum_of_free>4:
+                    if sum_of_free>5:
                         self.clues.append({"typ":2, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K3":K3, "i3":i3, "K6": K6})
                         return
     print("Program couldn't fit any clue of type no 2!")
@@ -506,9 +515,10 @@ def draw_clues(self):
 
 def try_to_restrict_clues(self):
     clues_copy = self.clues
+    to_restrict = []
+        
     clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
     clue_order = np.random.choice(clues1, len(clues1), replace=False)
-    to_restrict = []
     for i in clue_order:
         clues1_restricted = [ j for j in clues1 if j!=i ]
         self.clear_grid()
@@ -517,6 +527,18 @@ def try_to_restrict_clues(self):
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
             clues1 = clues1_restricted
+            
+    clues2 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==2 ]
+    clue_order = np.random.choice(clues2, len(clues2), replace=False)
+    for i in clue_order:
+        clues2_restricted = [ j for j in clues2 if j!=i ]
+        self.clear_grid()
+        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues2_restricted ]
+        self.try_to_solve()
+        if self.is_grid_completed() and not self.is_grid_contradictory():
+            to_restrict.append(i)
+            clues2 = clues2_restricted        
+            
     print(to_restrict)
     self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
     
