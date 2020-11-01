@@ -374,6 +374,13 @@ def use_clue2(self, c):
     self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-2, "X")
     self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-1, "X")
     
+    if clue["K1"]!=clue["K2"]:
+        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X")
+    if clue["K1"]!=clue["K3"]:
+        self.grid_insert(clue["K1"], clue["i1"], clue["K3"], clue["i3"], "X")
+    if clue["K2"]!=clue["K3"]:
+        self.grid_insert(clue["K2"], clue["i2"], clue["K3"], clue["i3"], "X")
+    
     for j in range(self.k-2):
         if self.get_grid_value(clue["K3"], clue["i3"], clue["K6"], j)==2:
             self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X")
