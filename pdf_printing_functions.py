@@ -20,14 +20,14 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
     special_font = "Times-Bold"
     replace_polish = True
     
+    x = X
+    text0 = str(no+1)+". "
+    c.setFont(normal_font, width)
+    c.drawString(x, Y, text0)
+    textWidth = stringWidth(text0, normal_font, width) 
+    x += textWidth + 1
+    
     if clue["typ"]==1:
-        x = X
-        text0 = str(no+1)+". "
-        c.setFont(normal_font, width)
-        c.drawString(x, Y, text0)
-        textWidth = stringWidth(text0, normal_font, width) 
-        x += textWidth + 1
-
         text1 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text1)
@@ -78,7 +78,51 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
                 text7 = funs.get_string_name(kategorie, clue["K2"], clue["i4"], replace_polish)
                 c.setFont(special_font, width)
                 c.drawString(x, Y, text7)
-
+    elif clue["typ"]==2:
+        text1 = "Pod względem "
+        c.drawString(x, Y, text1)
+        textWidth = stringWidth(text1, normal_font, width) 
+        x += textWidth + 1
+        
+        text2 = "Kategorii "+str(clue["K6"])
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text2)
+        textWidth = stringWidth(text2, special_font, width) 
+        x += textWidth + 1
+        
+        text3 = " zachodzi: "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text3)
+        textWidth = stringWidth(text3, normal_font, width) 
+        x += textWidth + 1
+        
+        text4 = funs.get_string_name(kategorie, clue["K3"], clue["i3"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text4)
+        textWidth = stringWidth(text4, special_font, width) 
+        x += textWidth + 1
+        
+        text5 = "<"
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text5)
+        textWidth = stringWidth(text5, normal_font, width) 
+        x += textWidth + 1
+        
+        text6 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text6)
+        textWidth = stringWidth(text6, special_font, width) 
+        x += textWidth + 1
+        
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text5)
+        textWidth = stringWidth(text5, normal_font, width) 
+        x += textWidth + 1
+        
+        text7 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text7)
+        
 # --------------------------------------- main printing function ----------------------------------
 
 def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
@@ -119,7 +163,7 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     for i in range(len(clues)):
         rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*i, i, width_clue)
     
-    # ------------- drawing footnote and seed info
+    # ------------- drawing footnote and info
     width_foot = 8
     c.setFont("sans-serif", width_foot)
     
