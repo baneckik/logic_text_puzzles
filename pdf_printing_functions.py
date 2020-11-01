@@ -109,14 +109,15 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
             c.rect( X+text_box_size+row*box_size, Y+row*box_size, k*box_size/k_cat, text_box_size+(N_rows-row)*box_size)
     
     # ------------- drawing clues
+    width_clue = 10
     Xc = 30
     Yc = 800
     odstep = 0.15
-    width_clue = 10
+    
     c.setFont("sans-serif", width_clue)
     clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
     for i in range(len(clues)):
-        rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width, Yc-width*i*0.5, i, width_clue)
+        rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*i, i, width_clue)
     
     # ------------- drawing footnote and seed info
     width_foot = 8
@@ -137,7 +138,7 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
     
     # ------------- typing cathegories names at the top
-    width2 = width*0.5
+    width2 = width_clue
     c.setFont("sans-serif", width2)
     special_font = "Times-Bold"
     Xc = 400
