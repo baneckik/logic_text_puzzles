@@ -245,6 +245,10 @@ def grid_concile(self):
     
                                                 
 def add_clue1(self):
+    """
+    Adding clue of type 1:
+    Single/double or triple 'X' in the grid.
+    """
     no_of_x = np.random.choice([1,2,3], 1, p=[0.8, 0.15, 0.05])
     K = self.K
     k = self.k
@@ -311,6 +315,10 @@ def add_clue1(self):
                             return
 
 def add_clue2(self):
+    """
+    Adding clue of type 2:
+    With respect to the Cathegory K6(numerical or ordinal) we have 'K3,i3 < K2,i2 < K1,i1'.
+    """
     K = self.K
     k = self.k
     
@@ -356,6 +364,64 @@ def add_clue2(self):
                         return
     print("Program couldn't fit any clue of type no 2!")
            
+def add_clue3(self):
+    """
+    Adding clue of type 3:
+    With respect to the Cathegory K6 (numerical) we have 'K2,i2 = K1,i1 oper diff'.
+    oper is one of {+, *}.
+    """
+    K = self.K
+    k = self.k
+    
+    K6_candidates = [ i for i, cat in enumerate(self.cathegories) if cat[0]=='numerical' ]
+    K6 = np.random.choice(K6_candidates, 1)[0]
+    values = self.cathegories[K6][1]
+    
+    diff_candidates = [ float(diff_string.split("y")[-1][1:]) for diff_string in self.cathegories[K6][2] ]
+    operations = [ diff_string.split("y")[-1][0] for diff_string in self.cathegories[K6][2] ]
+    
+    i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
+    i1_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
+    i2_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
+    diff_list = np.random.choice(diff_candidates, len(diff_candidates), replace=False)
+    
+    for i1p in i1_list:
+        for i2p in i2_list:
+            for diff, operation in zip(diff_list, operations):
+                if i1p!=i2p:
+                    K1 = i1p//k
+                    i1 = i1p%k
+                    K2 = i2p//k
+                    i2 = i2p%k
+                    if operation=="+":
+                        vals_for_X = []
+                        for i in range(k):
+                            if values[i]-diff not in values:
+                                vals_for_X.append(self.get_grid_value(K2, i2, K6, i))
+                            if values[i]+diff not in values:
+                                vals_for_X.append(self.get_grid_value(K1, i1, K6, i))
+                        if any([val==1 for val in vals_for_X]):
+                            break
+                        sum_of_free = sum([val==0 for val in vals_for_X])
+                        if sum_of_free>1:
+                            self.clues.append({"typ":3, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6, "diff":diff, "oper": operation})
+                            return
+                    elif operation=="*":
+                        vals_for_X = []
+                        for i in range(k):
+                            if values[i]/diff not in values:
+                                vals_for_X.append(self.get_grid_value(K2, i2, K6, i))
+                            if values[i]*diff not in values:
+                                vals_for_X.append(self.get_grid_value(K1, i1, K6, i))
+                        if any([val==1 for val in vals_for_X]):
+                            break
+                        sum_of_free = sum([val==0 for val in vals_for_X])
+                        if sum_of_free>1:
+                            self.clues.append({"typ":3, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6, "diff":diff, "oper": operation})
+                            return
+                    else:
+                        raise Exception("Unknown operation type: "+operation+"!")
+    print("Program couldn't fit any clue of type no 3!")
                         
 def use_clue1(self, c):
     if len(self.clues)<=c or c<0:
@@ -524,7 +590,6 @@ def try_to_solve(self):
                             self.grid = grid_copy
     self.grid = grid_main_copy
         
-        
 def draw_clues(self):
     no_of_clues2 = 4
     for i in range(no_of_clues2):
@@ -610,6 +675,7 @@ class puzzle:
     
     add_clue1 = add_clue1
     add_clue2 = add_clue2
+    add_clue3 = add_clue3
     use_clue1 = use_clue1
     use_clue2 = use_clue2
     is_grid_contradictory_with_clue2 = is_grid_contradictory_with_clue2
