@@ -255,30 +255,35 @@ def losuj_interpretacje_num(values):
     if czy_calk(values) and czy_mniejsze_od(values, 2040) and czy_wieksze_od(values, 1300):
         interpretacje.append( ("@ rok",100) )
         
-    if czy_mniejsze_od(values, 100):
+    if czy_mniejsze_od(values, 120):
         interpretacje.append( ("@ stopni F",5) )
     
-    if czy_mniejsze_od(values, 40):
+    if czy_mniejsze_od(values, 50):
         interpretacje.append( ("@ stopni C",5) )
     
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 50):
         interpretacje.append( ("@ pasków",5) )
         interpretacje.append( ("@ misiów",5) )
         interpretacje.append( ("@ lalek",5) )
-        interpretacje.append( ("@ miejsce",5) )
-        interpretacje.append( ("Nr @",5) )
-        interpretacje.append( ("@ dni",5) )
+        interpretacje.append( ("@ miejsce",15) )
+        interpretacje.append( ("Nr @",15) )
+        interpretacje.append( ("@ dni",10) )
         interpretacje.append( ("@ miesięcy",5) )
         
     if czy_dodatnie(values):
         interpretacje.append( ("@ kg",15) )
+        interpretacje.append( ("@ W",5) )
+        interpretacje.append( ("@ J",5) )
     
     if czy_dodatnie(values) and czy_mniejsze_od(values, 1000):
         interpretacje.append( ("@ l",15) )
         interpretacje.append( ("@ m",15) )
+        interpretacje.append( ("@ s",15) )
+        
         
     if czy_dodatnie(values) and czy_mniejsze_od(values, 11):
         interpretacje.append( ("@ szklanki",15) )
+        interpretacje.append( ("@ łyżeczki",10) )
         interpretacje.append( ("@ wiaderka",5) )
         interpretacje.append( ("@ koszy",5) )
         interpretacje.append( ("@ filiżanek",5) )
@@ -292,6 +297,9 @@ def losuj_interpretacje_num(values):
         
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 10):
         interpretacje.append( ("@ warianty",5) )
+        interpretacje.append( ("@-osobowy",15) )
+        interpretacje.append( ("@ pasażerów",5) )
+        
     
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 24):
         interpretacje.append( ("Rozpoczęcie",5) )
@@ -309,10 +317,12 @@ def losuj_interpretacje_num(values):
         
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 11) and czy_zawieraja(values,1):
         interpretacje.append( ("Kolejność",55) )
-        
-    
-    if len(interpretacje)<1:
-        raise Exception("Nie udało się znaleźć wystarczającej liczby interpretacji dla zmiennych numerycznych!")
+     
+    if True:
+        interpretacje.append( ("Wynik",5) )
+        interpretacje.append( ("Liczba",5) )
+        interpretacje.append( ("Pomiar",5) )
+        interpretacje.append( ("Wartość stałej",5) )
         
     teksty = [ t[0] for t in interpretacje ]
     wagi_tekstów = [ t[1] for t in interpretacje ]
