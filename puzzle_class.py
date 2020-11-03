@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import copy
 import generating_cathegories_functions as funs
 
 # ------------------ class methods ----------------------------
@@ -354,7 +355,7 @@ def add_clue2(self):
                         self.clues.append({"typ":2, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K3":K3, "i3":i3, "K6": K6})
                         return
     print("Program couldn't fit any clue of type no 2!")
-                
+           
                         
 def use_clue1(self, c):
     if len(self.clues)<=c or c<0:
@@ -455,7 +456,7 @@ def is_grid_contradictory(self):
     clues2 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==2 ]
     for c in clues2:
         if self.is_grid_contradictory_with_clue2(c):
-            print("Puzzle is contradictory with clue 2!")
+            #print("Puzzle is contradictory with clue 2!")
             return True
     return False
 
@@ -474,8 +475,8 @@ def draw_cathegories(self, diff=3):
         i += 1
         if i>i_max:
             raise Exception("Cannot draw non-repeating cathegories!")
-            
-def try_to_solve(self):
+
+def try_to_solve2(self):
     clues1 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==1 ]
     clues2 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==2 ]
     
@@ -490,7 +491,32 @@ def try_to_solve(self):
             self.use_clue2(c)
             self.grid_concile()
             if self.is_grid_contradictory() or self.is_grid_completed():
-                return
+                return            
+            
+def try_to_solve(self):
+    grid_main_copy = copy.deepcopy(self.grid)
+    self.changed = True
+    while self.changed:
+        self.changed = False
+        self.try_to_solve2()
+        for key in self.grid:
+            for i in range(self.k):
+                for j in range(self.k):
+                    K1 = int(key.split(",")[0])
+                    K2 = int(key.split(",")[1])
+                    if self.get_grid_value(K1, i, K2, j)==0:
+                        grid_copy = copy.deepcopy(self.grid)
+                        self.grid_insert(K1, i, K2, j, "O")
+                        self.try_to_solve2()
+                        if self.is_grid_contradictory():
+                            self.grid = grid_copy
+                            self.grid_insert(K1, i, K2, j, "X")
+                            self.try_to_solve2()
+                            if self.is_grid_completed() or self.is_grid_contradictory():
+                                return
+                        else:
+                            self.grid = grid_copy
+    self.grid = grid_main_copy
         
         
 def draw_clues(self):
@@ -506,7 +532,7 @@ def draw_clues(self):
     for i in range(100):
         self.add_clue1()
         self.use_clue1(len(self.clues)-1)
-        self.grid_concile()
+        self.try_to_solve()
         for j in range(no_of_clues2):
             self.use_clue2(j)
             self.grid_concile()
@@ -514,7 +540,7 @@ def draw_clues(self):
                 break
 
 def try_to_restrict_clues(self):
-    clues_copy = self.clues
+    clues_copy = copy.deepcopy(self.clues)
     to_restrict = []
         
     clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
@@ -522,7 +548,7 @@ def try_to_restrict_clues(self):
     for i in clue_order:
         clues1_restricted = [ j for j in clues1 if j!=i ]
         self.clear_grid()
-        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues1_restricted ]
+        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues1_restricted or not j in clues1 ]
         self.try_to_solve()
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
@@ -533,7 +559,7 @@ def try_to_restrict_clues(self):
     for i in clue_order:
         clues2_restricted = [ j for j in clues2 if j!=i ]
         self.clear_grid()
-        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues2_restricted ]
+        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues2_restricted or not j in clues2 ]
         self.try_to_solve()
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
@@ -581,6 +607,7 @@ class puzzle:
     use_clue2 = use_clue2
     is_grid_contradictory_with_clue2 = is_grid_contradictory_with_clue2
     
+    try_to_solve2 = try_to_solve2
     try_to_solve = try_to_solve
     try_to_restrict_clues = try_to_restrict_clues
     
