@@ -494,6 +494,8 @@ def try_to_solve2(self):
                 return            
             
 def try_to_solve(self):
+    self.solved = False
+    self.contradictory = False
     grid_main_copy = copy.deepcopy(self.grid)
     self.changed = True
     while self.changed:
@@ -512,7 +514,11 @@ def try_to_solve(self):
                             self.grid = grid_copy
                             self.grid_insert(K1, i, K2, j, "X")
                             self.try_to_solve2()
-                            if self.is_grid_completed() or self.is_grid_contradictory():
+                            if self.is_grid_contradictory():
+                                self.contradictory = True
+                                return
+                            if self.is_grid_completed():
+                                self.solved = True
                                 return
                         else:
                             self.grid = grid_copy
@@ -532,7 +538,7 @@ def draw_clues(self):
     for i in range(100):
         self.add_clue1()
         self.use_clue1(len(self.clues)-1)
-        self.try_to_solve()
+        self.grid_concile()
         for j in range(no_of_clues2):
             self.use_clue2(j)
             self.grid_concile()
@@ -577,6 +583,7 @@ class puzzle:
         self.grid = { str(i)+","+str(j): np.zeros((k,k)) for i in range(K) for j in range(K) if i<j }
         self.changed = False
         self.solved = False
+        self.contradictory = False
         self.cathegories = []
         self.clues = []
         self.seed = 0
