@@ -377,13 +377,13 @@ def add_clue3(self):
     K6 = np.random.choice(K6_candidates, 1)[0]
     values = self.cathegories[K6][1]
     
-    diff_candidates = [ float(diff_string.split("y")[-1][1:]) for diff_string in self.cathegories[K6][2] ]
-    operations = [ diff_string.split("y")[-1][0] for diff_string in self.cathegories[K6][2] ]
+    possible_randomized = np.random.permutation(list(self.cathegories[K6][2]))
+    diff_list = [ float(diff_string.split("y")[-1][1:]) for diff_string in possible_randomized ]
+    operations = [ diff_string.split("y")[-1][0] for diff_string in possible_randomized ]
     
     i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
-    i1_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
-    i2_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
-    diff_list = np.random.choice(diff_candidates, len(diff_candidates), replace=False)
+    i1_list = np.random.permutation(i_candidates)
+    i2_list = np.random.permutation(i_candidates)
     
     for i1p in i1_list:
         for i2p in i2_list:
@@ -400,6 +400,8 @@ def add_clue3(self):
                                 vals_for_X.append(self.get_grid_value(K2, i2, K6, i))
                             if values[i]+diff not in values:
                                 vals_for_X.append(self.get_grid_value(K1, i1, K6, i))
+                        if K1!=K2:
+                            vals_for_X.append(self.get_grid_value(K1, i1, K2, i2))
                         if any([val==1 for val in vals_for_X]):
                             break
                         sum_of_free = sum([val==0 for val in vals_for_X])
@@ -413,6 +415,8 @@ def add_clue3(self):
                                 vals_for_X.append(self.get_grid_value(K2, i2, K6, i))
                             if values[i]*diff not in values:
                                 vals_for_X.append(self.get_grid_value(K1, i1, K6, i))
+                        if K1!=K2:
+                            vals_for_X.append(self.get_grid_value(K1, i1, K2, i2))
                         if any([val==1 for val in vals_for_X]):
                             break
                         sum_of_free = sum([val==0 for val in vals_for_X])
@@ -424,11 +428,6 @@ def add_clue3(self):
     print("Program couldn't fit any clue of type no 3!")
                         
 def use_clue1(self, c):
-    if len(self.clues)<=c or c<0:
-        raise(Exception("Wrong clue id provided!"))
-    if self.clues[c]["typ"]!=1:
-        raise(Exception("Wrong clue type provided!"))
-        
     clue = self.clues[c]
     self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X")
     if "i3" in clue:
@@ -437,11 +436,6 @@ def use_clue1(self, c):
               self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i4"], "X")
                 
 def use_clue2(self, c):
-    if len(self.clues)<=c or c<0:
-        raise(Exception("Wrong clue id provided!"))
-    if self.clues[c]["typ"]!=2:
-        raise(Exception("Wrong clue type provided!"))
-    
     clue = self.clues[c]
     self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 0, "X")
     self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 1, "X")
@@ -464,11 +458,47 @@ def use_clue2(self, c):
         else:
             break
             
+def use_clue3(self, c):
+    clue = self.clues[c]
+    operation = clue["oper"]
+    diff = clue["diff"]
+    values = self.cathegories[clue["K6"]][1]
+    
+    if clue["K1"]!=clue["K2"]:
+        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X")
+    
+    if operation=="+":
+        for i in range(self.k):
+            if values[i]-diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]-diff))==2:
+                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X")
+            if values[i]+diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))==2:
+                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X")
+    elif operation=="*":
+        for i in range(self.k):
+            if values[i]/diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]/diff))==2:
+                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X")
+            if values[i]*diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))==2:
+                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X")            
+            
+def use_clue(self, c):
+    if len(self.clues)<=c or c<0:
+        raise Exception("Wrong clue id provided!") 
+    if self.clues[c]["typ"] not in [1, 2, 3]:
+        raise Exception("Wrong clue type provided!") 
+        
+    typ = self.clues[c]["typ"]
+    if typ==1:
+        self.use_clue1(c)
+    elif typ==2:
+        self.use_clue2(c)
+    elif typ==3:
+        self.use_clue3(c)
+            
 def is_grid_contradictory_with_clue2(self, c):
     if len(self.clues)<=c or c<0:
-        raise(Exception("Wrong clue id provided!"))
+        raise Exception("Wrong clue id provided!")
     if self.clues[c]["typ"]!=2:
-        raise(Exception("Wrong clue type provided!"))
+        raise Exception("Wrong clue type provided!")
        
     clue = self.clues[c]
     i1 = None
@@ -486,7 +516,27 @@ def is_grid_contradictory_with_clue2(self, c):
         return True
     else:
         return False
-            
+          
+def is_grid_contradictory_with_clue3(self, c):
+    if len(self.clues)<=c or c<0:
+        raise Exception("Wrong clue id provided!")
+    if self.clues[c]["typ"]!=3:
+        raise Exception("Wrong clue type provided!")
+       
+    clue = self.clues[c]
+    operation = clue["oper"]
+    diff = clue["diff"]
+    values = self.cathegories[clue["K6"]][1]
+    
+    if operation=="+":
+        for i in range(self.k):
+            if values[i]+diff in values and self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)!=2 and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))!=2:
+                return False
+    elif operation=="*":
+        for i in range(self.k):
+            if values[i]*diff in values and self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)!=2 and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))!=2:
+                return False
+    return True            
               
 def is_grid_completed(self):
     for box in self.grid.values():
@@ -524,6 +574,11 @@ def is_grid_contradictory(self):
         if self.is_grid_contradictory_with_clue2(c):
             #print("Puzzle is contradictory with clue 2!")
             return True
+    clues3 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==3 ]
+    for c in clues3:
+        if self.is_grid_contradictory_with_clue3(c):
+            #print("Puzzle is contradictory with clue 2!")
+            return True
     return False
 
 def set_seed(self, seed):
@@ -554,7 +609,7 @@ def try_to_solve2(self):
     while self.changed:
         self.changed = False
         for c in clues2:
-            self.use_clue2(c)
+            self.use_clue(c)
             self.grid_concile()
             if self.is_grid_contradictory() or self.is_grid_completed():
                 return            
@@ -588,27 +643,47 @@ def try_to_solve(self):
                                 return
                         else:
                             self.grid = grid_copy
-    self.grid = grid_main_copy
+    #self.grid = grid_main_copy
         
-def draw_clues(self):
-    no_of_clues2 = 4
-    for i in range(no_of_clues2):
-        self.add_clue2()
-        self.use_clue2(i)
+def draw_clues(self, trace=False):
+    no_of_clues23 = 5
+    for i in range(no_of_clues23):
+        typ = np.random.choice([2, 3], 1)[0]
+        if trace:
+            print("Trying to fit clue of type "+str(typ))
+        if typ==2:
+            self.add_clue2()
+        elif typ==3:
+            self.add_clue3()
+        self.use_clue(i)
         self.grid_concile()
-        self.use_clue2(i)
+        for j in range(len(self.clues)):
+            self.use_clue(j)
+        self.grid_concile()
+        
+        if trace:
+            self.print_grid()
+            self.print_info()
+        
         if self.is_grid_completed() or self.is_grid_contradictory():
             break
+    if trace:
+        print("-------------- Started to fit clues of type 1 ---------")
     
     for i in range(100):
         self.add_clue1()
-        self.use_clue1(len(self.clues)-1)
+        self.use_clue(len(self.clues)-1)
         self.grid_concile()
-        for j in range(no_of_clues2):
-            self.use_clue2(j)
+        if trace:
+            print("Clue of type 1 added")
+        for j in range(no_of_clues23):
+            self.use_clue(j)
             self.grid_concile()
             if self.is_grid_completed() or self.is_grid_contradictory():
-                break
+                return
+        if trace:
+            self.print_grid()
+            self.print_info()
 
 def try_to_restrict_clues(self):
     clues_copy = copy.deepcopy(self.clues)
@@ -638,6 +713,9 @@ def try_to_restrict_clues(self):
             
     print(to_restrict)
     self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
+
+def print_info(self):
+    print("Completed: "+str(self.is_grid_completed())+", Contradictory: "+str(self.is_grid_contradictory()) )
     
 # --------------------- class definition ------------------------------
     
@@ -659,8 +737,9 @@ class puzzle:
     clear_grid = clear_grid
     is_grid_completed = is_grid_completed
     is_grid_contradictory = is_grid_contradictory
+    print_info = print_info
+   
     set_seed = set_seed
-    
     draw_cathegories = draw_cathegories
     draw_clues = draw_clues
     
@@ -676,9 +755,13 @@ class puzzle:
     add_clue1 = add_clue1
     add_clue2 = add_clue2
     add_clue3 = add_clue3
+    
+    use_clue = use_clue
     use_clue1 = use_clue1
     use_clue2 = use_clue2
+    use_clue3 = use_clue3
     is_grid_contradictory_with_clue2 = is_grid_contradictory_with_clue2
+    is_grid_contradictory_with_clue3 = is_grid_contradictory_with_clue3
     
     try_to_solve2 = try_to_solve2
     try_to_solve = try_to_solve
