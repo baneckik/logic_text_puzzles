@@ -700,16 +700,16 @@ def try_to_restrict_clues(self):
             to_restrict.append(i)
             clues1 = clues1_restricted
             
-    clues2 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==2 ]
-    clue_order = np.random.choice(clues2, len(clues2), replace=False)
+    clues_other = [ i for i, clue in enumerate(clues_copy) if clue["typ"]!=1 ]
+    clue_order = np.random.permutation(clues_other)
     for i in clue_order:
-        clues2_restricted = [ j for j in clues2 if j!=i ]
+        clues_restricted = [ j for j in clues_other if j!=i ]
         self.clear_grid()
-        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues2_restricted or not j in clues2 ]
+        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues_restricted or (not j in clues_other and j in clues1) ]
         self.try_to_solve()
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
-            clues2 = clues2_restricted        
+            clues_other = clues_restricted        
             
     print(to_restrict)
     self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
