@@ -122,6 +122,120 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         text7 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text7)
+    elif clue["typ"]==3:
+        text1 = "Pod względem "
+        c.drawString(x, Y, text1)
+        textWidth = stringWidth(text1, normal_font, width) 
+        x += textWidth + 1
+        
+        text2 = "Kategorii "+str(clue["K6"])
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text2)
+        textWidth = stringWidth(text2, special_font, width) 
+        x += textWidth + 1
+        
+        text3 = " zachodzi: "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text3)
+        textWidth = stringWidth(text3, normal_font, width) 
+        x += textWidth + 1
+        
+        text4 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text4)
+        textWidth = stringWidth(text4, special_font, width) 
+        x += textWidth + 1
+        
+        text5 = " = "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text5)
+        textWidth = stringWidth(text5, normal_font, width) 
+        x += textWidth + 1
+        
+        text6 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text6)
+        textWidth = stringWidth(text6, special_font, width) 
+        x += textWidth + 1
+        
+        if str(clue["diff"]).endswith(".0"):
+            diff = str(clue["diff"])[:-2]
+        else:
+            diff = str(clue["diff"])
+        text7 = " "+clue["oper"]+" "+diff
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text7)
+    elif clue["typ"]==4:
+        text1 = "Jeśli "
+        c.drawString(x, Y, text1)
+        textWidth = stringWidth(text1, normal_font, width) 
+        x += textWidth + 1
+        
+        text2 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text2)
+        textWidth = stringWidth(text2, special_font, width) 
+        x += textWidth + 1
+        
+        text3 = " pasuje do "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text3)
+        textWidth = stringWidth(text3, normal_font, width) 
+        x += textWidth + 1
+        
+        text4 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text4)
+        textWidth = stringWidth(text4, special_font, width) 
+        x += textWidth + 1
+        
+        text5 = ", to "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text5)
+        textWidth = stringWidth(text5, normal_font, width) 
+        x += textWidth + 1
+        
+        text6 = funs.get_string_name(kategorie, clue["K3"], clue["i3"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text6)
+        textWidth = stringWidth(text6, special_font, width) 
+        x += textWidth + 1
+        
+        text7 = " pasuje do  "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text7)
+        textWidth = stringWidth(text7, normal_font, width) 
+        x += textWidth + 1
+        
+        text8 = funs.get_string_name(kategorie, clue["K4"], clue["i4"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text8)
+        
+        textWidth = stringWidth(text0, normal_font, width) 
+        x = X + textWidth + 1
+        
+        text9 = "W przeciwnym przypadku  "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y-width, text9)
+        textWidth = stringWidth(text9, normal_font, width) 
+        x += textWidth + 1
+        
+        text10 = funs.get_string_name(kategorie, clue["K5"], clue["i5"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y-width, text10)
+        textWidth = stringWidth(text10, special_font, width) 
+        x += textWidth + 1
+        
+        text11 = " pasuje do  "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y-width, text11)
+        textWidth = stringWidth(text11, normal_font, width) 
+        x += textWidth + 1
+        
+        text12 = funs.get_string_name(kategorie, clue["K6"], clue["i6"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y-width, text12)
+        
         
 # --------------------------------------- main printing function ----------------------------------
 
@@ -160,8 +274,11 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     
     c.setFont("sans-serif", width_clue)
     clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
+    additional_rows = 0
     for i in range(len(clues)):
-        rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*i, i, width_clue)
+        rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*(i+additional_rows), i, width_clue)
+        if clues[clue_order[i]]["typ"]==4:
+            additional_rows += 1
     
     # ------------- drawing footnote and info
     width_foot = 8
