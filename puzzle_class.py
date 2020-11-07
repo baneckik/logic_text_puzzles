@@ -483,41 +483,101 @@ def add_clue4(self):
                                 for i5 in i5_list:
                                     for i6 in i6_list:
                                         if K34==K56 and i3==i5 and i4==i6:
-                                            break
-                                        
-                                        K1 = int(K12.split(",")[0])
-                                        K2 = int(K12.split(",")[1])
-                                        K3 = int(K34.split(",")[0])
-                                        K4 = int(K34.split(",")[1])
-                                        K5 = int(K56.split(",")[0])
-                                        K6 = int(K56.split(",")[1])
-                                        
-                                        if self.get_grid_value(K1, i1, K2, i2)==0 and self.get_grid_value(K3, i3, K4, i4)==0 and self.get_grid_value(K5, i5, K6, i6)==0:
-                                            if K34==K56:
-                                                vals_for_X = []
-                                                if i3!=i5 and i4!=i6:
-                                                    vals_for_X.append(self.get_grid_value(K3, i5, K4, i4))
-                                                    vals_for_X.append(self.get_grid_value(K3, i3, K4, i6))
-                                                elif i3==i5:
-                                                    for i in range(k):
-                                                        if i!=i4 and i!=i6:
-                                                            vals_for_X.append(self.get_grid_value(K3, i3, K4, i))
+                                            pass
+                                        else:
+                                            K1 = int(K12.split(",")[0])
+                                            K2 = int(K12.split(",")[1])
+                                            K3 = int(K34.split(",")[0])
+                                            K4 = int(K34.split(",")[1])
+                                            K5 = int(K56.split(",")[0])
+                                            K6 = int(K56.split(",")[1])
+
+                                            if self.get_grid_value(K1, i1, K2, i2)==0 and self.get_grid_value(K3, i3, K4, i4)==0 and self.get_grid_value(K5, i5, K6, i6)==0:
+                                                if K34==K56:
+                                                    vals_for_X = []
+                                                    if i3!=i5 and i4!=i6:
+                                                        vals_for_X.append(self.get_grid_value(K3, i5, K4, i4))
+                                                        vals_for_X.append(self.get_grid_value(K3, i3, K4, i6))
+                                                    elif i3==i5:
+                                                        for i in range(k):
+                                                            if i!=i4 and i!=i6:
+                                                                vals_for_X.append(self.get_grid_value(K3, i3, K4, i))
+                                                    else:
+                                                        for i in range(k):
+                                                            if i!=i3 and i!=i5:
+                                                                vals_for_X.append(self.get_grid_value(K3, i, K4, i4))
+
+                                                    if any([val==1 for val in vals_for_X]):
+                                                        break
+                                                    sum_of_free = sum([val==0 for val in vals_for_X])
+                                                    if sum_of_free>1:
+                                                        self.clues.append({"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6})
+                                                        return
                                                 else:
-                                                    for i in range(k):
-                                                        if i!=i3 and i!=i5:
-                                                            vals_for_X.append(self.get_grid_value(K3, i, K4, i4))
-                                                
-                                                if any([val==1 for val in vals_for_X]):
-                                                    break
-                                                sum_of_free = sum([val==0 for val in vals_for_X])
-                                                if sum_of_free>1:
                                                     self.clues.append({"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6})
                                                     return
-                                            else:
-                                                self.clues.append({"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6})
-                                                return
 
+def add_clue5(self):
+    """
+    Adding clue of type 5:
+    Either K1,i1 match K2,i2 or K3,i3 match K4,i4.
+    """
+    K = self.K
+    k = self.k
+    
+    K12_candidates = np.random.permutation([ key for key in self.grid ])
+    K34_candidates = np.random.permutation([ key for key in self.grid ])
+    
+    i_candidates = [ i for i in range(k) ]
+    i1_list = np.random.permutation(i_candidates)
+    i2_list = np.random.permutation(i_candidates)
+    i3_list = np.random.permutation(i_candidates)
+    i4_list = np.random.permutation(i_candidates)
+    
+    for K12 in K12_candidates:
+        los = np.random.randint(2)
+        if los==0:
+            K34 = K12
+        else:
+            for Kxy in K34_candidates:
+                if Kxy!=K12:
+                    K34 = Kxy
+            
+        for i1 in i1_list:
+            for i2 in i2_list:
+                for i3 in i3_list:
+                    for i4 in i4_list:
+                        if K12==K34 and i1==i3 and i2==i4:
+                            pass
+                        else:
+                            K1 = int(K12.split(",")[0])
+                            K2 = int(K12.split(",")[1])
+                            K3 = int(K34.split(",")[0])
+                            K4 = int(K34.split(",")[1])
+                            if self.get_grid_value(K1, i1, K2, i2)==0 and self.get_grid_value(K3, i3, K4, i4)==0:
+                                if K12==K34:
+                                    vals_for_X = []
+                                    if i1!=i3 and i2!=i4:
+                                        vals_for_X.append(self.get_grid_value(K1, i1, K2, i4))
+                                        vals_for_X.append(self.get_grid_value(K1, i3, K2, i2))
+                                    elif i1==i3:
+                                        for i in range(k):
+                                            if i!=i2 and i!=i4:
+                                                vals_for_X.append(self.get_grid_value(K1, i1, K2, i))
+                                    else:
+                                        for i in range(k):
+                                            if i!=i1 and i!=i3:
+                                                vals_for_X.append(self.get_grid_value(K1, i, K2, i2))
 
+                                    if any([val==1 for val in vals_for_X]):
+                                        break
+                                    sum_of_free = sum([val==0 for val in vals_for_X])
+                                    if sum_of_free>1:
+                                        self.clues.append({"typ":5, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4})
+                                        return
+                                else:
+                                    self.clues.append({"typ":5, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4})
+                                    return
                         
 def use_clue1(self, c):
     clue = self.clues[c]
@@ -605,6 +665,36 @@ def use_clue4(self, c):
         self.grid_insert(K3, i3, K4, i4, "O")
     elif self.get_grid_value(K1, i1, K2, i2)==2:
         self.grid_insert(K5, i5, K6, i6, "O")
+        
+def use_clue5(self, c):
+    clue = self.clues[c]    
+    
+    K1 = clue["K1"]
+    K2 = clue["K2"]
+    K3 = clue["K3"]
+    K4 = clue["K4"]
+    i1 = clue["i1"]
+    i2 = clue["i2"]
+    i3 = clue["i3"]
+    i4 = clue["i4"]
+    
+    if K1==K3 and K2==K4:
+        if i1!=i3 and i2!=i4:
+            self.grid_insert(K1, i3, K2, i2, "X")
+            self.grid_insert(K1, i1, K2, i4, "X")
+        elif i1==i3:
+            for i in range(self.k):
+                if i!=i2 and i!=i4:
+                    self.grid_insert(K1, i1, K2, i, "X")
+        else:
+            for i in range(self.k):
+                if i!=i1 and i!=i3:
+                    self.grid_insert(K1, i, K2, i2, "X")
+            
+    if self.get_grid_value(K1, i1, K2, i2)==2:
+        self.grid_insert(K3, i3, K4, i4, "O")
+    elif self.get_grid_value(K3, i3, K4, i4)==2:
+        self.grid_insert(K1, i1, K2, i2, "O")
             
 def use_clue(self, c):
     if len(self.clues)<=c or c<0:
@@ -907,12 +997,14 @@ class puzzle:
     add_clue2 = add_clue2
     add_clue3 = add_clue3
     add_clue4 = add_clue4
+    add_clue5 = add_clue5
     
     use_clue = use_clue
     use_clue1 = use_clue1
     use_clue2 = use_clue2
     use_clue3 = use_clue3
     use_clue4 = use_clue4
+    use_clue5 = use_clue5
     
     is_grid_contradictory_with_clue2 = is_grid_contradictory_with_clue2
     is_grid_contradictory_with_clue3 = is_grid_contradictory_with_clue3
