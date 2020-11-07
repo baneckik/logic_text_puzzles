@@ -699,7 +699,7 @@ def use_clue5(self, c):
 def use_clue(self, c):
     if len(self.clues)<=c or c<0:
         raise Exception("Wrong clue id provided!") 
-    if self.clues[c]["typ"] not in [1, 2, 3, 4]:
+    if self.clues[c]["typ"] not in [1, 2, 3, 4, 5]:
         raise Exception("Wrong clue type provided!") 
         
     typ = self.clues[c]["typ"]
@@ -711,6 +711,8 @@ def use_clue(self, c):
         self.use_clue3(c)
     elif typ==4:
         self.use_clue4(c)
+    elif typ==5:
+        self.use_clue5(c)
         
             
 def is_grid_contradictory_with_clue2(self, c):
@@ -771,6 +773,17 @@ def is_grid_contradictory_with_clue4(self, c):
     if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==2 and self.get_grid_value(clue["K5"], clue["i5"], clue["K6"], clue["i6"])==2:
         return True
     return False
+
+def is_grid_contradictory_with_clue5(self, c):
+    if len(self.clues)<=c or c<0:
+        raise Exception("Wrong clue id provided!")
+    if self.clues[c]["typ"]!=5:
+        raise Exception("Wrong clue type provided!")
+       
+    clue = self.clues[c]
+    if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==2 and self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"])==2:
+        return True
+    return False
               
 def is_grid_completed(self):
     for box in self.grid.values():
@@ -817,6 +830,11 @@ def is_grid_contradictory(self):
     for c in clues4:
         if self.is_grid_contradictory_with_clue4(c):
             #print("Puzzle is contradictory with clue 4!")
+            return True
+    clues5 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==5 ]
+    for c in clues5:
+        if self.is_grid_contradictory_with_clue5(c):
+            #print("Puzzle is contradictory with clue 5!")
             return True
     return False
 
@@ -887,7 +905,7 @@ def try_to_solve(self):
 def draw_clues(self, trace=False):
     no_of_clues23 = 5
     for i in range(no_of_clues23):
-        typ = np.random.choice([2, 3, 4], 1, p=[0.4, 0.4, 0.2])[0]
+        typ = np.random.choice([2, 3, 4, 5], 1, p=[0.4, 0.2, 0.2, 0.2])[0]
         if trace:
             print("Trying to fit clue of type "+str(typ))
         if typ==2:
@@ -896,6 +914,8 @@ def draw_clues(self, trace=False):
             self.add_clue3()
         elif typ==4:
             self.add_clue4()
+        elif typ==5:
+            self.add_clue5()
         self.use_clue(i)
         self.grid_concile()
         for j in range(len(self.clues)):
@@ -935,7 +955,7 @@ def try_to_restrict_clues(self):
     for i in clue_order:
         clues1_restricted = [ j for j in clues1 if j!=i ]
         self.clear_grid()
-        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues1_restricted or not j in clues1 ]
+        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues1_restricted or not j in clue_order ]
         self.try_to_solve()
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
@@ -946,7 +966,7 @@ def try_to_restrict_clues(self):
     for i in clue_order:
         clues_restricted = [ j for j in clues_other if j!=i ]
         self.clear_grid()
-        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues_restricted or (not j in clues_other and j in clues1) ]
+        self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues_restricted or j in clues1 ]
         self.try_to_solve()
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
@@ -1009,6 +1029,7 @@ class puzzle:
     is_grid_contradictory_with_clue2 = is_grid_contradictory_with_clue2
     is_grid_contradictory_with_clue3 = is_grid_contradictory_with_clue3
     is_grid_contradictory_with_clue4 = is_grid_contradictory_with_clue4
+    is_grid_contradictory_with_clue5 = is_grid_contradictory_with_clue5
     
     try_to_solve2 = try_to_solve2
     try_to_solve = try_to_solve
