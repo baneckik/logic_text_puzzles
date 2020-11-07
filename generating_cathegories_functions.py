@@ -87,7 +87,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
     # ---------------------- wybór schematu i pierwszego wyrazu=n*p ---------------------------------
     
     # (schemat, jego_waga)
-    typy_schematu_wagi = [ ("ciag_arytmetyczny", 10), ("ciag_geometryczny", 2), ("ciag_rosnacy", 6)]
+    typy_schematu_wagi = [ ("ciag_arytmetyczny", 10), ("ciag_geometryczny", 2), ("ciag_rosnacy", 4)]
     typy = [ t[0] for t in typy_schematu_wagi ]
     wagi_typow = [ t[1] for t in typy_schematu_wagi ]
     wagi_typow = [ w/sum(wagi_typow) for w in wagi_typow ]
@@ -149,8 +149,8 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
         values = list(np.sort([ n*p*(r**k) for k in range(przedmiotow_w_kategorii) ]))
         
     elif schemat=="ciag_rosnacy":
-        r = np.random.choice([n*p, 2*n*p], przedmiotow_w_kategorii, p=[0.5, 0.5])
-        values = [ n*p+sum(r[:k]) for k in range(przedmiotow_w_kategorii) ]
+        r = np.random.choice([n*p, 2*n*p], przedmiotow_w_kategorii, p=[0.8, 0.2])
+        values = list(np.sort([ n*p+sum(r[:k]) for k in range(przedmiotow_w_kategorii) ]))
         
     if not isinstance(r, np.ndarray) and r==0:
         raise Exception("Nie udało się wygenerować mnożnika/incrementu r!\nParametry to: p="+str(p)+", n="+str(n)+", schemat="+str(schemat[0]))
@@ -158,6 +158,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
     # -------------------- określanie możliwych wskazówek ----------------------------
     
     wskazowki = []
+    min_free = (przedmiotow_w_kategorii-1)//2+1
     if schemat=="ciag_rosnacy":
         for r1 in [n*p, 2*n*p]:
             # wskazowki addytywne
@@ -166,7 +167,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
                 for val in values:
                     if val+i*r1 in values:
                         suma += 1
-                if suma>=2:
+                if suma>=min_free:
                     wskazowki.append("x=y+"+str(i*r1))
             # wskazowki multiplikatywne
             if r1!=1:
@@ -175,7 +176,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
                     for val in values:
                         if val*(r1**i) in values:
                             suma += 1
-                    if suma>=2:
+                    if suma>=min_free:
                         wskazowki.append("x=y*"+str(r1**i))
             if r1!=2:
                 for i in range(1,4):
@@ -183,7 +184,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
                     for val in values:
                         if val*(2**i) in values:
                             suma += 1
-                    if suma>=2:
+                    if suma>=min_free:
                         wskazowki.append("x=y*"+str(2**i))
     else:
         # wskazowki addytywne
@@ -192,7 +193,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
             for val in values:
                 if val+i*r in values:
                     suma += 1
-            if suma>=2:
+            if suma>=min_free:
                 wskazowki.append("x=y+"+str(i*r))
         # wskazowki multiplikatywne
         if r!=1:
@@ -201,7 +202,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
                 for val in values:
                     if val*(r**i) in values:
                         suma += 1
-                if suma>=2:
+                if suma>=min_free:
                     wskazowki.append("x=y*"+str(r**i))
         if r!=2:
             for i in range(1,4):
@@ -209,7 +210,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
                 for val in values:
                     if val*(2**i) in values:
                         suma += 1
-                if suma>=2:
+                if suma>=min_free:
                     wskazowki.append("x=y*"+str(2**i))
 
     #return schemat[0], values, set(wskazowki)
