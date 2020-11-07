@@ -288,6 +288,41 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         c.drawString(x, Y, text9)
         textWidth = stringWidth(text9, normal_font, width) 
         x += textWidth + 1
+    elif clue["typ"]==6:
+        text1 = "Pod względem "
+        c.drawString(x, Y, text1)
+        textWidth = stringWidth(text1, normal_font, width) 
+        x += textWidth + 1
+        
+        text2 = "Kategorii "+str(clue["K6"])
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text2)
+        textWidth = stringWidth(text2, special_font, width) 
+        x += textWidth + 1
+        
+        text3 = " obiekt "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text3)
+        textWidth = stringWidth(text3, normal_font, width) 
+        x += textWidth + 1
+        
+        text4 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text4)
+        textWidth = stringWidth(text4, special_font, width) 
+        x += textWidth + 1
+        
+        text5 = " jest tuż obok "
+        c.setFont(normal_font, width)
+        c.drawString(x, Y, text5)
+        textWidth = stringWidth(text5, normal_font, width) 
+        x += textWidth + 1
+        
+        text6 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        c.setFont(special_font, width)
+        c.drawString(x, Y, text6)
+        textWidth = stringWidth(text6, special_font, width) 
+        x += textWidth + 1
         
         
         
