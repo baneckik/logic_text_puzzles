@@ -950,7 +950,7 @@ def draw_cathegories(self, diff=3):
     i = 0
     i_max = 100
     while funs.do_cathegories_repeat(self.cathegories):
-        self.cathegories = funs.losuj_kategorie(self.K, self.k, diff, self.seed)
+        self.cathegories = funs.losuj_kategorie(self.K, self.k, diff, self.seed+i*1234567)
         i += 1
         if i>i_max:
             raise Exception("Program couldn't draw non-repeating cathegories!")
