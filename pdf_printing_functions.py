@@ -335,15 +335,15 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     seed = puzzle1.seed
     K_cat = puzzle1.K # liczba kategorii
     k_cat = puzzle1.k # liczba obiektów z każdej kategorii
+    puzzle_h = 400 # height of the puzzle grid
     
     if box_size == None:
-        box_size = 450/(K_cat+0.5)
+        box_size = puzzle_h/(K_cat+0.5)
     text_box_size = box_size*1.5
     
     N_rows = K_cat-1
     width = box_size/k_cat
 
-    cm = 20
     # ------------ drawing boxes
     c.setLineWidth(2)
     for row in range(N_rows):
@@ -356,7 +356,7 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
             c.rect( X+text_box_size+row*box_size, Y+row*box_size, k*box_size/k_cat, text_box_size+(N_rows-row)*box_size)
     
     # ------------- drawing clues
-    width_clue = 10
+    width_clue = 14
     Xc = 30
     Yc = 800
     odstep = 0.15
@@ -388,21 +388,30 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
     
     # ------------- typing cathegories names at the top
-    width2 = width_clue
+    width2 = 10
     c.setFont("sans-serif", width2)
     special_font = "Times-Bold"
     Xc = 430
-    col = 0
+    if k_cat<=5:
+        Ycat = Y+puzzle_h+width2*(k_cat+1)
+    else:
+        Ycat = Y+puzzle_h+width2*6
+        
+    col_width = 100
+    
     for i in range(len(kategorie)):
         c.setFont(special_font, width2)
         text0 = "Kategoria "+str(i)+":"
         nazwy = [ funs.get_string_name(kategorie, i, j, False) for j in range(len(kategorie[i][1])) ]
-        c.drawString(Xc, Yc-width2*col, text0)
+        c.drawString(X+col_width*i, Ycat, text0)
         c.setFont("sans-serif", width2)
-        textWidth = stringWidth(text0, special_font, width2) 
-        for name in nazwy:
-            c.drawString(Xc+textWidth+5, Yc-width2*col, name)
-            col += 1
+        for col, name in enumerate(nazwy):
+            if k_cat>5 and col>3:
+                c.drawString(X+col_width*i, Ycat-width2*(col+1), "...")
+                break
+            c.drawString(X+col_width*i, Ycat-width2*(col+1), name)
+            
+            
     
     # ------------- typing cathegories names into boxes
     for i, kategoria in enumerate(kategorie):
