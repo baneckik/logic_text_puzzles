@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 from reportlab.pdfgen import canvas
 import random
+from math import pi, cos, sin
 
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -14,6 +15,19 @@ import generating_cathegories_functions as funs
 from puzzle_class import puzzle
 
 # --------------------------------------- auxiliary functions ----------------------------------
+
+def star(canvas, xcenter, ycenter, radius):
+    p = canvas.beginPath()
+    p.moveTo(xcenter,ycenter+radius)
+    angle = (2*pi)*2/5.0
+    startangle = pi/2.0
+    for vertex in range(5-1):
+        nextangle = angle*(vertex+1)+startangle
+        x = xcenter + radius*cos(nextangle)
+        y = ycenter + radius*sin(nextangle)
+        p.lineTo(x,y)
+    p.close()
+    canvas.drawPath(p)
 
 def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
     normal_font = "sans-serif"
@@ -344,6 +358,12 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     N_rows = K_cat-1
     width = box_size/k_cat
 
+    # ------------ drawing stars
+    
+    n = np.min([4,np.max([1,puzzle1.diff//4])])
+    for i in range(n):
+        star(c, X+box_size*1.5-15-i*25, Y+puzzle_h-box_size*1.5+15, 10)
+    
     # ------------ drawing boxes
     c.setLineWidth(2)
     for row in range(N_rows):
@@ -358,7 +378,7 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     # ------------- drawing clues
     width_clue = 14
     Xc = 30
-    Yc = 800
+    Yc = 820
     odstep = 0.15
     
     c.setFont("sans-serif", width_clue)
@@ -372,6 +392,8 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     # ------------- drawing footnote and info
     width_foot = 8
     c.setFont("sans-serif", width_foot)
+    
+    c.drawString(X+text_box_size+box_size+10, Y+3*width_foot, "diff: "+str(puzzle1.diff))
     
     if puzzle1.is_grid_contradictory():
         c.setFillColorRGB(1,0,0)
@@ -387,7 +409,7 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
 
     c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
     
-    # ------------- typing cathegories names at the top
+    # ------------- typing cathegories names
     width2 = 10
     c.setFont("sans-serif", width2)
     special_font = "Times-Bold"
