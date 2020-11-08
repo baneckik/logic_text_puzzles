@@ -46,7 +46,7 @@ def find_word(word):
     for path in Path('cathegories/cathegorical').rglob('*.txt'):
             kat = pd.read_csv(path, header=None)
             if word in list(kat.iloc[1:,0]):
-                found.append(path.name.split(".")[0])
+                found.append("/".join(str(path).split(".")[0].split("/")[-2:]))
     if len(found)>0:
         print("Słowo występuje już w: ", found)
     else:
