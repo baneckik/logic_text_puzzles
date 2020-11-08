@@ -95,7 +95,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
     
     # (podstawa, jej_waga)
     podstawy_wagi = [(-40,1),(-10,1),(-5,1),(0,1),(1,20),(1.50,5),(2,10),(2.50,5),(3,4),(4,4),(5,3),(6,3), \
-                (7,2),(8,2),(9,2),(10,5),(20,5),(50,5),(100,6),(1000,6),(1500,4),(1950,4),(2000,4)]
+                (7,2),(8,2),(9,2),(10,5),(20,5),(50,5),(100,6),(1000,6),(1500,4),(1920,1),(1950,1),(1980,1),(1990,1),(2000,4)]
     # ograniczenia na wartości podstawy
     if schemat=="ciag_geometryczny": 
         podstawy_wagi = [ pw for pw in podstawy_wagi if abs(pw[0])<=10 and pw[0]!=0 ]
@@ -241,15 +241,35 @@ def losuj_interpretacje_num(values):
     interpretacje = []
     
     if czy_calk(values) and czy_dodatnie(values):
-        interpretacje.append( ("@ rok/lata", 25) )
+        interpretacje.append( ("@ rok/lata", 35) )
         interpretacje.append( ("@ klocków",5) )
-        interpretacje.append( ("@ punktów",5) )
+        interpretacje.append( ("@ punktów",10) )
+        
+        interpretacje.append( ("@ okruszków",5) )
+        interpretacje.append( ("@ ziaren",5) )
+        interpretacje.append( ("@ kropelek",5) )
+        interpretacje.append( ("@ groszków",5) )
+        interpretacje.append( ("@ plamek",5) )
+        interpretacje.append( ("@ drobinek",5) )
+        interpretacje.append( ("@ liści",5) )
+        interpretacje.append( ("@ kapsli",5) )
+        interpretacje.append( ("@ pocztówek",3) )
+        interpretacje.append( ("@ kulek",5) )
+        interpretacje.append( ("@ muszelek",5) )
+        interpretacje.append( ("@ drzew",5) )
+        interpretacje.append( ("@ kwiatów",5) )
+        interpretacje.append( ("@ owadów",5) )
+        interpretacje.append( ("@ ton",3) )
+        interpretacje.append( ("@ schodów",5) )
+        interpretacje.append( ("@ domów",5) )
+        interpretacje.append( ("@ ludzi",5) )
+        
         interpretacje.append( ("@ gwiazd",4) )
         interpretacje.append( ("@ puzzli",2) )
-        interpretacje.append( ("@ zł",25) )
-        interpretacje.append( ("@ EUR",5) )
-        interpretacje.append( ("@ USD",5) )
-        interpretacje.append( ("@ CHF",2) )
+        interpretacje.append( ("@ zł",35) )
+        interpretacje.append( ("@ EUR",15) )
+        interpretacje.append( ("@ USD",15) )
+        interpretacje.append( ("@ CHF",5) )
         interpretacje.append( ("@ denarów",2) )
         interpretacje.append( ("@ koron",5) )
         
@@ -299,7 +319,7 @@ def losuj_interpretacje_num(values):
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 10):
         interpretacje.append( ("@ warianty",5) )
         interpretacje.append( ("@-osobowy",15) )
-        interpretacje.append( ("@ pasażerów",5) )
+        interpretacje.append( ("@ pasażerów",10) )
         
     
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 24):
