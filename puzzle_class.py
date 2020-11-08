@@ -992,6 +992,7 @@ def try_to_solve(self):
                         if self.is_grid_contradictory():
                             self.grid = grid_copy
                             self.grid_insert(K1, i, K2, j, "X")
+                            self.diff += 1
                             self.try_to_solve2()
                             if self.is_grid_contradictory():
                                 self.contradictory = True
@@ -1101,6 +1102,7 @@ class puzzle:
         self.cathegories = []
         self.clues = []
         self.seed = 0
+        self.diff = 0
         
     get_grid_value = get_grid_value
     grid_insert = grid_insert
