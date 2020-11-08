@@ -547,7 +547,7 @@ def add_clue5(self):
             for i2 in i2_list:
                 for i3 in i3_list:
                     for i4 in i4_list:
-                        if K12==K34 and i1==i3 and i2==i4:
+                        if K12==K34 and (i1==i3 or i2==i4):
                             pass
                         else:
                             K1 = int(K12.split(",")[0])
@@ -1004,8 +1004,8 @@ def try_to_solve(self):
     #self.grid = grid_main_copy
         
 def draw_clues(self, trace=False):
-    no_of_clues23 = 8
-    for i in range(no_of_clues23):
+    non_1_clues = 8
+    for i in range(non_1_clues):
         typ = np.random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
         if trace:
             print("Trying to fit clue of type "+str(typ))
@@ -1038,13 +1038,14 @@ def draw_clues(self, trace=False):
     if trace:
         print("-------------- Started to fit clues of type 1 ---------")
     
+    non_1_clues = len(self.clues)
     for i in range(100):
         self.add_clue1()
         self.use_clue(len(self.clues)-1)
         self.grid_concile()
         if trace:
             print("Clue of type 1 added")
-        for j in range(no_of_clues23):
+        for j in range(non_1_clues):
             self.use_clue(j)
             self.grid_concile()
             if self.is_grid_completed() or self.is_grid_contradictory():
@@ -1084,6 +1085,8 @@ def try_to_restrict_clues(self):
 
 def print_info(self):
     print("Completed: "+str(self.is_grid_completed())+", Contradictory: "+str(self.is_grid_contradictory()) )
+    clues_counts = [ len([i for i in self.clues if i["typ"]==j]) for j in range(1,7)]
+    print("K: "+str(self.K)+", k: "+str(self.k)+", No of clues: "+str(len(self.clues))+str(clues_counts))
     
 # --------------------- class definition ------------------------------
     
