@@ -1,0 +1,7 @@
+# 1
+poziomy
+pionowy
+ukośny
+równoległy
+prostopadły
+
