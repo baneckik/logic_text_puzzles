@@ -360,7 +360,15 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
 
     # ------------ drawing stars
     
-    n = np.min([4,np.max([1,puzzle1.diff//4])])
+    if puzzle1.diff<2:
+        n = 1
+    elif puzzle1.diff<5:
+        n = 2
+    elif puzzle1.diff<10:
+        n = 3
+    else:
+        n = 4
+        
     for i in range(n):
         star(c, X+box_size*1.5-15-i*25, Y+puzzle_h-box_size*1.5+15, 10)
     
@@ -378,7 +386,7 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     # ------------- drawing clues
     width_clue = 14
     Xc = 30
-    Yc = 820
+    Yc = 810
     odstep = 0.15
     
     c.setFont("sans-serif", width_clue)
@@ -408,6 +416,27 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     c.drawString(X+text_box_size+box_size+10, Y, "seed: "+str(seed))
 
     c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
+    
+    # ------------- drawing solution
+    c.saveState()
+    c.rotate( 270 )
+    X_sol = -Y-350
+    Y_sol = 570
+    
+    width_sol = 8
+    c.setFont("Times-Bold", width_sol)
+    c.drawString(X_sol, Y_sol, "Solution:")
+    c.setFont("sans-serif", width_sol)
+    for i in range(k_cat):
+        linijka = funs.get_string_name(kategorie, 0, i, replace_polish=False)
+        for k2 in range(1, K_cat):
+            for j in range(k_cat):
+                if puzzle1.get_grid_value(0, i, k2, j)==1:
+                    break
+            linijka += " ~ "+funs.get_string_name(kategorie, k2, j, replace_polish=False)
+        c.drawString(X_sol, Y_sol-(i+1)*width_sol,linijka)
+    
+    c.restoreState()
     
     # ------------- typing cathegories names
     width2 = 10
