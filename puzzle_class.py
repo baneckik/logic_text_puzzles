@@ -1125,7 +1125,7 @@ def generate(self, seed=0, trace=False):
     self.diff = round(np.mean(diffs),2)
 
 def print_info(self):
-    print("Seed: "+str(seed)+", difficulty: "+str(self.diff))
+    print("Seed: "+str(self.seed)+", difficulty: "+str(self.diff))
     print("Completed: "+str(self.is_grid_completed())+", Contradictory: "+str(self.is_grid_contradictory()) )
     clues_counts = [ len([i for i in self.clues if i["typ"]==j]) for j in range(1,7)]
     print("K: "+str(self.K)+", k: "+str(self.k)+", No of clues: "+str(len(self.clues))+str(clues_counts))
