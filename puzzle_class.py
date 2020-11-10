@@ -381,7 +381,7 @@ def add_clue2(self):
                     if sum_of_free>5:
                         self.clues.append({"typ":2, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K3":K3, "i3":i3, "K6": K6})
                         return
-    print("Program couldn't fit any clue of type no 2!")
+    #print("Program couldn't fit any clue of type no 2!")
            
 def add_clue3(self):
     """
@@ -444,7 +444,7 @@ def add_clue3(self):
                             return
                     else:
                         raise Exception("Unknown operation type: "+operation+"!")
-    print("Program couldn't fit any clue of type no 3!")
+    #print("Program couldn't fit any clue of type no 3!")
     
 def add_clue4(self):
     """
@@ -980,7 +980,8 @@ def try_to_solve(self):
     while self.changed:
         self.changed = False
         self.try_to_solve2()
-        for key in self.grid:
+        key_candidates = np.random.permutation(list(self.grid.keys()))
+        for key in key_candidates:
             for i in range(self.k):
                 for j in range(self.k):
                     K1 = int(key.split(",")[0])
@@ -1021,7 +1022,7 @@ def draw_clues(self, trace=False):
         elif typ==6:
             self.add_clue6()
            
-        if len(self.clues)<i:
+        if trace and len(self.clues)<i:
             print("Failed to draw clue of type "+str(typ))
         
         self.use_clue(len(self.clues)-1)
@@ -1081,13 +1082,53 @@ def try_to_restrict_clues(self):
             to_restrict.append(i)
             clues_other = clues_restricted        
             
-    print(to_restrict)
+    #print(to_restrict)
     self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
+
+def generate(self, seed=0, trace=False):
+    self.set_seed(seed)
+    if trace:
+        print("Generating puzzle for seed="+str(seed))
+        print("Drawing cathegories...")
+    self.draw_cathegories()
+    if trace:
+        print("Cathegories drawn:")
+        for c in self.cathegories:
+            print(c)
+    if trace:
+        print("Drawing clues...")        
+    i_max = 100
+    for i in range(i_max):
+        self.clear_grid()
+        self.clues = []
+        self.draw_clues()
+        if self.is_grid_completed() and not self.is_grid_contradictory():
+            break
+        if trace and i==i_max-1:
+            print("Failed to draw clues!!!")
+    if trace:
+        clues_counts = [ len([i for i in self.clues if i["typ"]==j]) for j in range(1,7)]
+        print("No of clues drawn = "+str(len(self.clues))+str(clues_counts))
+        print("Restricting clues...")
+    self.try_to_restrict_clues() 
+    if trace:
+        print("Final difficulty assessment...")
+    N = 5
+    diffs = []
+    for n in range(N):
+        self.clear_grid()
+        self.diff = 0
+        self.try_to_solve()
+        diffs.append(self.diff)
+    if trace:
+        print("Difficulty: "+str(np.mean(diffs))+str(diffs))
+    self.diff = round(np.mean(diffs),2)
 
 def print_info(self):
     print("Completed: "+str(self.is_grid_completed())+", Contradictory: "+str(self.is_grid_contradictory()) )
     clues_counts = [ len([i for i in self.clues if i["typ"]==j]) for j in range(1,7)]
     print("K: "+str(self.K)+", k: "+str(self.k)+", No of clues: "+str(len(self.clues))+str(clues_counts))
+    print("Difficulty: "+str(self.diff))
     
 # --------------------- class definition ------------------------------
     
@@ -1149,4 +1190,5 @@ class puzzle:
     try_to_solve2 = try_to_solve2
     try_to_solve = try_to_solve
     try_to_restrict_clues = try_to_restrict_clues
+    generate = generate
     
