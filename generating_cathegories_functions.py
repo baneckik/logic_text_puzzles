@@ -45,9 +45,40 @@ def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
         
     chosen_out = []
     for c in chosen:
-        kat = pd.read_csv(c, header=None)
-        kat.drop(kat.head(1).index, inplace=True)
-        names = list(np.random.choice(kat.iloc[:,0], przedmiotow_w_kategorii, replace=False))
+        if str(c)=="cathegories/cathegorical/special_names/zmysleni_superbohaterowie_ang.txt":
+            kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
+            kat.drop(kat.head(1).index, inplace=True)
+            prenames = np.random.choice(kat.iloc[:,0], przedmiotow_w_kategorii, replace=False)
+            if przedmiotow_w_kategorii<5:
+                n = 1
+            else: 
+                n = 2
+            counts = [0]*n+[1]*n
+            counts += list(np.random.choice([0,1], przedmiotow_w_kategorii-len(counts), replace=True))
+            names_male = np.random.choice(kat.iloc[:,1], len([i for i in counts if i==0]), replace=False)
+            names_female = np.random.choice(kat.iloc[:,2], len([i for i in counts if i==1]), replace=False)
+            names = list(names_male)+list(names_female)
+            names = [prenames[i]+" "+names[i] for i in range(len(prenames))]
+        elif str(c)=="cathegories/cathegorical/special_names/zmysleni_superbohaterowie_pol.txt":
+            kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
+            kat.drop(kat.head(1).index, inplace=True)
+            rows = np.random.choice(range(kat.shape[0]), 5, replace=False)
+            if przedmiotow_w_kategorii<5:
+                n = 1
+            else: 
+                n = 2
+            counts = [0]*n+[1]*n
+            counts += list(np.random.choice([0,1], przedmiotow_w_kategorii-len(counts), replace=True))
+            names = []
+            for j, i in enumerate(rows):
+                if counts[j]==0:
+                    names.append(kat.iloc[i,0]+" "+kat.iloc[i,2])
+                else:
+                    names.append(kat.iloc[i,1]+" "+kat.iloc[i,3])
+        else:
+            kat = pd.read_csv(c, header=None)
+            kat.drop(kat.head(1).index, inplace=True)
+            names = list(np.random.choice(kat.iloc[:,0], przedmiotow_w_kategorii, replace=False))
         chosen_out.append(names)
     
     return [ ("cathegorical", chosen_out[i]) for i in range(len(chosen_out)) ]
