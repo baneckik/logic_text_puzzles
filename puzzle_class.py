@@ -1025,11 +1025,12 @@ def draw_clues(self, trace=False):
         if trace and len(self.clues)<i:
             print("Failed to draw clue of type "+str(typ))
         
-        self.use_clue(len(self.clues)-1)
-        self.grid_concile()
-        for j in range(len(self.clues)):
-            self.use_clue(j)
-        self.grid_concile()
+        if len(self.clues)>0:
+            self.use_clue(len(self.clues)-1)
+            self.grid_concile()
+            for j in range(len(self.clues)):
+                self.use_clue(j)
+            self.grid_concile()
         
         if trace:
             self.print_grid()
