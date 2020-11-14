@@ -62,7 +62,7 @@ def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
         elif str(c)=="cathegories/cathegorical/special_names/zmysleni_superbohaterowie_pol.txt":
             kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
             kat.drop(kat.head(1).index, inplace=True)
-            rows = np.random.choice(range(kat.shape[0]), 5, replace=False)
+            rows = np.random.choice(range(kat.shape[0]), przedmiotow_w_kategorii, replace=False)
             if przedmiotow_w_kategorii<5:
                 n = 1
             else: 
