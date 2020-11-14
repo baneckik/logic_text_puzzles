@@ -384,7 +384,13 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
             c.rect( X+text_box_size+row*box_size, Y+row*box_size, k*box_size/k_cat, text_box_size+(N_rows-row)*box_size)
     
     # ------------- drawing clues
-    width_clue = 14
+    N_lines = len(puzzle1.clues)+len([c for c in puzzle1.clues if c["typ"]==4])
+    if N_lines<=18:
+        width_clue = 14
+    elif N_lines<25:
+        width_clue = 12
+    else:
+        width_clue = 10
     Xc = 30
     Yc = 810
     odstep = 0.15
