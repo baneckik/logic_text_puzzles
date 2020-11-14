@@ -1006,7 +1006,7 @@ def try_to_solve(self):
     #self.grid = grid_main_copy
         
 def draw_clues(self, trace=False):
-    non_1_clues = 8
+    non_1_clues = int(np.ceil(self.k*self.K*self.K/10))
     for i in range(non_1_clues):
         typ = np.random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
         if trace:
