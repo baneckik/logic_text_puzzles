@@ -4,6 +4,7 @@ from tkinter import messagebox
 from tkinter.ttk import Progressbar
 from tkinter import filedialog
 from os import path
+import copy
 from reportlab.pdfgen import canvas
 
 import numpy as np
@@ -58,12 +59,95 @@ def clicked_gen():
 	lbl6.grid(row=6, column=0)
 	bar.grid(row=7, column=0)
 	
+	percent = 0
+	lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
+	bar['value'] = percent
+	window.update()
+	
+	# ----------------- Generating --------------
+	
 	puzzle1 = puzzle(K, k)
-	puzzle1.generate(seed, trace=True)
+	#puzzle1.generate(seed, trace=True)
+	
+	puzzle1.set_seed(seed)
+	puzzle1.draw_cathegories()
+	i_max = 100
+	for i in range(i_max):
+		puzzle1.clear_grid()
+		puzzle1.clues = []
+		puzzle1.draw_clues()
+		if puzzle1.is_grid_completed() and not puzzle1.is_grid_contradictory():
+			break
+	percent = 5
+	lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
+	bar['value'] = percent
+	window.update()
+	
+	bar_N = len(puzzle1.clues)+5
+	
+	# ---------------- clues restriction -----------------
+	
+	clues_copy = copy.deepcopy(puzzle1.clues)
+	to_restrict = []
+        
+	clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
+	clue_order = np.random.choice(clues1, len(clues1), replace=False)
+	for i in clue_order:
+		clues1_restricted = [ j for j in clues1 if j!=i ]
+		puzzle1.clear_grid()
+		puzzle1.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues1_restricted or not j in clue_order ]
+		puzzle1.try_to_solve()
+		if puzzle1.is_grid_completed() and not puzzle1.is_grid_contradictory():
+			to_restrict.append(i)
+			clues1 = clues1_restricted
+		percent += int(np.floor(95/bar_N))
+		lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
+		bar['value'] = percent
+		window.update()
+	
+	clues_other = [ i for i, clue in enumerate(clues_copy) if clue["typ"]!=1 ]
+	clue_order = np.random.permutation(clues_other)
+	for i in clue_order:
+		clues_restricted = [ j for j in clues_other if j!=i ]
+		puzzle1.clear_grid()
+		puzzle1.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues_restricted or j in clues1 ]
+		puzzle1.try_to_solve()
+		if puzzle1.is_grid_completed() and not puzzle1.is_grid_contradictory():
+			to_restrict.append(i)
+			clues_other = clues_restricted       
+		percent += int(np.floor(95/bar_N))
+		lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
+		bar['value'] = percent
+		window.update()
+
+	puzzle1.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
+	
+	#percent = int(np.floor(5+95/bar_N*(bar_N-5)))
+	#lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
+	#bar['value'] = percent
+	#window.update()
+	
+	# ---------------- difficulty assessment -------------------
+	
+	N = 5
+	diffs = []
+	for n in range(N):
+		puzzle1.clear_grid()
+		puzzle1.diff = 0
+		puzzle1.try_to_solve()
+		diffs.append(puzzle1.diff)
+		
+		percent = int(np.floor(5+95/bar_N*(bar_N-4+n)))
+		lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
+		bar['value'] = percent
+		window.update()
+	puzzle1.diff = round(np.mean(diffs),2)
+	
 	puzzle1.print_info()
 	
-	lbl6.configure(text="Generating puzzle...(100%)")
-	bar['value'] = 100
+	percent = 100
+	lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
+	bar['value'] = percent
 	
 	lbl7.grid(row=8, column=0)
 	lbl7.configure(text="You drew a puzzle from seed="+str(seed)+", estimated difficulty is: "+str(puzzle1.diff)+".\nYou may now alter cathegory names if you wish. \nWhen you are done you can print your puzzle to pdf.\n@ is a special symbol for the place where numerical data is inserted.")
@@ -132,11 +216,6 @@ def chosen_seed():
 	txt.focus()
 
 def clicked_print():
-	direc = filedialog.askdirectory(initialdir= path.dirname(__file__))
-	
-	if not direc:
-		return
-	
 	input_cathegories = []
 	n = 0
 	for j, cat in enumerate(final_puzzle.cathegories):
@@ -159,6 +238,11 @@ def clicked_print():
 		return
 		
 	final_puzzle.cathegories = input_cathegories
+	
+	direc = filedialog.askdirectory(initialdir= path.dirname(__file__))
+	
+	if not direc:
+		return
 	
 	c = canvas.Canvas(direc+"/"+final_name.cget("text"))
 	rysuj_zagadke(final_puzzle, c)
