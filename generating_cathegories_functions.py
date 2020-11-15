@@ -319,8 +319,9 @@ def losuj_interpretacje_num(values):
         interpretacje.append( ("@ lalek",5) )
         interpretacje.append( ("@ miejsce",15) )
         interpretacje.append( ("Nr @",15) )
-        interpretacje.append( ("@ dni",10) )
+        interpretacje.append( ("@ dni",15) )
         interpretacje.append( ("@ miesięcy",5) )
+        interpretacje.append( ("kanał @",5) )
         
     if czy_dodatnie(values):
         interpretacje.append( ("@ kg",15) )
@@ -345,7 +346,9 @@ def losuj_interpretacje_num(values):
         
     
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 600):
-        interpretacje.append( ("@ stron",5) )
+        interpretacje.append( ("@ stron",10) )
+        interpretacje.append( ("@ MHz",5) )
+        
         
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 10):
         interpretacje.append( ("@ warianty",5) )
