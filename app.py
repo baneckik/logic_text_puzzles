@@ -4,14 +4,16 @@ from tkinter import messagebox
 from tkinter.ttk import Progressbar
 from tkinter import filedialog
 from os import path
+from reportlab.pdfgen import canvas
 
 import numpy as np
 from puzzle_class import puzzle
+import generating_cathegories_functions as funs
+from pdf_printing_functions import rysuj_zagadke
 
 window = Tk()
 window.geometry('700x740')
 window.title("Text puzzle generator v1")
-
 
 def clicked_gen():
 	choice_int = choice.get()
@@ -52,7 +54,6 @@ def clicked_gen():
 		txt5.focus()
 		return
 	
-	#print(seed)
 	btn.configure(state='disabled')
 	lbl6.grid(row=6, column=0)
 	bar.grid(row=7, column=0)
@@ -66,15 +67,16 @@ def clicked_gen():
 	
 	lbl7.grid(row=8, column=0)
 	lbl7.configure(text="You drew a puzzle from seed="+str(seed)+", estimated difficulty is: "+str(puzzle1.diff)+".\nYou may now alter cathegory names if you wish. \nWhen you are done you can print your puzzle to pdf.\n@ is a special symbol for the place where numerical data is inserted.")
-
-	cat_cats = []
-	num_cats = []
+	
+	cat_cats.clear()
+	num_cats.clear()
 	for j, cat in enumerate(puzzle1.cathegories):
 		entries = []
 		if cat[0]=='cathegorical' or cat[0]=='ordinal':
+			l = Label(cat_frame, text="Cathegory "+str(j)+":", font=(std_font, std_font_size//2, 'bold'))
+			l.grid(row=0, column=len(cat_cats))
+			entries.append(l)
 			for i in range(k):
-				l = Label(cat_frame, text="Cathegory "+str(j)+":", font=(std_font, std_font_size//2, 'bold'))
-				l.grid(row=0, column=len(cat_cats))
 				v = StringVar(cat_frame, value=cat[1][i])
 				e = Entry(cat_frame, textvariable=v)
 				e.grid(row=i+1, column=len(cat_cats))
@@ -87,14 +89,34 @@ def clicked_gen():
 			e = Entry(num_frame, textvariable=v)
 			e.grid(row=1, column=len(num_cats))
 			
-			vals = [ str(val)[:-2] if str(val).endswith(".0") else val for val in cat[1] ]
+			vals = [ str(val)[:-2] if str(val).endswith(".0") else str(val) for val in cat[1] ]
 			l2 = Label(num_frame, text="("+", ".join(vals)+")", font=(std_font, 10))
 			l2.grid(row=2, column=len(num_cats))
-			num_cats.append(e)
 			
+			entries.append(l)
+			entries.append(e)
+			entries.append(l2)
+			num_cats.append(entries)
 			
-			print_btn['state'] = 'normal'
-			new_btn['state'] = 'normal'
+	cat_frame.grid()
+	num_frame.grid()
+	
+	final_frame.grid()
+	print_btn['state'] = 'normal'
+	new_btn['state'] = 'normal'
+	final_lbl.grid()
+	
+	final_puzzle.K = K
+	final_puzzle.k = k
+	final_puzzle.grid = puzzle1.grid
+	final_puzzle.diff = puzzle1.diff
+	final_puzzle.clues = puzzle1.clues
+	final_puzzle.cathegories = puzzle1.cathegories
+	final_puzzle.seed = puzzle1.seed
+	final_puzzle.solved = puzzle1.solved
+	final_puzzle.contradictory = puzzle1.contradictory
+	
+	final_name.configure(text="p"+str(puzzle1.seed)+"K"+str(puzzle1.K)+"k"+str(puzzle1.k)+"c"+str(len(puzzle1.clues))+".pdf")
 
 
 def chosen_random():
@@ -102,6 +124,7 @@ def chosen_random():
 	txt4['state'] = 'normal'
 	txt5['state'] = 'normal'
 	txt4.focus()
+	
 def chosen_seed():
 	txt['state'] = 'normal'
 	txt4['state'] = 'normal'
@@ -111,8 +134,59 @@ def chosen_seed():
 def clicked_print():
 	direc = filedialog.askdirectory(initialdir= path.dirname(__file__))
 	
+	if not direc:
+		return
+	
+	input_cathegories = []
+	n = 0
+	for j, cat in enumerate(final_puzzle.cathegories):
+		if cat[0]=='cathegorical' or cat[0]=='ordinal':
+			names = []
+			for i in range(final_puzzle.k):
+				names.append(cat_cats[n][i+1].get())
+			input_cathegories.append( (cat[0], names) )
+			n += 1
+	n = 0
+	for j, cat in enumerate(final_puzzle.cathegories):
+		if cat[0]=='numerical':
+			input_cathegories.append( (cat[0], cat[1], cat[2], num_cats[n][1].get()) )
+			n += 1
+	
+	print(input_cathegories)
+	
+	if funs.do_cathegories_repeat(input_cathegories):
+		messagebox.showwarning('Warning', 'Repeating names detected!')
+		return
+		
+	final_puzzle.cathegories = input_cathegories
+	
+	c = canvas.Canvas(direc+"/"+final_name.cget("text"))
+	rysuj_zagadke(final_puzzle, c)
+	c.showPage()
+	c.save()
+	
+	final_lbl.configure(text="The puzzle has been printed to:\n"+direc+"/"+final_name.cget("text"))
+	
 def clicked_new():
-	pass
+	btn['state'] = 'normal'
+	lbl6.grid_forget()
+	bar.grid_forget()
+	lbl7.grid_forget()
+	
+	final_frame.grid_forget()
+	final_lbl.configure(text="")
+	final_lbl.grid_forget()
+	
+	for cat in cat_cats:
+		for entry in cat:
+			entry.grid_forget()
+	for cat in num_cats:
+		for entry in cat:
+			entry.grid_forget()
+			
+
+	cat_frame.grid_forget()
+	num_frame.grid_forget()
 
 # ------------------------- Intro -----------------------------
 
@@ -130,6 +204,7 @@ lbl2 = Label(window, text="Choose what you want to do:", font=font, pady=10)
 lbl2.grid(row=2, column=0, columnspan=2)
 
 # ------------ choosing frame ------------------
+
 choose_frame = Frame(window)
 choose_frame.grid(row=3, column=0)
 
@@ -144,6 +219,7 @@ txt.grid(row=0, column=3)
 txt.configure(state='disabled')
 
 # -------------- specifying sizes frame ---------------
+
 size_frame = Frame(window)
 size_frame.grid(row=4)
 
@@ -174,6 +250,9 @@ bar['value'] = 0
 
 # ----------------- Info about generated puzzle ------------------
 
+cat_cats = []
+num_cats = []
+
 lbl7 = Label(window, text="", font=font)
 
 cat_frame = Frame(window)
@@ -194,7 +273,13 @@ new_btn = Button(final_frame, text="I want another puzzle!", font=("Arial", std_
 new_btn.grid(row=0, column=1)
 new_btn.configure(state='disabled')
 
+# -------------------- Final info ----------------------------
 
+final_puzzle = puzzle(3,3)
+final_name = Label(window, text="unknown_puzzle.pdf", font=font)
+
+final_lbl = Label(window, text="", font=(std_font, 10))
+final_lbl.grid(row=12)
 
 
 
