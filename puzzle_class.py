@@ -262,6 +262,68 @@ def grid_concile(self):
         self.grid_concile4()
         self.grid_concile5()
     
+def is_forbidden(self, clue_cand):
+    """
+    This function tests if a candicate for a clue is directly solving any clue type 4 or 5.
+    """
+    forbidden45 = []
+    for clue in self.clues:
+        if clue["typ"] in [4, 5]:
+            forbidden45.append( (clue["K1"], clue["i1"], clue["K2"], clue["i2"]) )
+            forbidden45.append( (clue["K3"], clue["i3"], clue["K4"], clue["i4"]) )
+            if clue["typ"]==4:
+                forbidden45.append( (clue["K5"], clue["i5"], clue["K6"], clue["i6"]) )
+    forb_list = []
+    for f in forbidden45:
+        forb_list.append( (f[2:]+f[:2]) ) 
+    forb_list += forbidden45
+    
+    if clue_cand["typ"]==1:
+        for forb in forb_list:
+            if (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
+                return True
+            if "i3" in clue_cand:
+                if (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i3"])==forb:
+                    return True
+            if "i4" in clue_cand:
+                if (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i4"])==forb:
+                    return True
+    elif clue_cand["typ"]==2:
+        for forb in forb_list:
+            if (clue_cand["K1"], clue_cand["i1"], clue_cand["K6"], 0)==forb:
+                return True
+            if (clue_cand["K1"], clue_cand["i1"], clue_cand["K6"], 1)==forb:
+                return True
+            if (clue_cand["K2"], clue_cand["i2"], clue_cand["K6"], 0)==forb:
+                return True
+            if (clue_cand["K2"], clue_cand["i2"], clue_cand["K6"], self.k-1)==forb:
+                return True
+            if (clue_cand["K3"], clue_cand["i3"], clue_cand["K6"], self.k-1)==forb:
+                return True
+            if (clue_cand["K3"], clue_cand["i3"], clue_cand["K6"], self.k-2)==forb:
+                return True
+            
+            if clue_cand["K1"]!=clue_cand["K2"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
+                return True
+            if clue_cand["K1"]!=clue_cand["K3"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K3"], clue_cand["i3"])==forb:
+                return True
+            if clue_cand["K2"]!=clue_cand["K3"] and (clue_cand["K2"], clue_cand["i2"], clue_cand["K3"], clue_cand["i3"])==forb:
+                return True
+    elif clue_cand["typ"]==3:
+        for forb in forb_list:
+            if clue_cand["K1"]!=clue_cand["K2"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
+                return True
+            
+            if (clue_cand["K1"], clue_cand["i1"], clue_cand["K6"], self.k-1)==forb:
+                return True
+            if (clue_cand["K2"], clue_cand["i2"], clue_cand["K6"], 0)==forb:
+                return True
+    elif clue_cand["typ"]==6:
+        for forb in forb_list:
+            if clue_cand["K1"]!=clue_cand["K2"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
+                return True
+
+    return False
                                                 
 def add_clue1(self):
     """
@@ -286,7 +348,10 @@ def add_clue1(self):
             for j in j_list:
                 if self.get_grid_value(K1, i, K2, j)==0:
                     if no_of_x==1:
-                        self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j})
+                        clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j}
+                        if self.is_forbidden(clue_cand):
+                            break
+                        self.clues.append(clue_cand)
                         return
                     other_i = []
                     other_j = []
@@ -297,40 +362,67 @@ def add_clue1(self):
                         if self.get_grid_value(K1, i, K2, j2)==0 and j2!=j:
                             other_j.append(j2)
                     if len(other_i)<=no_of_x-1 and len(other_j)<=no_of_x-1:
-                        self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j})
+                        clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j}
+                        if self.is_forbidden(clue_cand):
+                            break
+                        self.clues.append(clue_cand)
                         return
                     elif len(other_i)>no_of_x-1 and len(other_j)>no_of_x-1:
                         if np.random.randint(2)==0:
                             to_fill = np.random.choice(other_i, no_of_x-1, replace=False)
                             if no_of_x==2:
-                                self.clues.append({"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]})
+                                clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]}
+                                if self.is_forbidden(clue_cand):
+                                    break
+                                self.clues.append(clue_cand)
                                 return
                             else:
-                                self.clues.append({"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0], "i4":to_fill[1]})
+                                clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0], "i4":to_fill[1]}
+                                if self.is_forbidden(clue_cand):
+                                    break
+                                self.clues.append(clue_cand)
                                 return
                         else:
                             to_fill = np.random.choice(other_j, no_of_x-1, replace=False)
                             if no_of_x==2:
-                                self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]})
+                                clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]}
+                                if self.is_forbidden(clue_cand):
+                                    break
+                                self.clues.append(clue_cand)
                                 return
                             else:
-                                self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0], "i4":to_fill[1]})
+                                clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0], "i4":to_fill[1]}
+                                if self.is_forbidden(clue_cand):
+                                    break
+                                self.clues.append(clue_cand)
                                 return
                     elif len(other_i)>no_of_x-1:
                         to_fill = np.random.choice(other_i, no_of_x-1, replace=False)
                         if no_of_x==2:
-                            self.clues.append({"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]})
+                            clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]}
+                            if self.is_forbidden(clue_cand):
+                                break
+                            self.clues.append(clue_cand)
                             return
                         else:
-                            self.clues.append({"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0], "i4":to_fill[1]})
+                            clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0], "i4":to_fill[1]}
+                            if self.is_forbidden(clue_cand):
+                                break
+                            self.clues.append(clue_cand)
                             return
                     else:
                         to_fill = np.random.choice(other_j, no_of_x-1, replace=False)
                         if no_of_x==2:
-                            self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]})
+                            clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]}
+                            if self.is_forbidden(clue_cand):
+                                break
+                            self.clues.append(clue_cand)
                             return
                         else:
-                            self.clues.append({"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0], "i4":to_fill[1]})
+                            clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0], "i4":to_fill[1]}
+                            if self.is_forbidden(clue_cand):
+                                break
+                            self.clues.append(clue_cand)
                             return
 
 def add_clue2(self):
@@ -379,7 +471,10 @@ def add_clue2(self):
                         break
                     sum_of_free = sum([val==0 for val in values])
                     if sum_of_free>5:
-                        self.clues.append({"typ":2, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K3":K3, "i3":i3, "K6": K6})
+                        clue_cand = {"typ":2, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K3":K3, "i3":i3, "K6": K6}
+                        if self.is_forbidden(clue_cand):
+                            break
+                        self.clues.append(clue_cand)
                         return
     #print("Program couldn't fit any clue of type no 2!")
            
@@ -425,7 +520,10 @@ def add_clue3(self):
                             break
                         sum_of_free = sum([val==0 for val in vals_for_X])
                         if sum_of_free>1:
-                            self.clues.append({"typ":3, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6, "diff":diff, "oper": operation})
+                            clue_cand = {"typ":3, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6, "diff":diff, "oper": operation}
+                            if self.is_forbidden(clue_cand):
+                                break
+                            self.clues.append(clue_cand)
                             return
                     elif operation=="*":
                         vals_for_X = []
@@ -440,7 +538,10 @@ def add_clue3(self):
                             break
                         sum_of_free = sum([val==0 for val in vals_for_X])
                         if sum_of_free>1:
-                            self.clues.append({"typ":3, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6, "diff":diff, "oper": operation})
+                            clue_cand = {"typ":3, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6, "diff":diff, "oper": operation}
+                            if self.is_forbidden(clue_cand):
+                                break
+                            self.clues.append(clue_cand)
                             return
                     else:
                         raise Exception("Unknown operation type: "+operation+"!")
@@ -608,7 +709,10 @@ def add_clue6(self):
                     if i!=k-1 and self.get_grid_value(K1, i1, K6, i)==0 and self.get_grid_value(K2, i2, K6, i+1)==0:
                         possible_pairs += 1
                 if possible_pairs>k-1:
-                    self.clues.append({"typ":6, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6})
+                    clue_cand = {"typ":6, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6}
+                    if self.is_forbidden(clue_cand):
+                        break
+                    self.clues.append(clue_cand)
                     return
                         
 def use_clue1(self, c):
@@ -1006,7 +1110,7 @@ def try_to_solve(self):
     #self.grid = grid_main_copy
         
 def draw_clues(self, trace=False):
-    non_1_clues = int(np.ceil(self.k*self.K*self.K/10))
+    non_1_clues = int(np.ceil(self.k*self.K/2.3))
     for i in range(non_1_clues):
         typ = np.random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
         if trace:
@@ -1168,6 +1272,7 @@ class puzzle:
     grid_concile5 = grid_concile5
     grid_concile = grid_concile
     
+    is_forbidden = is_forbidden
     add_clue1 = add_clue1
     add_clue2 = add_clue2
     add_clue3 = add_clue3
