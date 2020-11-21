@@ -446,28 +446,35 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     
     # ------------- typing cathegories names
     width2 = 10
-    c.setFont("sans-serif", width2)
+    
+    normal_font = "sans-serif"
     special_font = "Times-Bold"
+    c.setFont(normal_font, width2)
+    
     Xc = 430
     if k_cat<=5:
         Ycat = Y+puzzle_h+width2*(k_cat+1)
     else:
         Ycat = Y+puzzle_h+width2*6
         
-    col_width = 100
-    
+    x_shift = 0
     for i in range(len(kategorie)):
+        widths = []
         c.setFont(special_font, width2)
         text0 = "Kategoria "+str(i)+":"
+        widths.append( stringWidth(text0, special_font, width2) )
+        
         nazwy = [ funs.get_string_name(kategorie, i, j, False) for j in range(len(kategorie[i][1])) ]
-        c.drawString(X+col_width*i, Ycat, text0)
-        c.setFont("sans-serif", width2)
+        c.drawString(X+x_shift, Ycat, text0)
+        c.setFont(normal_font, width2)
         for col, name in enumerate(nazwy):
             if k_cat>5 and col>3:
-                c.drawString(X+col_width*i, Ycat-width2*(col+1), "...")
+                c.drawString(X+x_shift, Ycat-width2*(col+1), "...")
+                widths.append( stringWidth("...", normal_font, width2) )
                 break
-            c.drawString(X+col_width*i, Ycat-width2*(col+1), name)
-            
+            c.drawString(X+x_shift, Ycat-width2*(col+1), name)
+            widths.append( stringWidth(name, normal_font, width2) )
+        x_shift += int(np.max(widths))+10
             
     
     # ------------- typing cathegories names into boxes
