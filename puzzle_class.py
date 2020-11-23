@@ -265,6 +265,7 @@ def grid_concile(self):
 def is_forbidden(self, clue_cand):
     """
     This function tests if a candicate for a clue is directly solving any clue type 4 or 5.
+    Also detects too nested clues of type 2 or 3(only if k is small, otherwise nested clues 2 and 3 are allowed).
     """
     forbidden45 = []
     for clue in self.clues:
@@ -322,6 +323,37 @@ def is_forbidden(self, clue_cand):
         for forb in forb_list:
             if clue_cand["K1"]!=clue_cand["K2"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
                 return True
+    
+    if clue_cand["typ"]==2 and self.k<6:
+        for clue in [ c for c in self.clues if c["typ"]==2 ]:
+            if clue["K6"]==clue_cand["K6"]:
+                if clue["K1"]==clue_cand["K3"] and clue["i1"]==clue_cand["i3"]:
+                    return True
+                if clue["K3"]==clue_cand["K1"] and clue["i3"]==clue_cand["i1"]:
+                    return True
+                if self.k<5:
+                    if clue["K2"]==clue_cand["K3"] and clue["i2"]==clue_cand["i3"]:
+                        return True
+                    if clue["K2"]==clue_cand["K1"] and clue["i2"]==clue_cand["i1"]:
+                        return True
+                    if clue["K3"]==clue_cand["K2"] and clue["i3"]==clue_cand["i2"]:
+                        return True
+                    if clue["K1"]==clue_cand["K2"] and clue["i1"]==clue_cand["i2"]:
+                        return True
+        if self.k<5:
+            for clue in [ c for c in self.clues if c["typ"]==3 ]:
+                if clue["K6"]==clue_cand["K6"]:
+                    if clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
+                        return True
+                    if clue["K2"]==clue_cand["K2"] and clue["i2"]==clue_cand["i2"]:
+                        return True
+    elif clue_cand["typ"]==3 and self.k<5:
+        for clue in [ c for c in self.clues if c["typ"]==2 ]:
+            if clue["K6"]==clue_cand["K6"]:
+                if clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
+                    return True
+                if clue["K3"]==clue_cand["K2"] and clue["i3"]==clue_cand["i2"]:
+                    return True
 
     return False
                                                 
