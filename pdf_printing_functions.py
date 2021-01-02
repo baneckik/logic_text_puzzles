@@ -11,7 +11,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 pdfmetrics.registerFont(TTFont('sans-serif', 'FreeSans.ttf'))
 
-import generating_cathegories_functions as funs
+import generating_categories_functions as funs
 from puzzle_class import puzzle
 
 # --------------------------------------- auxiliary functions ----------------------------------
@@ -344,7 +344,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
 
 def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     
-    kategorie = puzzle1.cathegories
+    kategorie = puzzle1.categories
     clues = puzzle1.clues
     seed = puzzle1.seed
     K_cat = puzzle1.K # liczba kategorii
@@ -444,7 +444,7 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     
     c.restoreState()
     
-    # ------------- typing cathegories names
+    # ------------- typing categories names
     width2 = 10
     
     normal_font = "sans-serif"
@@ -477,7 +477,8 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
         x_shift += int(np.max(widths))+10
             
     
-    # ------------- typing cathegories names into boxes
+    # ------------- typing categories names into boxes
+    
     for i, kategoria in enumerate(kategorie):
         nazwy = [ str(k) for k in kategoria[1] ]
         if kategoria[0]=='numerical':

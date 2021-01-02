@@ -1,0 +1,13 @@
+# 2
+bicykl
+monocykl
+szosowy
+miejski
+górski
+trekkingowy
+crossowy
+elektryczny
+bmx
+mtb
+dziecięcy
+składak

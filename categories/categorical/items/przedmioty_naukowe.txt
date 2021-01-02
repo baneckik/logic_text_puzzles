@@ -1,0 +1,19 @@
+# 1
+globus
+mapa
+cyrkiel
+linijka
+ekierka
+astrolabium
+kompas
+busola
+luneta
+teleskop
+lornetka
+lupa
+kwadrant
+sekstant
+żyroskop
+abakus
+liczydło
+kalkulator

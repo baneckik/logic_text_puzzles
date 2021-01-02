@@ -1,0 +1,21 @@
+# 5
+trąbka
+gitara
+pianino
+fortepian
+keyboard
+harfa
+skrzypce
+kontrabas
+flet
+klarnet
+bęben
+perkusja
+werbel
+trójkąt
+ukulele
+puzon
+organy
+wiolonczela
+kazoo
+

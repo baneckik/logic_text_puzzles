@@ -1,0 +1,18 @@
+# 5
+epos
+powieść
+satyra
+legenda
+opowiadanie
+baśń
+dramat
+tragedia
+komedia
+romans
+thriller
+fantasy
+sci-fi
+horror
+biografia
+poradnik
+reportaż

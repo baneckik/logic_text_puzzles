@@ -1,15 +1,15 @@
 import numpy as np
 import pandas as pd
 import copy
-import generating_cathegories_functions as funs
+import generating_categories_functions as funs
 
 # ------------------ class methods ----------------------------
 
 def grid_insert(self, K1, i1, K2, i2, val):
     if K1>=self.K or K2>=self.K or K1<0 or K2<0 or K1==K2:
-        raise(Exception("Cathegory index out of range!"))
+        raise(Exception("Category index out of range!"))
     if i1>=self.k or i2>=self.k or i1<0 or i2<0:
-        raise(Exception("Word in cathegory index is out of range!"))
+        raise(Exception("Word in category index is out of range!"))
     if K1<K2:
         j1 = i1
         j2 = i2
@@ -52,9 +52,9 @@ def clear_grid(self):
             
 def get_grid_value(self, K1, i1, K2, i2):
         if K1>=self.K or K2>=self.K or K1<0 or K2<0 or K1==K2:
-            raise(Exception("Cathegory index out of range!"))
+            raise(Exception("Category index out of range!"))
         if i1>=self.k or i2>=self.k or i1<0 or i2<0:
-            raise(Exception("Word in cathegory index is out of range!"))
+            raise(Exception("Word in category index is out of range!"))
         if K1<K2:
             j1 = i1
             j2 = i2
@@ -65,7 +65,7 @@ def get_grid_value(self, K1, i1, K2, i2):
 
 def is_line_completed(self, K1, i, K2):
     if K1<0 or K1>=self.K or K2<0 or K2>=self.K:
-        raise(Exception("Wrong cathegory id!"))
+        raise(Exception("Wrong category id!"))
     if i<0 or i>=self.k:
         raise(Exception("Wrong row/column id!"))
         
@@ -88,7 +88,7 @@ def is_line_completed(self, K1, i, K2):
       
 def count_x_in_line(self, K1, i, K2):
     if K1<0 or K1>=self.K or K2<0 or K2>=self.K:
-        raise(Exception("Wrong cathegory id!"))
+        raise(Exception("Wrong category id!"))
     if i<0 or i>=self.k:
         raise(Exception("Wrong row/column id!"))
         
@@ -175,7 +175,7 @@ def grid_concile3(self):
 def grid_concile4(self):
     """ 
     Conciliation no 4
-    Look for contradictory lines. If two lines with respect to some cathegory K1 contradicts each other 
+    Look for contradictory lines. If two lines with respect to some category K1 contradicts each other 
     (that is, in summary they exclude all of the options), then the objects associated with that lines 
     cannot be linked together (therefore we put 'X' there).
     """
@@ -460,12 +460,12 @@ def add_clue1(self):
 def add_clue2(self):
     """
     Adding clue of type 2:
-    With respect to the Cathegory K6(numerical or ordinal) we have 'K3,i3 < K2,i2 < K1,i1'.
+    With respect to the Category K6(numerical or ordinal) we have 'K3,i3 < K2,i2 < K1,i1'.
     """
     K = self.K
     k = self.k
     
-    K6_candidates = [ i for i, cat in enumerate(self.cathegories) if cat[0] in ['numerical','ordinal'] ]
+    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat[0] in ['numerical','ordinal'] ]
     K6 = np.random.choice(K6_candidates, 1)[0]
     
     i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
@@ -513,17 +513,17 @@ def add_clue2(self):
 def add_clue3(self):
     """
     Adding clue of type 3:
-    With respect to the Cathegory K6 (numerical) we have 'K2,i2 = K1,i1 oper diff'.
+    With respect to the Category K6 (numerical) we have 'K2,i2 = K1,i1 oper diff'.
     oper is one of {+, *}.
     """
     K = self.K
     k = self.k
     
-    K6_candidates = [ i for i, cat in enumerate(self.cathegories) if cat[0]=='numerical' ]
+    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat[0]=='numerical' ]
     K6 = np.random.choice(K6_candidates, 1)[0]
-    values = self.cathegories[K6][1]
+    values = self.categories[K6][1]
     
-    possible_randomized = np.random.permutation(list(self.cathegories[K6][2]))
+    possible_randomized = np.random.permutation(list(self.categories[K6][2]))
     diff_list = [ float(diff_string.split("y")[-1][1:]) for diff_string in possible_randomized ]
     operations = [ diff_string.split("y")[-1][0] for diff_string in possible_randomized ]
     
@@ -715,12 +715,12 @@ def add_clue5(self):
 def add_clue6(self):
     """
     Adding clue of type 6:
-    With respect to the Cathegory K6(numerical or ordinal) K1,i1 is right next to K2,i2.
+    With respect to the Category K6(numerical or ordinal) K1,i1 is right next to K2,i2.
     """
     K = self.K
     k = self.k
     
-    K6_candidates = [ i for i, cat in enumerate(self.cathegories) if cat[0] in ['numerical','ordinal'] ]
+    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat[0] in ['numerical','ordinal'] ]
     K6 = np.random.choice(K6_candidates, 1)[0]
     
     i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
@@ -782,7 +782,7 @@ def use_clue3(self, c):
     clue = self.clues[c]
     operation = clue["oper"]
     diff = clue["diff"]
-    values = self.cathegories[clue["K6"]][1]
+    values = self.categories[clue["K6"]][1]
     
     if clue["K1"]!=clue["K2"]:
         self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X")
@@ -947,7 +947,7 @@ def is_grid_contradictory_with_clue3(self, c):
     clue = self.clues[c]
     operation = clue["oper"]
     diff = clue["diff"]
-    values = self.cathegories[clue["K6"]][1]
+    values = self.categories[clue["K6"]][1]
     
     if operation=="+":
         for i in range(self.k):
@@ -1079,17 +1079,17 @@ def set_seed(self, seed):
     self.seed = seed
     np.random.seed(self.seed)
 
-def draw_cathegories(self, diff=3):
+def draw_categories(self, diff=3):
     if not diff in [2,3,4]:
         raise Exception("Można losować zagadki tylko o liczbie gwiazdek równej 2, 3 albo 4!")
-    self.cathegories = funs.losuj_kategorie(self.K, self.k, diff, self.seed)
+    self.categories = funs.losuj_kategorie(self.K, self.k, diff, self.seed)
     i = 0
     i_max = 100
-    while funs.do_cathegories_repeat(self.cathegories):
-        self.cathegories = funs.losuj_kategorie(self.K, self.k, diff, self.seed+i*1234567)
+    while funs.do_categories_repeat(self.categories):
+        self.categories = funs.losuj_kategorie(self.K, self.k, diff, self.seed+i*1234567)
         i += 1
         if i>i_max:
-            raise Exception("Program couldn't draw non-repeating cathegories!")
+            raise Exception("Program couldn't draw non-repeating categories!")
 
 def try_to_solve2(self):
     clues1 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==1 ]
@@ -1226,11 +1226,11 @@ def generate(self, seed=0, trace=False):
     self.set_seed(seed)
     if trace:
         print("Generating puzzle for seed="+str(seed))
-        print("Drawing cathegories...")
-    self.draw_cathegories()
+        print("Drawing categories...")
+    self.draw_categories()
     if trace:
-        print("Cathegories drawn:")
-        for c in self.cathegories:
+        print("Categories drawn:")
+        for c in self.categories:
             print(c)
     if trace:
         print("Drawing clues...")        
@@ -1278,7 +1278,7 @@ class puzzle:
         self.changed = False
         self.solved = False
         self.contradictory = False
-        self.cathegories = []
+        self.categories = []
         self.clues = []
         self.seed = 0
         self.diff = 0
@@ -1292,7 +1292,7 @@ class puzzle:
     print_info = print_info
    
     set_seed = set_seed
-    draw_cathegories = draw_cathegories
+    draw_categories = draw_categories
     draw_clues = draw_clues
     
     is_line_completed = is_line_completed

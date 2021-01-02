@@ -1,0 +1,14 @@
+# 3
+pomorski
+kujawski
+podlaski
+mazowiecki
+wielkopolski
+lubuski
+śląski
+opolski
+małopolski
+łódzki
+świętokrzyski
+podkarpacki
+lubelski

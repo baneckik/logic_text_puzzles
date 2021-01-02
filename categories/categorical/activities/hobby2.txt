@@ -1,0 +1,20 @@
+# 7
+bilard
+snooker
+szachy
+warcaby
+karty
+brydż
+poker
+makao
+zdrapki
+kółko i krzyżyk
+bingo
+planszówki
+chińczyk
+monopoly
+puzzle
+krzyżówki
+sudoku
+Logi-Mix
+obrazki logiczne

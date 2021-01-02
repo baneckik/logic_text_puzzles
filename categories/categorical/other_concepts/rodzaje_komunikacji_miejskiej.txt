@@ -1,0 +1,10 @@
+# 4
+autobus
+tramwaj
+trolejbus
+metro
+pociąg
+riksza
+taksówka
+prom
+wodolot
