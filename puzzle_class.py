@@ -1103,71 +1103,15 @@ def set_seed(self, seed):
 def draw_categories(self, diff=3):
     if not diff in [2,3,4]:
         raise Exception("Można losować zagadki tylko o liczbie gwiazdek równej 2, 3 albo 4!")
-    self.categories = funs.losuj_kategorie(self.K, self.k, diff, self.seed)
+    self.categories = funs.draw_category(self.K, self.k, diff, self.seed)
     i = 0
     i_max = 100
     while funs.do_categories_repeat(self.categories):
-        self.categories = funs.losuj_kategorie(self.K, self.k, diff, self.seed+i*1234567)
+        self.categories = funs.draw_category(self.K, self.k, diff, self.seed+i*1234567)
         i += 1
         if i>i_max:
             raise Exception("Program couldn't draw non-repeating categories!")
 
-def try_to_solve2(self):
-    clues1 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==1 ]
-    clues2 = [ i for i,clue in enumerate(self.clues) if clue["typ"]!=1 ]
-    
-    for c in clues1:
-        self.use_clue1(c)
-    self.grid_concile()
-    
-    #changed_copy = self.changed
-    self.changed = True
-    while self.changed:
-        self.changed = False
-        for c in clues2:
-            self.use_clue(c)
-            self.grid_concile()
-            if self.is_grid_contradictory() or self.is_grid_completed():
-                #if changed_copy and not self.changed:
-                #    self.changed = changed_copy
-                return
-        #if self.changed:
-        #    changed_copy = True
-    #self.changed = changed_copy
-            
-def try_to_solve(self):
-    self.solved = False
-    self.contradictory = False
-    grid_main_copy = copy.deepcopy(self.grid)
-    self.changed = True
-    while self.changed:
-        self.changed = False
-        self.try_to_solve2()
-        key_candidates = np.random.permutation(list(self.grid.keys()))
-        for key in key_candidates:
-            for i in range(self.k):
-                for j in range(self.k):
-                    K1 = int(key.split(",")[0])
-                    K2 = int(key.split(",")[1])
-                    if self.get_grid_value(K1, i, K2, j)==0:
-                        grid_copy = copy.deepcopy(self.grid)
-                        self.grid_insert(K1, i, K2, j, "O")
-                        self.try_to_solve2()
-                        if self.is_grid_contradictory():
-                            self.grid = grid_copy
-                            self.grid_insert(K1, i, K2, j, "X")
-                            self.diff += 1
-                            self.try_to_solve2()
-                            if self.is_grid_contradictory():
-                                self.contradictory = True
-                                return
-                            if self.is_grid_completed():
-                                self.solved = True
-                                return
-                        else:
-                            self.grid = grid_copy
-    #self.grid = grid_main_copy
-        
 def draw_clues(self, trace=False):
     non_1_clues = int(np.ceil(self.k*self.K/2.3))
     for i in range(non_1_clues):
@@ -1219,8 +1163,69 @@ def draw_clues(self, trace=False):
         if trace:
             self.print_grid()
             self.print_info()
+            
+def try_to_solve2(self):
+    clues1 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==1 ]
+    clues2 = [ i for i,clue in enumerate(self.clues) if clue["typ"]!=1 ]
+    
+    for c in clues1:
+        self.use_clue1(c)
+    self.grid_concile()
+    
+    #changed_copy = self.changed
+    self.changed = True
+    while self.changed:
+        self.changed = False
+        for c in clues2:
+            self.use_clue(c)
+            self.grid_concile()
+            if self.is_grid_contradictory() or self.is_grid_completed():
+                #if changed_copy and not self.changed:
+                #    self.changed = changed_copy
+                return
+        #if self.changed:
+        #    changed_copy = True
+    #self.changed = changed_copy
+            
+def try_to_solve(self, max_iter=None):
+    self.solved = False
+    self.contradictory = False
+    grid_main_copy = copy.deepcopy(self.grid)
+    self.changed = True
+    
+    it = 0
+    while self.changed:
+        self.changed = False
+        self.try_to_solve2()
+        key_candidates = np.random.permutation(list(self.grid.keys()))
+        for key in key_candidates:
+            for i in range(self.k):
+                for j in range(self.k):
+                    K1 = int(key.split(",")[0])
+                    K2 = int(key.split(",")[1])
+                    if self.get_grid_value(K1, i, K2, j)==0:
+                        grid_copy = copy.deepcopy(self.grid)
+                        self.grid_insert(K1, i, K2, j, "O")
+                        self.try_to_solve2()
+                        if self.is_grid_contradictory():
+                            self.grid = grid_copy
+                            self.grid_insert(K1, i, K2, j, "X")
+                            self.diff += 1
+                            self.try_to_solve2()
+                            if self.is_grid_contradictory():
+                                self.contradictory = True
+                                return
+                            if self.is_grid_completed():
+                                self.solved = True
+                                return
+                        else:
+                            self.grid = grid_copy
+        if max_iter!=None and it>=max_iter:
+            return
+        it += 1
+    #self.grid = grid_main_copy
 
-def try_to_restrict_clues(self, trace=False):
+def try_to_restrict_clues(self, trace=False, max_iter=None):
     clues_copy = copy.deepcopy(self.clues)
     to_restrict = []
         
@@ -1233,7 +1238,7 @@ def try_to_restrict_clues(self, trace=False):
         clues1_restricted = [ j for j in clues1 if j!=i ]
         self.clear_grid()
         self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues1_restricted or not j in clue_order ]
-        self.try_to_solve()
+        self.try_to_solve(max_iter)
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
             clues1 = clues1_restricted
@@ -1250,7 +1255,7 @@ def try_to_restrict_clues(self, trace=False):
         clues_restricted = [ j for j in clues_other if j!=i ]
         self.clear_grid()
         self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues_restricted or j in clues1 ]
-        self.try_to_solve()
+        self.try_to_solve(max_iter)
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
             clues_other = clues_restricted
@@ -1264,7 +1269,7 @@ def try_to_restrict_clues(self, trace=False):
     #print(to_restrict)
     self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
 
-def generate(self, seed=0, trace=False):
+def generate(self, seed=0, trace=False, max_iter=None):
     self.set_seed(seed)
     if trace:
         print("Generating puzzle for seed="+str(seed))
@@ -1289,7 +1294,7 @@ def generate(self, seed=0, trace=False):
         clues_counts = [ len([i for i in self.clues if i["typ"]==j]) for j in range(1,7)]
         print("No of clues drawn = "+str(len(self.clues))+str(clues_counts))
         print("Restricting clues...")
-    self.try_to_restrict_clues(trace=trace) 
+    self.try_to_restrict_clues(trace=trace, max_iter=max_iter) 
     if trace:
         print("Final difficulty assessment...")
     N = 5

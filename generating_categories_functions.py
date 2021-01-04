@@ -4,7 +4,7 @@ from pathlib import Path
 
 # ----------------------------------------- LOSOWANIE ZMIENNYCH KATEGORYCZNYCH ---------------------------------------------
 
-def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
+def draw_cat_scheme(ile=1, puzzle_k=5):
     
     if ile<1:
         return []
@@ -15,7 +15,7 @@ def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
     wagi_folder = [ fw[1] for fw in foldery_wagi ]
     wagi_folder = [ w/sum(wagi_folder) for w in wagi_folder ]
     
-    if przedmiotow_w_kategorii<6:
+    if ile<6:
         if np.random.uniform(0,1)<0.75:
             foldery = np.random.choice(podstawy, ile, p=wagi_folder, replace=False)
         else:
@@ -30,7 +30,7 @@ def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
         available_weights = []
         for path in Path('categories/categorical/'+folder).rglob('*.txt'):
             kat = pd.read_csv(path, header=None)
-            if kat.shape[0]-1 >= przedmiotow_w_kategorii:
+            if kat.shape[0]-1 >= puzzle_k:
                 available_cats.append(path)
                 available_weights.append(int(kat.iloc[0,0].split(" ")[-1]))
         available_weights = [ w/sum(available_weights) for w in available_weights ]
@@ -39,7 +39,7 @@ def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
         ile_kat = sum([f==folder for f in foldery])
         if len(available_cats)<ile_kat:
             raise Exception("Nie można znaleźć "+str(ile)+" kategorii porządkowych dla " \
-                            +str(przedmiotow_w_kategorii)+" przedmiotów w kategorii!")
+                            +str(puzzle_k)+" przedmiotów w kategorii!")
 
         chosen += list( np.random.choice(available_cats, ile_kat, p=available_weights, replace=False) )
         
@@ -48,13 +48,13 @@ def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
         if str(c)=="categories/categorical/special_names/zmysleni_superbohaterowie_ang.txt":
             kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
             kat.drop(kat.head(1).index, inplace=True)
-            prenames = np.random.choice(kat.iloc[:,0], przedmiotow_w_kategorii, replace=False)
-            if przedmiotow_w_kategorii<5:
+            prenames = np.random.choice(kat.iloc[:,0], puzzle_k, replace=False)
+            if puzzle_k<5:
                 n = 1
             else: 
                 n = 2
             counts = [0]*n+[1]*n
-            counts += list(np.random.choice([0,1], przedmiotow_w_kategorii-len(counts), replace=True))
+            counts += list(np.random.choice([0,1], puzzle_k-len(counts), replace=True))
             names_male = np.random.choice(kat.iloc[:,1], len([i for i in counts if i==0]), replace=False)
             names_female = np.random.choice(kat.iloc[:,2], len([i for i in counts if i==1]), replace=False)
             names = list(names_male)+list(names_female)
@@ -62,13 +62,13 @@ def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
         elif str(c)=="categories/categorical/special_names/zmysleni_superbohaterowie_pol.txt":
             kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
             kat.drop(kat.head(1).index, inplace=True)
-            rows = np.random.choice(range(kat.shape[0]), przedmiotow_w_kategorii, replace=False)
-            if przedmiotow_w_kategorii<5:
+            rows = np.random.choice(range(kat.shape[0]), puzzle_k, replace=False)
+            if puzzle_k<5:
                 n = 1
             else: 
                 n = 2
             counts = [0]*n+[1]*n
-            counts += list(np.random.choice([0,1], przedmiotow_w_kategorii-len(counts), replace=True))
+            counts += list(np.random.choice([0,1], puzzle_k-len(counts), replace=True))
             names = []
             for j, i in enumerate(rows):
                 if counts[j]==0:
@@ -78,14 +78,14 @@ def losuj_schemat_cat(ile=1, przedmiotow_w_kategorii=5):
         else:
             kat = pd.read_csv(c, header=None)
             kat.drop(kat.head(1).index, inplace=True)
-            names = list(np.random.choice(kat.iloc[:,0], przedmiotow_w_kategorii, replace=False))
+            names = list(np.random.choice(kat.iloc[:,0], puzzle_k, replace=False))
         chosen_out.append(names)
     
     return [ ("categorical", chosen_out[i]) for i in range(len(chosen_out)) ]
 
 # ----------------------------------------- LOSOWANIE ZMIENNYCH PORZĄDKOWYCH ---------------------------------------------
 
-def losuj_schemat_porz(ile=1, przedmiotow_w_kategorii=5):
+def draw_ord_scheme(ile=1, puzzle_k=5):
     
     if ile<1:
         return []
@@ -94,26 +94,26 @@ def losuj_schemat_porz(ile=1, przedmiotow_w_kategorii=5):
     for path in Path('categories/ordinal').rglob('*.txt'):
         kat = pd.read_csv(path, header=None)
         #kat.columns = [path.name.split(".")[0]]
-        if kat.shape[0]>=przedmiotow_w_kategorii:
+        if kat.shape[0]>=puzzle_k:
             available_cats.append(path)
         
     if len(available_cats)<ile:
         raise Exception("Nie można znaleźć "+str(ile)+" kategorii porządkowych dla " \
-                        +str(przedmiotow_w_kategorii)+" przedmiotów w kategorii!")
+                        +str(puzzle_k)+" przedmiotów w kategorii!")
     
     chosen = np.random.choice(available_cats, ile, replace=False)
     chosen_out = []
     for c in chosen:
         kat = pd.read_csv(c, header=None)
-        start = int(np.random.choice(range(0,kat.shape[0]-przedmiotow_w_kategorii+1), 1))
-        names = list(kat.iloc[start:(start+przedmiotow_w_kategorii),0])
+        start = int(np.random.choice(range(0,kat.shape[0]-puzzle_k+1), 1))
+        names = list(kat.iloc[start:(start+puzzle_k),0])
         chosen_out.append(names)
     
     return [ ("ordinal", chosen_out[i]) for i in range(len(chosen_out)) ]
 
 # ----------------------------------------- LOSOWANIE ZMIENNYCH NUMERYCZNYCH ---------------------------------------------
 
-def losuj_schemat_num(przedmiotow_w_kategorii=5):
+def draw_num_scheme(puzzle_k=5):
     
     # ---------------------- wybór schematu i pierwszego wyrazu=n*p ---------------------------------
     
@@ -163,7 +163,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
         wagi_incrementow = [ i[1] for i in incrementy_wagi ]
         wagi_incrementow = [ w/sum(wagi_incrementow) for w in wagi_incrementow ]
         r = np.random.choice(incrementy, 1, p=wagi_incrementow)[0]
-        values = [ n*p+k*r for k in range(przedmiotow_w_kategorii) ]
+        values = [ n*p+k*r for k in range(puzzle_k) ]
         
     elif schemat=="ciag_geometryczny":
         mnozniki_wagi = [ (0.5,10), (2,10), (3,5), (4,4), (5,3), (10,2)]
@@ -177,11 +177,11 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
         wagi_mnoznikow = [ i[1] for i in mnozniki_wagi ]
         wagi_mnoznikow = [ w/sum(wagi_mnoznikow) for w in wagi_mnoznikow ]
         r = np.random.choice(mnozniki, 1, p=wagi_mnoznikow)[0]
-        values = list(np.sort([ n*p*(r**k) for k in range(przedmiotow_w_kategorii) ]))
+        values = list(np.sort([ n*p*(r**k) for k in range(puzzle_k) ]))
         
     elif schemat=="ciag_rosnacy":
-        r = np.random.choice([n*p, 2*n*p], przedmiotow_w_kategorii, p=[0.8, 0.2])
-        values = list(np.sort([ n*p+sum(r[:k]) for k in range(przedmiotow_w_kategorii) ]))
+        r = np.random.choice([n*p, 2*n*p], puzzle_k, p=[0.8, 0.2])
+        values = list(np.sort([ n*p+sum(r[:k]) for k in range(puzzle_k) ]))
         
     if not isinstance(r, np.ndarray) and r==0:
         raise Exception("Nie udało się wygenerować mnożnika/incrementu r!\nParametry to: p="+str(p)+", n="+str(n)+", schemat="+str(schemat[0]))
@@ -189,7 +189,7 @@ def losuj_schemat_num(przedmiotow_w_kategorii=5):
     # -------------------- określanie możliwych wskazówek ----------------------------
     
     wskazowki = []
-    min_free = (przedmiotow_w_kategorii-1)//2+1
+    min_free = (puzzle_k-1)//2+1
     if schemat=="ciag_rosnacy":
         for r1 in [n*p, 2*n*p]:
             # wskazowki addytywne
@@ -267,7 +267,7 @@ def czy_wieksze_od(values, C):
 def czy_zawieraja(values, C):
     return any([v==C for v in values])
 
-def losuj_interpretacje_num(values):
+def draw_num_interpretation(values):
     
     interpretacje = []
     
@@ -388,7 +388,7 @@ def losuj_interpretacje_num(values):
 
 # ----------------------------------------- LOSOWANIE WSZYTKIEGO (FKCJA ZBIORCZA) ---------------------------------------------
 
-def losuj_kategorie(K, k, gwiazdki, seed=0):
+def draw_category(K, k, gwiazdki, seed=0):
     np.random.seed(seed)
     
     if K<2:
@@ -415,16 +415,16 @@ def losuj_kategorie(K, k, gwiazdki, seed=0):
     # losujemy konkretne kategorie
     wylosowane = []
     # zmienne kategoryczne:
-    wylosowane += losuj_schemat_cat(ile=licznosci[0], przedmiotow_w_kategorii=k) 
+    wylosowane += draw_cat_scheme(ile=licznosci[0], puzzle_k=k) 
     # zmienne porządkowe
-    wylosowane += losuj_schemat_porz( ile=licznosci[1], przedmiotow_w_kategorii=k) 
+    wylosowane += draw_ord_scheme( ile=licznosci[1], puzzle_k=k) 
     #zmienne numeryczne i ich interpretacje:
     interpretacje = []
     for i in range(licznosci[2]):
-        los = losuj_schemat_num(przedmiotow_w_kategorii=k)
+        los = draw_num_scheme(puzzle_k=k)
         # próbujemy wylosować interpretację, tak żeby się nie powtarzać
         for j in range(20):
-            los_interpret = losuj_interpretacje_num(los[1])
+            los_interpret = draw_num_interpretation(los[1])
             if not los_interpret[0] in interpretacje:
                 interpretacje.append(los_interpret[0])
                 break
