@@ -63,10 +63,10 @@ def get_grid_value(self, K1, i1, K2, i2):
             j2 = i1
         return self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2]
 
-def is_line_completed(self, K1, i, K2):
+def is_line_completed(self, K1, i1, K2):
     if K1<0 or K1>=self.K or K2<0 or K2>=self.K:
         raise(Exception("Wrong category id!"))
-    if i<0 or i>=self.k:
+    if i1<0 or i1>=self.k:
         raise(Exception("Wrong row/column id!"))
         
     box = self.grid[str(min(K1,K2))+","+str(max(K1,K2))]
@@ -74,40 +74,40 @@ def is_line_completed(self, K1, i, K2):
     o_count = 0
     if K1<K2:
         for j in range(self.k):
-            if box[i, j]==1:
+            if box[i1, j]==1:
                 o_count += 1
-            elif box[i, j]==2:
+            elif box[i1, j]==2:
                 x_count += 1
     else:
         for j in range(self.k):
-            if box[j, i]==1:
+            if box[j, i1]==1:
                 o_count += 1
-            elif box[j, i]==2:
+            elif box[j, i1]==2:
                 x_count += 1
     return x_count==self.k-1 and o_count==1        
       
-def count_x_in_line(self, K1, i, K2):
+def count_x_in_line(self, K1, i1, K2):
     if K1<0 or K1>=self.K or K2<0 or K2>=self.K:
         raise(Exception("Wrong category id!"))
-    if i<0 or i>=self.k:
+    if i1<0 or i1>=self.k:
         raise(Exception("Wrong row/column id!"))
         
     box = self.grid[str(min(K1,K2))+","+str(max(K1,K2))]
     x_count = 0
     if K1<K2:
         for j in range(self.k):
-            if box[i, j]==2:
+            if box[i1, j]==2:
                 x_count += 1
     else:
         for j in range(self.k):
-            if box[j, i]==2:
+            if box[j, i1]==2:
                 x_count += 1
     return x_count 
     
 def grid_concile1(self):
     """ 
     Conciliation no 1
-    If there is an 'O' in the box add 'X's in all directions (cross like).
+    If there is an 'O' in the square add 'X's in all directions (cross like).
     """
     K = self.K
     k = self.k
@@ -126,7 +126,7 @@ def grid_concile1(self):
 def grid_concile2(self):                
     """ 
     Conciliation no 2
-    If there is only one blank space in row/column insert 'O' in it (and add 'X's in all directions from it).
+    If there is only one blank square in row/column insert 'O' in it (and add 'X's in all directions from it).
     """
     for key in self.grid:
         K1 = int(key.split(",")[0])
@@ -202,7 +202,7 @@ def grid_concile5(self):
     """ 
     Conciliation no 5
     If two/three line's blank spaces are restricted only to two/three the same options, then no other line can 
-    have 'O' on the level of that blank space.
+    have 'O' on the level of that blank square.
     """
     K = self.K
     k = self.k
@@ -253,6 +253,7 @@ def grid_concile5(self):
                                                 self.grid_insert(K1, i4, K2, j, "X")
 
 def grid_concile(self):
+    #changed_copy = self.changed
     self.changed = True
     while self.changed == True:
         self.changed = False
@@ -261,10 +262,13 @@ def grid_concile(self):
         self.grid_concile3()
         self.grid_concile4()
         self.grid_concile5()
+        #if self.changed:
+         #   changed_copy = True
+    #self.changed = changed_copy
     
 def is_forbidden(self, clue_cand):
     """
-    This function tests if a candicate for a clue is directly solving any clue type 4 or 5.
+    This function tests if a candidate for a clue is directly solving any clue type 4 or 5.
     Also detects too nested clues of type 2 or 3(only if k is small, otherwise nested clues 2 and 3 are allowed).
     """
     forbidden45 = []
@@ -773,8 +777,25 @@ def use_clue2(self, c):
     
     for j in range(self.k-2):
         if self.get_grid_value(clue["K3"], clue["i3"], clue["K6"], j)==2:
-            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X")
             self.grid_insert(clue["K2"], clue["i2"], clue["K6"], j+1, "X")
+            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X")          
+        else:
+            break
+    for j in range(self.k-1):
+        if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], j)==2:
+            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+1, "X")
+        else:
+            break
+            
+    for j in range(self.k-2):
+        if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], self.k-j-1)==2:
+            self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-j-2, "X")
+            self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-3, "X")
+        else:
+            break
+    for j in range(self.k-1):
+        if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], self.k-j-1)==2:
+            self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-2, "X")
         else:
             break
             
@@ -1099,6 +1120,7 @@ def try_to_solve2(self):
         self.use_clue1(c)
     self.grid_concile()
     
+    #changed_copy = self.changed
     self.changed = True
     while self.changed:
         self.changed = False
@@ -1106,7 +1128,12 @@ def try_to_solve2(self):
             self.use_clue(c)
             self.grid_concile()
             if self.is_grid_contradictory() or self.is_grid_completed():
-                return            
+                #if changed_copy and not self.changed:
+                #    self.changed = changed_copy
+                return
+        #if self.changed:
+        #    changed_copy = True
+    #self.changed = changed_copy
             
 def try_to_solve(self):
     self.solved = False
@@ -1193,9 +1220,12 @@ def draw_clues(self, trace=False):
             self.print_grid()
             self.print_info()
 
-def try_to_restrict_clues(self):
+def try_to_restrict_clues(self, trace=False):
     clues_copy = copy.deepcopy(self.clues)
     to_restrict = []
+        
+    trace_i = 1
+    trace_clue_count = len(self.clues)
         
     clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
     clue_order = np.random.choice(clues1, len(clues1), replace=False)
@@ -1207,6 +1237,12 @@ def try_to_restrict_clues(self):
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
             clues1 = clues1_restricted
+            if trace:
+                print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+", type: 1 OUT")
+                trace_i += 1
+        elif trace:
+            print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+", type: 1")
+            trace_i += 1
             
     clues_other = [ i for i, clue in enumerate(clues_copy) if clue["typ"]!=1 ]
     clue_order = np.random.permutation(clues_other)
@@ -1217,7 +1253,13 @@ def try_to_restrict_clues(self):
         self.try_to_solve()
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
-            clues_other = clues_restricted        
+            clues_other = clues_restricted
+            if trace:
+                print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+", type: "+str(clues_copy[i]["typ"])+" OUT")
+                trace_i += 1
+        elif trace:
+            print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+", type: "+str(clues_copy[i]["typ"]))
+            trace_i += 1
             
     #print(to_restrict)
     self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
@@ -1247,7 +1289,7 @@ def generate(self, seed=0, trace=False):
         clues_counts = [ len([i for i in self.clues if i["typ"]==j]) for j in range(1,7)]
         print("No of clues drawn = "+str(len(self.clues))+str(clues_counts))
         print("Restricting clues...")
-    self.try_to_restrict_clues() 
+    self.try_to_restrict_clues(trace=trace) 
     if trace:
         print("Final difficulty assessment...")
     N = 5
