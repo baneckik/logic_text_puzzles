@@ -4,10 +4,10 @@ from pathlib import Path
 import collections
 import matplotlib.pyplot as plt
 
-def print_cathegories_stats():
+def print_categories_stats():
     df = pd.DataFrame(columns=["name","weight","folder","N"])
     i = 0
-    for path in Path('cathegories/cathegorical').rglob('*.txt'):
+    for path in Path('categories/categorical').rglob('*.txt'):
         kat = pd.read_csv(path, header=None)
         name = path.name.split(".")[0]
         weight = int(kat.iloc[0,0][2:])
@@ -17,17 +17,17 @@ def print_cathegories_stats():
         i += 1
             
     folders = np.unique(df.folder)
-    fig, ax = plt.subplots(len(folders),1, figsize=(15,30))
+    fig, ax = plt.subplots(len(folders),1, figsize=(15,50))
     for i in range(len(folders)):
         df_plot = df[df.folder==folders[i]]
         ax[i].pie(df_plot.weight, labels=df_plot.name)
-    
+    plt.tight_layout()
     plt.show()
     
-def print_cathegories_stats2():
+def print_categories_stats2():
     df = pd.DataFrame(columns=["name","weight","folder","N"])
     i = 0
-    for path in Path('cathegories/cathegorical').rglob('*.txt'):
+    for path in Path('categories/categorical').rglob('*.txt'):
         kat = pd.read_csv(path, header=None)
         name = path.name.split(".")[0]
         weight = int(kat.iloc[0,0][2:])
@@ -43,7 +43,7 @@ def print_cathegories_stats2():
     
 def find_word(word):
     found = []
-    for path in Path('cathegories/cathegorical').rglob('*.txt'):
+    for path in Path('categories/categorical').rglob('*.txt'):
             kat = pd.read_csv(path, header=None)
             if word in list(kat.iloc[1:,0]):
                 found.append("/".join(str(path).split(".")[0].split("/")[-2:]))
@@ -54,7 +54,7 @@ def find_word(word):
         
 def check_for_duplicates():
     found = []
-    for path in Path('cathegories/cathegorical').rglob('*.txt'):
+    for path in Path('categories/categorical').rglob('*.txt'):
             kat = pd.read_csv(path, header=None).iloc[1:,0]
             if len(list(kat)) != len(set(kat)):
                 found.append(path.name.split(".")[0])
