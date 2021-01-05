@@ -2,30 +2,30 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-# ----------------------------------------- LOSOWANIE ZMIENNYCH KATEGORYCZNYCH ---------------------------------------------
+# ----------------------------------------- Drawing categorical categories ---------------------------------------------
 
 def draw_cat_scheme(ile=1, puzzle_k=5):
     
     if ile<1:
         return []
     
-    # losowanie folderów
-    foldery_wagi = [("activities",3),("geography",3),("items",5),("names",12),("nature",4),("other_concepts",5),("special_names",6)]
-    podstawy = [ fw[0] for fw in foldery_wagi ]
-    wagi_folder = [ fw[1] for fw in foldery_wagi ]
-    wagi_folder = [ w/sum(wagi_folder) for w in wagi_folder ]
+    # drawing folders
+    folders_weights = [("activities",3),("geography",3),("items",5),("names",12),("nature",4),("other_concepts",5),("special_names",6)]
+    folder_names = [ fw[0] for fw in folders_weights ]
+    weights_folder = [ fw[1] for fw in folders_weights ]
+    weights_folder = [ w/sum(weights_folder) for w in weights_folder ]
     
     if ile<6:
         if np.random.uniform(0,1)<0.75:
-            foldery = np.random.choice(podstawy, ile, p=wagi_folder, replace=False)
+            folders = np.random.choice(folder_names, ile, p=weights_folder, replace=False)
         else:
-            foldery = np.random.choice(podstawy, ile, p=wagi_folder, replace=True)
+            folders = np.random.choice(folder_names, ile, p=weights_folder, replace=True)
     else:
-        foldery = np.random.choice(podstawy, ile, p=wagi_folder, replace=True)
+        folders = np.random.choice(folder_names, ile, p=weights_folder, replace=True)
       
     # drawing categories from folders
     chosen = []
-    for folder in np.unique(foldery):
+    for folder in np.unique(folders):
         available_cats = []
         available_weights = []
         for path in Path('categories/categorical/'+folder).rglob('*.txt'):
@@ -36,10 +36,10 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
         available_weights = [ w/sum(available_weights) for w in available_weights ]
         
         # number of categories to draw from this folder
-        ile_kat = sum([f==folder for f in foldery])
+        ile_kat = sum([f==folder for f in folders])
         if len(available_cats)<ile_kat:
-            raise Exception("Nie można znaleźć "+str(ile)+" kategorii kategorycznych dla " \
-                            +str(puzzle_k)+" przedmiotów w kategorii!")
+            raise Exception("Cannot find "+str(ile)+" categorical categories for " \
+                        +str(puzzle_k)+" objects in each category!")
 
         chosen += list( np.random.choice(available_cats, ile_kat, p=available_weights, replace=False) )
         
@@ -83,7 +83,7 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
     
     return [ ("categorical", chosen_out[i]) for i in range(len(chosen_out)) ]
 
-# ----------------------------------------- LOSOWANIE ZMIENNYCH PORZĄDKOWYCH ---------------------------------------------
+# ----------------------------------------- Drawing ordinal categories ---------------------------------------------
 
 def draw_ord_scheme(ile=1, puzzle_k=5):
     
@@ -100,8 +100,8 @@ def draw_ord_scheme(ile=1, puzzle_k=5):
     available_weights = [ w/sum(available_weights) for w in available_weights ]
         
     if len(available_cats)<ile:
-        raise Exception("Nie można znaleźć "+str(ile)+" kategorii porządkowych dla " \
-                        +str(puzzle_k)+" przedmiotów w kategorii!")
+        raise Exception("Cannot find "+str(ile)+" ordinal categories for " \
+                        +str(puzzle_k)+" objects in each category!")
     
     chosen = np.random.choice(available_cats, ile, p=available_weights, replace=False)
     chosen_out = []
@@ -113,96 +113,96 @@ def draw_ord_scheme(ile=1, puzzle_k=5):
     
     return [ ("ordinal", chosen_out[i]) for i in range(len(chosen_out)) ]
 
-# ----------------------------------------- LOSOWANIE ZMIENNYCH NUMERYCZNYCH ---------------------------------------------
+# ----------------------------------------- Drawing numerical categories ---------------------------------------------
 
 def draw_num_scheme(puzzle_k=5):
     
-    # ---------------------- wybór schematu i pierwszego wyrazu=n*p ---------------------------------
+    # ---------------------- choice of the scheme and first element in a sequence=n*p ---------------------------------
     
-    # (schemat, jego_waga)
-    typy_schematu_wagi = [ ("ciag_arytmetyczny", 10), ("ciag_geometryczny", 2), ("ciag_rosnacy", 4)]
-    typy = [ t[0] for t in typy_schematu_wagi ]
-    wagi_typow = [ t[1] for t in typy_schematu_wagi ]
-    wagi_typow = [ w/sum(wagi_typow) for w in wagi_typow ]
-    schemat = np.random.choice(typy, 1, p=wagi_typow)
+    # (scheme, its_weight)
+    schemes_weights = [ ("arithmetic_sequence", 10), ("geometric_sequence", 2), ("ascending_sequence", 4)]
+    schemes = [ t[0] for t in schemes_weights ]
+    weights = [ t[1] for t in schemes_weights ]
+    weights = [ w/sum(weights) for w in weights ]
+    scheme = np.random.choice(schemes, 1, p=weights)
     
-    # (podstawa, jej_waga)
-    podstawy_wagi = [(-40,1),(-10,1),(-5,1),(0,1),(1,20),(1.50,5),(2,10),(2.50,5),(3,4),(4,4),(5,3),(6,3), \
+    # (base_value(p), its_weight)
+    base_weights = [(-40,1),(-10,1),(-5,1),(0,1),(1,20),(1.50,5),(2,10),(2.50,5),(3,4),(4,4),(5,3),(6,3), \
                 (7,2),(8,2),(9,2),(10,5),(20,5),(50,5),(100,6),(1000,6),(1500,4),(1920,1),(1950,1),(1980,1),(1990,1),(2000,4)]
-    # ograniczenia na wartości podstawy
-    if schemat=="ciag_geometryczny": 
-        podstawy_wagi = [ pw for pw in podstawy_wagi if abs(pw[0])<=10 and pw[0]!=0 ]
-    if schemat=="ciag_rosnacy": 
-        podstawy_wagi = [ pw for pw in podstawy_wagi if pw[0]!=0 ]
+    # limitations of the base value p
+    if scheme=="geometric_sequence": 
+        base_weights = [ bw for bw in base_weights if abs(bw[0])<=10 and bw[0]!=0 ]
+    if scheme=="ascending_sequence": 
+        base_weights = [ bw for bw in base_weights if bw[0]!=0 ]
         
-    podstawy = [ pod[0] for pod in podstawy_wagi ]
-    wagi_podstaw = [ pod[1] for pod in podstawy_wagi ]
-    wagi_podstaw = [ w/sum(wagi_podstaw) for w in wagi_podstaw ]
-    p = np.random.choice(podstawy, 1, p=wagi_podstaw)[0]
+    base_values = [ bw[0] for bw in base_weights ]
+    weights = [ bw[1] for bw in base_weights ]
+    weights = [ w/sum(weights) for w in weights ]
+    p = np.random.choice(base_values, 1, p=weights)[0]
     
-    # (krotnosc, jej_waga)
-    krotnosci_wagi = [(1,10),(2,5),(3,2)]
-    krotnosci = [ k[0] for k in krotnosci_wagi ]
-    wagi_krotnosci = [ k[1] for k in krotnosci_wagi ]
-    wagi_krotnosci = [ w/sum(wagi_krotnosci) for w in wagi_krotnosci ]
-    n = np.random.choice(krotnosci, 1, p=wagi_krotnosci)[0]
+    # (times factor(n), its_weght)
+    times_weights = [(1,10),(2,5),(3,2)]
+    times_factors = [ k[0] for k in times_weights ]
+    weights = [ k[1] for k in times_weights ]
+    weights = [ w/sum(weights) for w in weights ]
+    n = np.random.choice(times_factors, 1, p=weights)[0]
     
-    # ------------ wybór mnożnika/incrementu i obliczanie wyjściowych wartości --------------------
+    # ------------ choice of the multiplier/increment and counting the final numerical values --------------------
     
     r = 0
-    if schemat=="ciag_arytmetyczny":
-        incrementy_wagi = [ (0.5,10), (1,40), (1.5,5), (2,15), (2.5,5), (3,5), (4,5), (5,10), (10,10), \
+    if scheme=="arithmetic_sequence":
+        increment_weights = [ (0.5,10), (1,40), (1.5,5), (2,15), (2.5,5), (3,5), (4,5), (5,10), (10,10), \
                            (15,4), (25,10), (50,10), (100,8), (200,6), (250,3), (500,5), (1000,5)]
-        # ograniczenia na wartości incrementu
+        # limitation on the increment value (r)
         if n*p>=-5 and n*p<=10: 
-            incrementy_wagi = [ iw for iw in incrementy_wagi if iw[0]<=10 ]
+            increment_weights = [ iw for iw in increment_weights if iw[0]<=10 ]
         if n*p>=100 and n*p<=1500 or n*p>=2300: 
-            incrementy_wagi = [ iw for iw in incrementy_wagi if iw[0]>=25 ]
+            increment_weights = [ iw for iw in increment_weights if iw[0]>=25 ]
         if n*p>=20: 
-            incrementy_wagi = [ iw for iw in incrementy_wagi if iw[0]==int(iw[0]) ]
+            increment_weights = [ iw for iw in increment_weights if iw[0]==int(iw[0]) ]
         
-        incrementy = [ i[0] for i in incrementy_wagi ]
-        wagi_incrementow = [ i[1] for i in incrementy_wagi ]
-        wagi_incrementow = [ w/sum(wagi_incrementow) for w in wagi_incrementow ]
-        r = np.random.choice(incrementy, 1, p=wagi_incrementow)[0]
+        increments = [ i[0] for i in increment_weights ]
+        weights = [ i[1] for i in increment_weights ]
+        weights = [ w/sum(weights) for w in weights ]
+        r = np.random.choice(increments, 1, p=weights)[0]
         values = [ n*p+k*r for k in range(puzzle_k) ]
         
-    elif schemat=="ciag_geometryczny":
-        mnozniki_wagi = [ (0.5,10), (2,10), (3,5), (4,4), (5,3), (10,2)]
-        # ograniczenia na wartości mnożnika
+    elif scheme=="geometric_sequence":
+        multiplier_weights = [ (0.5,10), (2,10), (3,5), (4,4), (5,3), (10,2)]
+        # limitation on the multiplier value (r)
         if (n*p)%8!=0: 
-            mnozniki_wagi = [ mw for mw in mnozniki_wagi if mw[0]>=2 ]
+            multiplier_weights = [ mw for mw in multiplier_weights if mw[0]>=2 ]
         if (n*p)>=50 and (n*p)%100!=0: 
-            mnozniki_wagi = [ mw for mw in mnozniki_wagi if mw[0]==2 or mw[0]==10 ]
+            multiplier_weights = [ mw for mw in multiplier_weights if mw[0]==2 or mw[0]==10 ]
         
-        mnozniki = [ i[0] for i in mnozniki_wagi ]
-        wagi_mnoznikow = [ i[1] for i in mnozniki_wagi ]
-        wagi_mnoznikow = [ w/sum(wagi_mnoznikow) for w in wagi_mnoznikow ]
-        r = np.random.choice(mnozniki, 1, p=wagi_mnoznikow)[0]
+        multipliers = [ i[0] for i in multiplier_weights ]
+        weights = [ i[1] for i in multiplier_weights ]
+        weights = [ w/sum(weights) for w in weights ]
+        r = np.random.choice(multipliers, 1, p=weights)[0]
         values = list(np.sort([ n*p*(r**k) for k in range(puzzle_k) ]))
         
-    elif schemat=="ciag_rosnacy":
+    elif scheme=="ascending_sequence":
         r = np.random.choice([n*p, 2*n*p], puzzle_k, p=[0.8, 0.2])
         values = list(np.sort([ n*p+sum(r[:k]) for k in range(puzzle_k) ]))
         
     if not isinstance(r, np.ndarray) and r==0:
-        raise Exception("Nie udało się wygenerować mnożnika/incrementu r!\nParametry to: p="+str(p)+", n="+str(n)+", schemat="+str(schemat[0]))
+        raise Exception("Cannot generate multiplier/increment r!\nParameters are: p="+str(p)+", n="+str(n)+", scheme="+str(schemat[0]))
         
-    # -------------------- określanie możliwych wskazówek ----------------------------
+    # -------------------- determinig possible clues of type 3 ----------------------------
     
-    wskazowki = []
+    clues_candidates = []
     min_free = (puzzle_k-1)//2+1
-    if schemat=="ciag_rosnacy":
+    if scheme=="ascending_sequence":
         for r1 in [n*p, 2*n*p]:
-            # wskazowki addytywne
+            # additive clues
             for i in range(1,4):
                 suma = 0
                 for val in values:
                     if val+i*r1 in values:
                         suma += 1
                 if suma>=min_free:
-                    wskazowki.append("x=y+"+str(i*r1))
-            # wskazowki multiplikatywne
+                    clues_candidates.append("x=y+"+str(i*r1))
+            # multiplicative clues
             if r1!=1:
                 for i in range(1,4):
                     suma = 0
@@ -210,7 +210,7 @@ def draw_num_scheme(puzzle_k=5):
                         if val*(r1**i) in values:
                             suma += 1
                     if suma>=min_free:
-                        wskazowki.append("x=y*"+str(r1**i))
+                        clues_candidates.append("x=y*"+str(r1**i))
             if r1!=2:
                 for i in range(1,4):
                     suma = 0
@@ -218,17 +218,17 @@ def draw_num_scheme(puzzle_k=5):
                         if val*(2**i) in values:
                             suma += 1
                     if suma>=min_free:
-                        wskazowki.append("x=y*"+str(2**i))
+                        clues_candidates.append("x=y*"+str(2**i))
     else:
-        # wskazowki addytywne
+        # additive clues
         for i in range(1,4):
             suma = 0
             for val in values:
                 if val+i*r in values:
                     suma += 1
             if suma>=min_free:
-                wskazowki.append("x=y+"+str(i*r))
-        # wskazowki multiplikatywne
+                clues_candidates.append("x=y+"+str(i*r))
+        # multiplicative clues
         if r!=1:
             for i in range(1,4):
                 suma = 0
@@ -236,7 +236,7 @@ def draw_num_scheme(puzzle_k=5):
                     if val*(r**i) in values:
                         suma += 1
                 if suma>=min_free:
-                    wskazowki.append("x=y*"+str(r**i))
+                    clues_candidates.append("x=y*"+str(r**i))
         if r!=2:
             for i in range(1,4):
                 suma = 0
@@ -244,10 +244,10 @@ def draw_num_scheme(puzzle_k=5):
                     if val*(2**i) in values:
                         suma += 1
                 if suma>=min_free:
-                    wskazowki.append("x=y*"+str(2**i))
+                    clues_candidates.append("x=y*"+str(2**i))
 
-    #return schemat[0], values, set(wskazowki)
-    return "numerical", values, set(wskazowki)
+    #return schemat[0], values, set(clues_candidates)
+    return "numerical", values, set(clues_candidates)
 
 # ----------------------------- LOSOWANIE INTERPRETACJI ZMIENNYCH NUMERYCZNYCH ---------------------------------------------
 
@@ -382,69 +382,69 @@ def draw_num_interpretation(values):
         interpretacje.append( ("Wartość stałej",5) )
         
     teksty = [ t[0] for t in interpretacje ]
-    wagi_tekstów = [ t[1] for t in interpretacje ]
-    wagi_tekstów = [ w/sum(wagi_tekstów) for w in wagi_tekstów ]
-    tekst = np.random.choice(teksty, 1, p=wagi_tekstów)
+    weights_text = [ t[1] for t in interpretacje ]
+    weights_text = [ w/sum(weights_text) for w in weights_text ]
+    tekst = np.random.choice(teksty, 1, p=weights_text)
     
     return tekst[0], values
 
-# ----------------------------------------- LOSOWANIE WSZYTKIEGO (FKCJA ZBIORCZA) ---------------------------------------------
+# ----------------------------------------- Collective function ---------------------------------------------
 
-def draw_category(K, k, gwiazdki, seed=0):
+def draw_category(K, k, diff=3, seed=0):
+    if K<2:
+        raise Exception("Number of categories (K) must be at least 2!")
+    if k<3:
+        raise Exception("Number of objects in each category (k) must be at least 3!")
+    
     np.random.seed(seed)
     
-    if K<2:
-        raise Exception("Liczba kategorii musi być równa co najmniej 2!")
-    if k<3:
-        raise Exception("Liczba przedmiotów w kategorii musi być równa co najmniej 3!")
-    
-    # wyznaczamy rozkład poszczególnych typów kategorii z zależności od liczby gwiazdek
-    if gwiazdki==2:
-        rozklad = [2, 0.5, 2]
-    elif gwiazdki==3:
-        rozklad = [2, 0.2, 2]
-    elif gwiazdki==4:
-        rozklad = [2.5, 0.4, 1.5]
+    # determining probability distribution of categories types (categorical, ordinal, numerical) depending on diff
+    if diff==2:
+        distribution = [2, 0.5, 2]
+    elif diff==3:
+        distribution = [2, 0.2, 2]
+    elif diff==4:
+        distribution = [2.5, 0.4, 1.5]
     else:
-        raise Exception("Można losować zagadki tylko o liczbie gwiazdek równej 2, 3 albo 4!")
-    rozklad = [ r/sum(rozklad) for r in rozklad ]
+        raise Exception("diff must be either 2, 3 or 4!")
+    distribution = [ d/sum(distribution) for d in distribution ]
     
-    # wyznaczamy licznosci poszczególnych typów kategorii
-    licznosci = ["cat", "num"] # zawsze musi być przynajmniej jedna zmienna kategoryczna i jadna numeryczna
-    licznosci += list(np.random.choice(["cat", "ord", "num"], K-2, p=rozklad))
-    licznosci = [ sum([l==kat for l in licznosci]) for kat in ["cat", "ord", "num"] ]
+    # determining the count of the category types
+    cat_counts = ["cat", "num"] # always has to be at least one categorical and one numerical category
+    cat_counts += list(np.random.choice(["cat", "ord", "num"], K-2, p=distribution))
+    cat_counts = [ sum([l==kat for l in cat_counts]) for kat in ["cat", "ord", "num"] ]
     
-    # losujemy konkretne kategorie
-    wylosowane = []
-    # zmienne kategoryczne:
-    wylosowane += draw_cat_scheme(ile=licznosci[0], puzzle_k=k) 
-    # zmienne porządkowe
-    wylosowane += draw_ord_scheme( ile=licznosci[1], puzzle_k=k) 
-    #zmienne numeryczne i ich interpretacje:
-    interpretacje = []
-    for i in range(licznosci[2]):
+    # drawing specific categories
+    drawn = []
+    # categorical:
+    drawn += draw_cat_scheme(ile=cat_counts[0], puzzle_k=k) 
+    # ordinal:
+    drawn += draw_ord_scheme(ile=cat_counts[1], puzzle_k=k) 
+    # numerical and their interpretations:
+    interpretations = []
+    for i in range(cat_counts[2]):
         los = draw_num_scheme(puzzle_k=k)
-        # próbujemy wylosować interpretację, tak żeby się nie powtarzać
-        for j in range(20):
+        # trying to draw an interpretation, without repetitions
+        for j in range(50):
             los_interpret = draw_num_interpretation(los[1])
-            if not los_interpret[0] in interpretacje:
-                interpretacje.append(los_interpret[0])
+            if not los_interpret[0] in interpretations:
+                interpretations.append(los_interpret[0])
                 break
-        wylosowane.append( (los[0], los[1], los[2], los_interpret[0]) )
+        drawn.append( (los[0], los[1], los[2], los_interpret[0]) )
     
-    return wylosowane   
+    return drawn
 
-# ----------------------------------------- INNE FUNKCJE ---------------------------------------------
+# ----------------------------------------- Other functions ---------------------------------------------
 
-def get_string_name(kategorie, K1, i1, replace_polish=False):
-    if kategorie[K1][0]=='categorical' or kategorie[K1][0]=='ordinal':
-        name = kategorie[K1][1][i1]
+def get_string_name(categories, K1, i1, replace_polish=False):
+    if categories[K1][0]=='categorical' or categories[K1][0]=='ordinal':
+        name = categories[K1][1][i1]
     else :
-        number = str(kategorie[K1][1][i1])
+        number = str(categories[K1][1][i1])
         if number.endswith(".0"):
             number = number[:-2] 
-        if "@" in kategorie[K1][3]:
-            a = kategorie[K1][3].split("@")
+        if "@" in categories[K1][3]:
+            a = categories[K1][3].split("@")
             name = number.join(a)
         else:
             name = number
