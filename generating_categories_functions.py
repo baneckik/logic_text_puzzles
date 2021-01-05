@@ -38,7 +38,7 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
         # number of categories to draw from this folder
         ile_kat = sum([f==folder for f in foldery])
         if len(available_cats)<ile_kat:
-            raise Exception("Nie można znaleźć "+str(ile)+" kategorii porządkowych dla " \
+            raise Exception("Nie można znaleźć "+str(ile)+" kategorii kategorycznych dla " \
                             +str(puzzle_k)+" przedmiotów w kategorii!")
 
         chosen += list( np.random.choice(available_cats, ile_kat, p=available_weights, replace=False) )
@@ -91,21 +91,23 @@ def draw_ord_scheme(ile=1, puzzle_k=5):
         return []
     
     available_cats = []
+    available_weights = []
     for path in Path('categories/ordinal').rglob('*.txt'):
         kat = pd.read_csv(path, header=None)
-        #kat.columns = [path.name.split(".")[0]]
-        if kat.shape[0]>=puzzle_k:
+        if kat.shape[0]-1 >= puzzle_k:
             available_cats.append(path)
+            available_weights.append(int(kat.iloc[0,0].split(" ")[-1]))
+    available_weights = [ w/sum(available_weights) for w in available_weights ]
         
     if len(available_cats)<ile:
         raise Exception("Nie można znaleźć "+str(ile)+" kategorii porządkowych dla " \
                         +str(puzzle_k)+" przedmiotów w kategorii!")
     
-    chosen = np.random.choice(available_cats, ile, replace=False)
+    chosen = np.random.choice(available_cats, ile, p=available_weights, replace=False)
     chosen_out = []
     for c in chosen:
         kat = pd.read_csv(c, header=None)
-        start = int(np.random.choice(range(0,kat.shape[0]-puzzle_k+1), 1))
+        start = int(np.random.choice(range(1,kat.shape[0]-puzzle_k+1), 1))
         names = list(kat.iloc[start:(start+puzzle_k),0])
         chosen_out.append(names)
     
