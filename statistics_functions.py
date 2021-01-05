@@ -15,12 +15,23 @@ def print_categories_stats():
         count = kat.shape[0]-1
         df.loc[i] = [name, weight, folder, count]
         i += 1
-            
+    
+    df2 = pd.DataFrame(columns=["name","weight","N"])
+    i = 0
+    for path in Path('categories/ordinal').rglob('*.txt'):
+        kat = pd.read_csv(path, header=None)
+        name = path.name.split(".")[0]
+        weight = int(kat.iloc[0,0][2:])
+        count = kat.shape[0]-1
+        df2.loc[i] = [name, weight, count]
+        i += 1
+        
     folders = np.unique(df.folder)
-    fig, ax = plt.subplots(len(folders),1, figsize=(15,50))
+    fig, ax = plt.subplots(len(folders)+1, 1, figsize=(17,50))
     for i in range(len(folders)):
         df_plot = df[df.folder==folders[i]]
         ax[i].pie(df_plot.weight, labels=df_plot.name)
+    ax[-1].pie(df2.weight, labels=df2.name)    
     plt.tight_layout()
     plt.show()
     
@@ -36,14 +47,29 @@ def print_categories_stats2():
         df.loc[i] = [name, weight, folder, count]
         i += 1
     
-    print("Liczba wszystkich kategorii: "+str(df.shape[0])+".")
-    print("Liczba wszystkich słów we wszystkich kategoriach: "+str(sum(df.N))+".")
-    print("Każda kategoria posiada średnio "+str(np.round(sum(df.N)/df.shape[0],2))+" słów.")
-    print("Minimalna/maksymalna liczność kategorii: "+str(min(df.N))+"/"+str(max(df.N))+"." )
+    df2 = pd.DataFrame(columns=["name","weight","N"])
+    i = 0
+    for path in Path('categories/ordinal').rglob('*.txt'):
+        kat = pd.read_csv(path, header=None)
+        name = path.name.split(".")[0]
+        weight = int(kat.iloc[0,0][2:])
+        count = kat.shape[0]-1
+        df2.loc[i] = [name, weight, count]
+        i += 1
+        
+    print("Liczba wszystkich kategorii kategorycznych: "+str(df.shape[0])+".")
+    print("Liczba wszystkich słów we wszystkich kategoriach kategorycznych: "+str(sum(df.N))+".")
+    print("Każda kategoria kategoryczna posiada średnio "+str(np.round(sum(df.N)/df.shape[0],2))+" słów.")
+    print("Minimalna/maksymalna liczność kategorii kategorycznej: "+str(min(df.N))+"/"+str(max(df.N))+"." )
+    print()
+    print("Liczba wszystkich kategorii porządkowych: "+str(df2.shape[0])+".")
+    print("Liczba wszystkich słów we wszystkich kategoriach porządkowych: "+str(sum(df2.N))+".")
+    print("Każda kategoria porządkowa posiada średnio "+str(np.round(sum(df2.N)/df2.shape[0],2))+" słów.")
+    print("Minimalna/maksymalna liczność kategorii porządkowych: "+str(min(df2.N))+"/"+str(max(df2.N))+"." )
     
 def find_word(word):
     found = []
-    for path in Path('categories/categorical').rglob('*.txt'):
+    for path in Path('categories').rglob('*.txt'):
             kat = pd.read_csv(path, header=None)
             if word in list(kat.iloc[1:,0]):
                 found.append("/".join(str(path).split(".")[0].split("/")[-2:]))
@@ -54,7 +80,7 @@ def find_word(word):
         
 def check_for_duplicates():
     found = []
-    for path in Path('categories/categorical').rglob('*.txt'):
+    for path in Path('categories').rglob('*.txt'):
             kat = pd.read_csv(path, header=None).iloc[1:,0]
             if len(list(kat)) != len(set(kat)):
                 found.append(path.name.split(".")[0])
