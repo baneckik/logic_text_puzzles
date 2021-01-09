@@ -88,9 +88,49 @@ def check_for_duplicates():
     if len(found)>0:
         print("Znaleziono powtarzające się słowa w: ", found)
     else:
-        print("Nie znaleziono nigdzie powtarzających się słów.")
+        print("Nie znaleziono kategorii, w której powtarzałyby się słowa.")
 
+def print_table1():
+    df = pd.DataFrame(columns=["name","weight","folder","N"])
+    i = 0
+    for path in Path('categories/categorical').rglob('*.txt'):
+        kat = pd.read_csv(path, header=None)
+        name = path.name.split(".")[0]
+        weight = int(kat.iloc[0,0][2:])
+        folder = path.parts[-2]
+        count = kat.shape[0]-1
+        df.loc[i] = [name, weight, folder, count]
+        i += 1
+    
+    df = df.sort_values("name")
+    pre = "\\begin{center}\n\\begin{tabular}{ | c | c | c | c |}\n\\hline\n Category & \\# of objects & Weight & Probability\\\\ \n\hline\n"
+    post = "\\hline\n\\end{tabular}\n\\end{center}"
+    for folder in np.unique(df.folder):
+        print("------------------------- "+str(folder)+" ------------------------")
+        table_latex = pre
+        df1 = df[df.folder==folder]
+        df1.insert(3, "prob", [round(df1.weight.iloc[i]/sum(df1.weight)*100, 1) for i in range(df1.shape[0]) ] )
+        for i in range(df1.shape[0]):
+            table_latex += "\_".join(df1.iloc[i,0].split("_"))+" & $"+str(df1.iloc[i,4])+"$ & $"+str(df1.iloc[i,1])+"$ & $"+str(df1.iloc[i,3])+"\\%$ \\\\ \n"
+        table_latex += post
+        print(table_latex)
         
-        
-        
-        
+       
+    # ------------- ordinals -------------
+    print("------------------------- ordinal ------------------------")
+    df2 = pd.DataFrame(columns=["name","weight","N"])
+    i = 0
+    for path in Path('categories/ordinal').rglob('*.txt'):
+        kat = pd.read_csv(path, header=None)
+        name = path.name.split(".")[0]
+        weight = int(kat.iloc[0,0][2:])
+        count = kat.shape[0]-1
+        df2.loc[i] = [name, weight, count]
+        i += 1
+    df2 = df2.sort_values("name")
+    df2.insert(3, "prob", [round(df2.weight.iloc[i]/sum(df2.weight)*100, 1) for i in range(df2.shape[0]) ] )
+    table_latex = pre
+    for i in range(df2.shape[0]):
+        table_latex += "\_".join(df2.iloc[i,0].split("_"))+" & $"+str(df2.iloc[i,2])+"$ & $"+str(df2.iloc[i,1])+"$ & $"+str(df2.iloc[i,3])+"\\%$ \\\\ \n"
+    table_latex += post
+    print(table_latex)
