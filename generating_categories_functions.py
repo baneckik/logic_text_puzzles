@@ -141,7 +141,7 @@ def draw_num_scheme(puzzle_k=5):
     p = np.random.choice(base_values, 1, p=weights)[0]
     
     # (times factor(n), its_weght)
-    times_weights = [(1,10),(2,5),(3,2)]
+    times_weights = [(1,10),(2,4),(3,1)]
     times_factors = [ k[0] for k in times_weights ]
     weights = [ k[1] for k in times_weights ]
     weights = [ w/sum(weights) for w in weights ]
@@ -170,7 +170,7 @@ def draw_num_scheme(puzzle_k=5):
     elif scheme=="geometric_sequence":
         multiplier_weights = [ (0.5,10), (2,10), (3,5), (4,4), (5,3), (10,2)]
         # limitation on the multiplier value (r)
-        if (n*p)%8!=0: 
+        if (n*p)%(2**(puzzle_k-1))!=0: 
             multiplier_weights = [ mw for mw in multiplier_weights if mw[0]>=2 ]
         if (n*p)>=50 and (n*p)%100!=0: 
             multiplier_weights = [ mw for mw in multiplier_weights if mw[0]==2 or mw[0]==10 ]
@@ -249,7 +249,7 @@ def draw_num_scheme(puzzle_k=5):
     #return schemat[0], values, set(clues_candidates)
     return "numerical", values, set(clues_candidates)
 
-# ----------------------------- LOSOWANIE INTERPRETACJI ZMIENNYCH NUMERYCZNYCH ---------------------------------------------
+# ----------------------------- drawing numerical interpretations ---------------------------------------------
 
 def czy_calk(values):
     return all([int(v)==v for v in values])
@@ -344,7 +344,7 @@ def draw_num_interpretation(values):
         interpretacje.append( ("@ filiżanek",5) )
     
     if czy_wieksze_od(values, -0.01) and czy_mniejsze_od(values, 100.001):
-        interpretacje.append( ("@ %",5) )
+        interpretacje.append( ("@ %",10) )
         
     
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 600):
@@ -361,7 +361,6 @@ def draw_num_interpretation(values):
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 24):
         interpretacje.append( ("Rozpoczęcie",5) )
         interpretacje.append( ("Zakończenie",5) )
-        interpretacje.append( ("Kolejność",25) )
         interpretacje.append( ("Sprawdzian",5) )
         interpretacje.append( ("@ interwencji",5) )
         interpretacje.append( ("@:00",25) )
