@@ -1,0 +1,21 @@
+# 1
+bigoli
+cannelloni
+capellini
+conchiglie
+coqulliettes
+farfalle
+fettuccine
+fusilli
+lasagne
+orecchiette
+lumache
+pappardelle
+penne
+ravioli
+rigatoni
+ruote
+spaghetti
+tagliatelle
+chiński
+ryżowy

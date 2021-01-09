@@ -1,0 +1,21 @@
+# 1
+feta
+mozzarella
+twaróg
+ricotta
+camembert
+brie
+gorgonzola
+munster
+stilton
+bryndza
+gouda
+cheddar
+tylżycki
+parmezan
+roquefort
+wiejski
+emmental
+edam
+oscypek
+haloumi
