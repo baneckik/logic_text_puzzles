@@ -689,10 +689,16 @@ def add_clue4(self):
                                                         break
                                                     sum_of_free = sum([val==0 for val in vals_for_X])
                                                     if sum_of_free>1:
-                                                        self.clues.append({"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6})
+                                                        clue_cand = {"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6}
+                                                        if self.is_forbidden(clue_cand):
+                                                            break
+                                                        self.clues.append(clue_cand)
                                                         return
                                                 else:
-                                                    self.clues.append({"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6})
+                                                    clue_cand = {"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6}
+                                                    if self.is_forbidden(clue_cand):
+                                                        break
+                                                    self.clues.append(clue_cand)
                                                     return
 
 def add_clue5(self):
@@ -751,10 +757,16 @@ def add_clue5(self):
                                         break
                                     sum_of_free = sum([val==0 for val in vals_for_X])
                                     if sum_of_free>1:
-                                        self.clues.append({"typ":5, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4})
+                                        clue_cand = {"typ":5, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4}
+                                        if self.is_forbidden(clue_cand):
+                                            break
+                                        self.clues.append(clue_cand)
                                         return
                                 else:
-                                    self.clues.append({"typ":5, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4})
+                                    clue_cand = {"typ":5, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4}
+                                    if self.is_forbidden(clue_cand):
+                                        break
+                                    self.clues.append(clue_cand)
                                     return
                                 
 def add_clue6(self):
