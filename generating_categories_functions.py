@@ -309,10 +309,10 @@ def draw_num_interpretation(values):
     if czy_calk(values) and czy_mniejsze_od(values, 2040) and czy_wieksze_od(values, 1300):
         interpretacje.append( ("@ rok",100) )
         
-    if czy_mniejsze_od(values, 120):
+    if czy_mniejsze_od(values, 120) and czy_wieksze_od(values, -460):
         interpretacje.append( ("@ stopni F",5) )
     
-    if czy_mniejsze_od(values, 50):
+    if czy_mniejsze_od(values, 100) and czy_wieksze_od(values, -273):
         interpretacje.append( ("@ stopni C",5) )
     
     if czy_calk(values) and czy_dodatnie(values) and czy_mniejsze_od(values, 50):
