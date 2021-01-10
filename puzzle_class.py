@@ -266,68 +266,109 @@ def grid_concile(self):
          #   changed_copy = True
     #self.changed = changed_copy
     
+def get_critical_squares(self, clue):
+    """
+    Function return critical squares of a certain clue. Critical squares are squares in which basing on 
+    the clue one can immediately put 'X' there or if somoeone puts 'O' there some clue is completely/partially being solved.
+    """
+    critical = []
+    if clue["typ"]==1:
+        critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        if "i3" in clue:
+            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i3"])]
+        if "i4" in clue:
+            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i4"])]
+    elif clue["typ"]==2:
+        critical += [(clue["K1"], clue["i1"], clue["K6"], 0)]
+        critical += [(clue["K1"], clue["i1"], clue["K6"], 1)]
+        critical += [(clue["K2"], clue["i2"], clue["K6"], 0)]
+        critical += [(clue["K2"], clue["i2"], clue["K6"], self.k-1)]
+        critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-2)]
+        critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-1)]
+
+        if clue["K1"]!=clue["K2"]:
+            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        if clue["K1"]!=clue["K3"]:
+            critical += [(clue["K1"], clue["i1"], clue["K3"], clue["i3"])]
+        if clue["K2"]!=clue["K3"]:
+            critical += [(clue["K2"], clue["i2"], clue["K3"], clue["i3"])]
+    elif clue["typ"]==3:
+        operation = clue["oper"]
+        diff = clue["diff"]
+        values = self.categories[clue["K6"]][1]
+
+        if clue["K1"]!=clue["K2"]:
+            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+
+        if operation=="+":
+            for i in range(self.k):
+                if values[i]-diff not in values:
+                    critical += [(clue["K2"], clue["i2"], clue["K6"], i)]
+                if values[i]+diff not in values:
+                    critical += [(clue["K1"], clue["i1"], clue["K6"], i)]
+        elif operation=="*":
+            for i in range(self.k):
+                if values[i]/diff not in values:
+                    critical += [(clue["K2"], clue["i2"], clue["K6"], i)]
+                if values[i]*diff not in values:
+                    critical += [(clue["K1"], clue["i1"], clue["K6"], i)]
+    elif clue["typ"]==4:
+        critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
+        critical += [(clue["K5"], clue["i5"], clue["K6"], clue["i6"])]
+        
+        if clue["K3"]==clue["K5"] and clue["K4"]==clue["K6"]:
+            if clue["i3"]!=clue["i5"] and clue["i4"]!=clue["i6"]:
+                critical += [(clue["K3"], clue["i5"], clue["K4"], clue["i4"])]
+                critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i6"])]
+            elif clue["i3"]==clue["i5"]:
+                for i in range(self.k):
+                    if i!=clue["i4"] and i!=clue["i6"]:
+                        critical += [(clue["K3"], clue["i3"], clue["K4"], i)]
+            else:
+                for i in range(self.k):
+                    if i!=clue["i3"] and i!=clue["i5"]:
+                        critical += [(clue["K3"], i, clue["K4"], clue["i4"])]
+
+    elif clue["typ"]==5:
+        critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
+        
+        if clue["K1"]==clue["K3"] and clue["K2"]==clue["K4"]:
+            if clue["i1"]!=clue["i3"] and clue["i2"]!=clue["i4"]:
+                critical += [(clue["K1"], clue["i3"], clue["K2"], clue["i2"])]
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i4"])]
+            elif clue["i1"]==clue["i3"]:
+                for i in range(self.k):
+                    if i!=clue["i2"] and i!=clue["i4"]:
+                        critical += [(clue["K1"], clue["i1"], clue["K2"], i)]
+            else:
+                for i in range(self.k):
+                    if i!=clue["i1"] and i!=clue["i3"]:
+                        critical += [(clue["K1"], i, clue["K2"], clue["i2"])]
+    elif clue["typ"]==6:
+        if clue["K1"]!=clue["K2"]:
+            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+    return critical
+    
 def is_forbidden(self, clue_cand):
     """
-    This function tests if a candidate for a clue is directly solving any clue type 4 or 5.
+    This function tests if a candidate for a clue has at least one critical square that is occupied already.
     Also detects too nested clues of type 2 or 3(only if k is small, otherwise nested clues 2 and 3 are allowed).
     """
-    forbidden45 = []
+    
+    # checking if critical squares do not repeat
+    critical1 = self.get_critical_squares(clue_cand)
     for clue in self.clues:
-        if clue["typ"] in [4, 5]:
-            forbidden45.append( (clue["K1"], clue["i1"], clue["K2"], clue["i2"]) )
-            forbidden45.append( (clue["K3"], clue["i3"], clue["K4"], clue["i4"]) )
-            if clue["typ"]==4:
-                forbidden45.append( (clue["K5"], clue["i5"], clue["K6"], clue["i6"]) )
-    forb_list = []
-    for f in forbidden45:
-        forb_list.append( (f[2:]+f[:2]) ) 
-    forb_list += forbidden45
-    
-    if clue_cand["typ"]==1:
-        for forb in forb_list:
-            if (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
-                return True
-            if "i3" in clue_cand:
-                if (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i3"])==forb:
+        critical2 = self.get_critical_squares(clue)
+        for s1 in critical1:
+            for s2 in critical2:
+                if s1[0]==s2[0] and s1[1]==s2[1] and s1[2]==s2[2] and s1[3]==s2[3]:
                     return True
-            if "i4" in clue_cand:
-                if (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i4"])==forb:
+                if s1[0]==s2[2] and s1[1]==s2[3] and s1[2]==s2[0] and s1[3]==s2[1]:
                     return True
-    elif clue_cand["typ"]==2:
-        for forb in forb_list:
-            if (clue_cand["K1"], clue_cand["i1"], clue_cand["K6"], 0)==forb:
-                return True
-            if (clue_cand["K1"], clue_cand["i1"], clue_cand["K6"], 1)==forb:
-                return True
-            if (clue_cand["K2"], clue_cand["i2"], clue_cand["K6"], 0)==forb:
-                return True
-            if (clue_cand["K2"], clue_cand["i2"], clue_cand["K6"], self.k-1)==forb:
-                return True
-            if (clue_cand["K3"], clue_cand["i3"], clue_cand["K6"], self.k-1)==forb:
-                return True
-            if (clue_cand["K3"], clue_cand["i3"], clue_cand["K6"], self.k-2)==forb:
-                return True
-            
-            if clue_cand["K1"]!=clue_cand["K2"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
-                return True
-            if clue_cand["K1"]!=clue_cand["K3"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K3"], clue_cand["i3"])==forb:
-                return True
-            if clue_cand["K2"]!=clue_cand["K3"] and (clue_cand["K2"], clue_cand["i2"], clue_cand["K3"], clue_cand["i3"])==forb:
-                return True
-    elif clue_cand["typ"]==3:
-        for forb in forb_list:
-            if clue_cand["K1"]!=clue_cand["K2"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
-                return True
-            
-            if (clue_cand["K1"], clue_cand["i1"], clue_cand["K6"], self.k-1)==forb:
-                return True
-            if (clue_cand["K2"], clue_cand["i2"], clue_cand["K6"], 0)==forb:
-                return True
-    elif clue_cand["typ"]==6:
-        for forb in forb_list:
-            if clue_cand["K1"]!=clue_cand["K2"] and (clue_cand["K1"], clue_cand["i1"], clue_cand["K2"], clue_cand["i2"])==forb:
-                return True
-    
+                
+    # checking if clues of type 2 or 3 do not solve themselves immediately 
     if clue_cand["typ"]==2 and self.k<6:
         for clue in [ c for c in self.clues if c["typ"]==2 ]:
             if clue["K6"]==clue_cand["K6"]:
@@ -1351,6 +1392,7 @@ class puzzle:
     grid_concile5 = grid_concile5
     grid_concile = grid_concile
     
+    get_critical_squares = get_critical_squares
     is_forbidden = is_forbidden
     add_clue1 = add_clue1
     add_clue2 = add_clue2
