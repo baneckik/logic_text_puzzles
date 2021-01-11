@@ -368,8 +368,9 @@ def is_forbidden(self, clue_cand):
                 if s1[0]==s2[2] and s1[1]==s2[3] and s1[2]==s2[0] and s1[3]==s2[1]:
                     return True
                 
-    # checking if clues of type 2 or 3 do not solve themselves immediately 
+    
     if clue_cand["typ"]==2 and self.k<6:
+        # checking if clue of type 2 do not solve any clue of type 2 immediately 
         for clue in [ c for c in self.clues if c["typ"]==2 ]:
             if clue["K6"]==clue_cand["K6"]:
                 if clue["K1"]==clue_cand["K3"] and clue["i1"]==clue_cand["i3"]:
@@ -393,13 +394,63 @@ def is_forbidden(self, clue_cand):
                     if clue["K2"]==clue_cand["K2"] and clue["i2"]==clue_cand["i2"]:
                         return True
     elif clue_cand["typ"]==3 and self.k<5:
+        # checking if clue of type 3 do not solve any clue of type 2 immediately 
+        # assuming only one 'X' for either of two objects in clue 3
         for clue in [ c for c in self.clues if c["typ"]==2 ]:
             if clue["K6"]==clue_cand["K6"]:
                 if clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
                     return True
                 if clue["K3"]==clue_cand["K2"] and clue["i3"]==clue_cand["i2"]:
                     return True
-
+    
+    # checking if clue of type 2/3 do not solve any clue of type 2/3 immediately 
+    # done via critical squares(taking into the account many 'X's for either of two objects in clue 3)
+    if clue_cand["typ"]==3 and self.k>3:
+        for clue in [ c for c in self.clues if c["typ"]==2 ]:
+            if clue["K6"]==clue_cand["K6"]:
+                if clue["K3"]==clue_cand["K2"] and clue["i3"]==clue_cand["i2"]:
+                    critical_sum = 0
+                    critical1 = self.get_critical_squares(clue_cand)
+                    critical2 = self.get_critical_squares(clue)
+                    critical_list = critical1 + critical2
+                    for i in range(self.k):
+                        if (clue["K3"], clue["i3"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K3"], clue["i3"]) in critical_list:
+                            critical_sum += 1
+                    if critical_sum >= self.k-1:
+                        return True
+                elif clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
+                    critical_sum = 0
+                    critical1 = self.get_critical_squares(clue_cand)
+                    critical2 = self.get_critical_squares(clue)
+                    critical_list = critical1 + critical2
+                    for i in range(self.k):
+                        if (clue["K1"], clue["i1"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K1"], clue["i1"]) in critical_list:
+                            critical_sum += 1
+                    if critical_sum >= self.k-1:
+                        return True
+    elif clue_cand["typ"]==2 and self.k>3:
+        for clue in [ c for c in self.clues if c["typ"]==3 ]:
+            if clue["K6"]==clue_cand["K6"]:
+                if clue_cand["K3"]==clue["K2"] and clue_cand["i3"]==clue["i2"]:
+                    critical_sum = 0
+                    critical1 = self.get_critical_squares(clue_cand)
+                    critical2 = self.get_critical_squares(clue)
+                    critical_list = critical1 + critical2
+                    for i in range(self.k):
+                        if (clue["K2"], clue["i2"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K2"], clue["i2"]) in critical_list:
+                            critical_sum += 1
+                    if critical_sum >= self.k-1:
+                        return True
+                elif clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
+                    critical_sum = 0
+                    critical1 = self.get_critical_squares(clue_cand)
+                    critical2 = self.get_critical_squares(clue)
+                    critical_list = critical1 + critical2
+                    for i in range(self.k):
+                        if (clue["K1"], clue["i1"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K1"], clue["i1"]) in critical_list:
+                            critical_sum += 1
+                    if critical_sum >= self.k-1:
+                        return True
     return False
                                                 
 def add_clue1(self):
