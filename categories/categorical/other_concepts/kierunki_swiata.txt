@@ -3,8 +3,7 @@ północ
 południe
 wschód
 zachód
-południowy wschód
-południowy zachód
-północny wschód
-północny zachód
-
+płd. wschód
+płd. zachód
+płn. wschód
+płn. zachód
