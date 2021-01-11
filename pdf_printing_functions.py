@@ -10,6 +10,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 pdfmetrics.registerFont(TTFont('sans-serif', 'FreeSans.ttf'))
+from reportlab.lib import colors
 
 import generating_categories_functions as funs
 from puzzle_class import puzzle
@@ -492,6 +493,25 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
         
         miejsce = i+1
         odstep = 0.15
+        odstep2 = 0 # only for numerical category with interpretation which do not contain '@'
+        if category[0]=='numerical' and "@" not in category[3]:
+            odstep2 = width
+            c.saveState()
+            c.setLineWidth(2)
+            c.setFillColor(colors.white)
+            c.rect( X, Y+(K_cat-i-1)*box_size, box_size/k_cat, box_size, fill=1)
+            c.rect( X+text_box_size+box_size*(i-1), Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat, box_size, box_size/k_cat, fill=1)
+            c.restoreState()
+            
+            
+            inter_width = stringWidth(category[3], "sans-serif", width) 
+            c.setFont("sans-serif", width*(1-odstep)*box_size/inter_width)
+            c.drawString(X+text_box_size+box_size*(i-1)+odstep*width, Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat+odstep*width, category[3])
+            c.saveState()
+            c.rotate( 90 )
+            c.drawString(Y+(K_cat-i-1)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, category[3])
+            c.restoreState()
+        
         for i, name in enumerate(nazwy):
             if len(name) > 7+(k_cat-3)*3:
                 c.setFont("sans-serif", width*(7+(k_cat-3)*3)/len(name))
@@ -499,9 +519,9 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
                 c.setFont("sans-serif", width)
             # rysowanie poziome:
             if miejsce==1:
-                c.drawString(X+odstep*width, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name)
+                c.drawString(X+odstep*width+odstep2, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name)
             elif miejsce!=2:
-                c.drawString(X+odstep*width, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name)
+                c.drawString(X+odstep*width+odstep2, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name)
             c.saveState()
             # rysowanie pionowe:
             c.rotate( 90 )
@@ -511,3 +531,6 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
                 c.drawString(Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name)
 
             c.restoreState()
+
+            
+            
