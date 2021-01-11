@@ -29,7 +29,7 @@ def star(canvas, xcenter, ycenter, radius):
     p.close()
     canvas.drawPath(p)
 
-def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
+def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
     normal_font = "sans-serif"
     special_font = "Times-Bold"
     replace_polish = True
@@ -42,7 +42,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
     x += textWidth + 1
     
     if clue["typ"]==1:
-        text1 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        text1 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text1)
         textWidth = stringWidth(text1, special_font, width) 
@@ -55,7 +55,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
             textWidth = stringWidth(text2, normal_font, width) 
             x += textWidth + 1
             
-            text3 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+            text3 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
             c.setFont(special_font, width)
             c.drawString(x, Y, text3)
         else:
@@ -65,7 +65,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
             textWidth = stringWidth(text2, normal_font, width) 
             x += textWidth + 1
 
-            text3 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+            text3 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
             c.setFont(special_font, width)
             c.drawString(x, Y, text3)
             textWidth = stringWidth(text3, special_font, width) 
@@ -77,7 +77,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
             textWidth = stringWidth(text4, normal_font, width) 
             x += textWidth + 1
 
-            text5 = funs.get_string_name(kategorie, clue["K2"], clue["i3"], replace_polish)
+            text5 = funs.get_string_name(categories, clue["K2"], clue["i3"], replace_polish)
             c.setFont(special_font, width)
             c.drawString(x, Y, text5)
             textWidth = stringWidth(text5, special_font, width) 
@@ -89,7 +89,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
                 textWidth = stringWidth(text6, normal_font, width) 
                 x += textWidth + 1
 
-                text7 = funs.get_string_name(kategorie, clue["K2"], clue["i4"], replace_polish)
+                text7 = funs.get_string_name(categories, clue["K2"], clue["i4"], replace_polish)
                 c.setFont(special_font, width)
                 c.drawString(x, Y, text7)
     elif clue["typ"]==2:
@@ -110,7 +110,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(kategorie, clue["K3"], clue["i3"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -122,7 +122,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -133,7 +133,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text7 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        text7 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text7)
     elif clue["typ"]==3:
@@ -154,7 +154,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -166,7 +166,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -185,7 +185,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text1, normal_font, width) 
         x += textWidth + 1
         
-        text2 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        text2 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text2)
         textWidth = stringWidth(text2, special_font, width) 
@@ -197,7 +197,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -209,7 +209,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(kategorie, clue["K3"], clue["i3"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -221,7 +221,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text7, normal_font, width) 
         x += textWidth + 1
         
-        text8 = funs.get_string_name(kategorie, clue["K4"], clue["i4"], replace_polish)
+        text8 = funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text8)
         
@@ -234,7 +234,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text9, normal_font, width) 
         x += textWidth + 1
         
-        text10 = funs.get_string_name(kategorie, clue["K5"], clue["i5"], replace_polish)
+        text10 = funs.get_string_name(categories, clue["K5"], clue["i5"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y-width, text10)
         textWidth = stringWidth(text10, special_font, width) 
@@ -246,7 +246,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text11, normal_font, width) 
         x += textWidth + 1
         
-        text12 = funs.get_string_name(kategorie, clue["K6"], clue["i6"], replace_polish)
+        text12 = funs.get_string_name(categories, clue["K6"], clue["i6"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y-width, text12)
     elif clue["typ"]==5:
@@ -255,7 +255,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text1, normal_font, width) 
         x += textWidth + 1
         
-        text2 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        text2 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text2)
         textWidth = stringWidth(text2, special_font, width) 
@@ -267,7 +267,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -279,7 +279,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(kategorie, clue["K3"], clue["i3"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -291,7 +291,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text7, normal_font, width) 
         x += textWidth + 1
         
-        text8 = funs.get_string_name(kategorie, clue["K4"], clue["i4"], replace_polish)
+        text8 = funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text8)
         textWidth = stringWidth(text8, special_font, width) 
@@ -320,7 +320,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(kategorie, clue["K1"], clue["i1"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -332,7 +332,7 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(kategorie, clue["K2"], clue["i2"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -342,9 +342,9 @@ def rysuj_pytanie(kategorie, clue, c, X, Y, no, width):
         
 # --------------------------------------- main printing function ----------------------------------
 
-def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
+def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
     
-    kategorie = puzzle1.categories
+    categories = puzzle1.categories
     clues = puzzle1.clues
     seed = puzzle1.seed
     K_cat = puzzle1.K # liczba kategorii
@@ -399,7 +399,7 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
     additional_rows = 0
     for i in range(len(clues)):
-        rysuj_pytanie(kategorie, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*(i+additional_rows), i, width_clue)
+        draw_clues_on_canvas(categories, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*(i+additional_rows), i, width_clue)
         if clues[clue_order[i]]["typ"]==4:
             additional_rows += 1
     
@@ -434,12 +434,12 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     c.drawString(X_sol, Y_sol, "Solution:")
     c.setFont("sans-serif", width_sol)
     for i in range(k_cat):
-        linijka = funs.get_string_name(kategorie, 0, i, replace_polish=False)
+        linijka = funs.get_string_name(categories, 0, i, replace_polish=False)
         for k2 in range(1, K_cat):
             for j in range(k_cat):
                 if puzzle1.get_grid_value(0, i, k2, j)==1:
                     break
-            linijka += " ~ "+funs.get_string_name(kategorie, k2, j, replace_polish=False)
+            linijka += " ~ "+funs.get_string_name(categories, k2, j, replace_polish=False)
         c.drawString(X_sol, Y_sol-(i+1)*width_sol,linijka)
     
     c.restoreState()
@@ -458,13 +458,16 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
         Ycat = Y+puzzle_h+width2*6
         
     x_shift = 0
-    for i in range(len(kategorie)):
+    for i in range(len(categories)):
         widths = []
         c.setFont(special_font, width2)
-        text0 = "Kategoria "+str(i)+":"
+        if puzzle1.K>6:
+            text0 = "Kat. "+str(i)+":"
+        else:
+            text0 = "Kategoria "+str(i)+":"
         widths.append( stringWidth(text0, special_font, width2) )
         
-        nazwy = [ funs.get_string_name(kategorie, i, j, False) for j in range(len(kategorie[i][1])) ]
+        nazwy = [ funs.get_string_name(categories, i, j, False) for j in range(len(categories[i][1])) ]
         c.drawString(X+x_shift, Ycat, text0)
         c.setFont(normal_font, width2)
         for col, name in enumerate(nazwy):
@@ -479,12 +482,12 @@ def rysuj_zagadke(puzzle1, c, X = 30, Y = 30, box_size = None):
     
     # ------------- typing categories names into boxes
     
-    for i, kategoria in enumerate(kategorie):
-        nazwy = [ str(k) for k in kategoria[1] ]
-        if kategoria[0]=='numerical':
+    for i, category in enumerate(categories):
+        nazwy = [ str(k) for k in category[1] ]
+        if category[0]=='numerical':
             nazwy = [ k[:-2] if k.endswith(".0") else k for k in nazwy ]
-            if "@" in kategoria[3]:
-                a = kategoria[3].split("@")
+            if "@" in category[3]:
+                a = category[3].split("@")
                 nazwy = [ k.join(a) for k in nazwy ]
         
         miejsce = i+1
