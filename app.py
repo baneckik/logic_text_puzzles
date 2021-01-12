@@ -14,7 +14,7 @@ from pdf_printing_functions import draw_on_canvas
 
 window = Tk()
 window.geometry('700x740')
-window.title("Text puzzle generator v1")
+window.title("Text puzzle generator v1.1")
 
 def clicked_gen():
 	choice_int = choice.get()
@@ -64,6 +64,8 @@ def clicked_gen():
 	bar['value'] = percent
 	window.update()
 	
+	print("------------------ generating started ------------------")
+    
 	# ----------------- Generating --------------
 	
 	puzzle1 = puzzle(K, k)
@@ -71,6 +73,7 @@ def clicked_gen():
 	
 	puzzle1.set_seed(seed)
 	puzzle1.draw_categories()
+	puzzle1.print_info()
 	i_max = 100
 	for i in range(i_max):
 		puzzle1.clear_grid()
@@ -94,6 +97,8 @@ def clicked_gen():
         
 	clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
 	clue_order = np.random.choice(clues1, len(clues1), replace=False)
+	trace_i = 1
+	trace_clue_count = len(puzzle1.clues)
 	for i in clue_order:
 		clues1_restricted = [ j for j in clues1 if j!=i ]
 		puzzle1.clear_grid()
@@ -102,6 +107,11 @@ def clicked_gen():
 		if puzzle1.is_grid_completed() and not puzzle1.is_grid_contradictory():
 			to_restrict.append(i)
 			clues1 = clues1_restricted
+			print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+" finished, type: 1 OUT")
+			trace_i += 1
+		else:
+			print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+" finished, type: 1")
+			trace_i += 1
 		percent += int(np.floor(95/bar_N))
 		lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
 		bar['value'] = percent
@@ -116,7 +126,12 @@ def clicked_gen():
 		puzzle1.try_to_solve()
 		if puzzle1.is_grid_completed() and not puzzle1.is_grid_contradictory():
 			to_restrict.append(i)
-			clues_other = clues_restricted       
+			clues_other = clues_restricted
+			print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+" finished, type: "+str(clues_copy[i]["typ"])+" OUT")
+			trace_i += 1
+		else:
+			print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+" finished, type: "+str(clues_copy[i]["typ"]))
+			trace_i += 1
 		percent += int(np.floor(95/bar_N))
 		lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
 		bar['value'] = percent
@@ -130,7 +145,8 @@ def clicked_gen():
 	#window.update()
 	
 	# ---------------- difficulty assessment -------------------
-	
+    
+	print("Final difficulty assessment...")
 	N = 5
 	diffs = []
 	for n in range(N):
