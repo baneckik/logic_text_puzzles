@@ -1,8 +1,0 @@
-# 3
-głowa
-lewa ręka
-prawa ręka
-lewa noga
-prawa noga
-tors
-
