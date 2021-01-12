@@ -1,6 +1,0 @@
-półbajty
-bajty
-kilobajty
-megabajty
-gigabajty
-terabajty
