@@ -47,7 +47,6 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
     for c in chosen:
         if c==Path("categories/categorical/special_names/zmysleni_superbohaterowie_ang.txt"):
             kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
-            kat.drop(kat.head(1).index, inplace=True)
             prenames = np.random.choice(kat.iloc[:,0], puzzle_k, replace=False)
             if puzzle_k<5:
                 n = 1
@@ -61,7 +60,6 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
             names = [prenames[i]+" "+names[i] for i in range(len(prenames))]
         elif c==Path("categories/categorical/special_names/zmysleni_superbohaterowie_pol.txt"):
             kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
-            kat.drop(kat.head(1).index, inplace=True)
             rows = np.random.choice(range(kat.shape[0]), puzzle_k, replace=False)
             if puzzle_k<5:
                 n = 1
