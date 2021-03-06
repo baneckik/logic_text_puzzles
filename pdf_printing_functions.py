@@ -385,7 +385,14 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text6, special_font, width) 
         x += textWidth + 1
         
-        
+def draw_into_rectangle(c, X, Y, text, font, rec_h, rec_w):
+    width = rec_h
+    length = stringWidth(text, font, width) 
+    while length>rec_w*0.94:
+        width -= rec_h/100
+        length = stringWidth(text, font, width) 
+    c.setFont(font, width)
+    c.drawString(X, Y, text)
         
 # --------------------------------------- main printing function ----------------------------------
 
@@ -539,49 +546,62 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
         
         miejsce = i+1
         odstep = 0.15
-        odstep2 = 0 # only for numerical category with interpretation which do not contain '@'
-        if category[0]=='numerical' and "@" not in category[3] and category[3]!="":
+        odstep2 = 0 # only for categories with horizontal bars
+        
+        # if there is a horizontal bar to draw
+        if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
+            
+            if category[0]=='numerical':
+                text = category[4]
+            else:
+                text = category[2]
             odstep2 = width
             c.saveState()
             c.setLineWidth(2)
             c.setFillColor(colors.white)
-            # additional box on the left
+            # horizontal bar on the left
             if i!=1:
-                c.rect( X, Y+(i-2)*box_size, box_size/k_cat, box_size, fill=1)
-            # additional box at the top
+                if i!=0:
+                    c.rect( X, Y+(i-2)*box_size, box_size/k_cat, box_size, fill=1)
+                else:
+                    c.rect( X, Y+(K_cat-2)*box_size, box_size/k_cat, box_size, fill=1)
+            # horizontal bar at the top
             if i!=0:
                 c.rect( X+text_box_size+box_size*(i-1), Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat, box_size, box_size/k_cat, fill=1)
             c.restoreState()
             
-            inter_width = stringWidth(category[3], "sans-serif", width) 
+            inter_width = stringWidth(text, "sans-serif", width) 
             c.setFont("sans-serif", min([width, width*(1-odstep)*box_size/inter_width]))
-            # additional text at the top
+            # horizontal bar text at the top
             if i!=0:
-                c.drawString(X+text_box_size+box_size*(i-1)+odstep*width, Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat+odstep*width, category[3])
-            # additional text on the left
+                draw_into_rectangle(c, X+text_box_size+box_size*(i-1)+odstep*width, Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat+odstep*width, text, "sans-serif", width, box_size)
+            # horizontal bar text on the left
             if i!=1:
                 c.saveState()
                 c.rotate( 90 )
-                c.drawString(Y+(i-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, category[3])
+                if i!=0:
+                    draw_into_rectangle(c, Y+(i-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, "sans-serif", width, box_size)
+                else:
+                    draw_into_rectangle(c, Y+(K_cat-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, "sans-serif", width, box_size)
                 c.restoreState()
         
         for i, name in enumerate(nazwy):
-            if len(name) > 7+(k_cat-3)*3:
-                c.setFont("sans-serif", width*(7+(k_cat-3)*3)/len(name))
+            if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
+                space_size = text_box_size-box_size/k_cat
             else:
-                c.setFont("sans-serif", width)
+                space_size = text_box_size
             # rysowanie poziome:
             if miejsce==1:
-                c.drawString(X+odstep*width+odstep2, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name)
+                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name, "sans-serif", width, space_size)
             elif miejsce!=2:
-                c.drawString(X+odstep*width+odstep2, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name)
+                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name, "sans-serif", width, space_size)
             c.saveState()
             # rysowanie pionowe:
             c.rotate( 90 )
             if miejsce==2:
-                c.drawString(Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(i+1)*width+odstep*width, name)
+                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(i+1)*width+odstep*width, name, "sans-serif", width, space_size)
             elif miejsce!=1:
-                c.drawString(Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name)
+                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name, "sans-serif", width, space_size)
 
             c.restoreState()
 

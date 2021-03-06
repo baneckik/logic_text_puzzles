@@ -118,7 +118,7 @@ def draw_num_scheme(puzzle_k=5):
     # ---------------------- choice of the scheme and first element in a sequence=n*p ---------------------------------
     
     # (scheme, its_weight)
-    schemes_weights = [ ("arithmetic_sequence", 10), ("geometric_sequence", 2), ("ascending_sequence", 4)]
+    schemes_weights = [ ("arithmetic_sequence", 10), ("geometric_sequence", 2), ("ascending_sequence", 3)]
     schemes = [ t[0] for t in schemes_weights ]
     weights = [ t[1] for t in schemes_weights ]
     weights = [ w/sum(weights) for w in weights ]
@@ -180,7 +180,9 @@ def draw_num_scheme(puzzle_k=5):
         values = list(np.sort([ n*p*(r**k) for k in range(puzzle_k) ]))
         
     elif scheme=="ascending_sequence":
-        r = np.random.choice([n*p, 2*n*p], puzzle_k, p=[0.8, 0.2])
+        r = [n*p, 2*n*p]
+        r += list(np.random.choice([n*p, 2*n*p], puzzle_k-3, p=[0.8, 0.2]))
+        r = list(np.random.permutation(r))
         values = list(np.sort([ n*p+sum(r[:k]) for k in range(puzzle_k) ]))
         
     if not isinstance(r, np.ndarray) and r==0:
@@ -244,8 +246,8 @@ def draw_num_scheme(puzzle_k=5):
                 if suma>=min_free:
                     clues_candidates.append("x=y*"+str(2**i))
 
-    #return schemat[0], values, set(clues_candidates)
-    return "numerical", values, set(clues_candidates)
+    #return schemat[0], values, clues_candidates
+    return "numerical", values, clues_candidates, scheme[0].split("_")[0]
 
 # ----------------------------- drawing numerical interpretations ---------------------------------------------
 
@@ -427,13 +429,23 @@ def draw_category(K, k, diff=3, seed=0):
             if not los_interpret[0] in interpretations:
                 interpretations.append(los_interpret[0])
                 break
-        drawn.append( (los[0], los[1], los[2], los_interpret[0]) )
+        drawn.append( (los[0], los[1], los[2], los_interpret[0], los[3]) )
     
-    return drawn
+    # adding empty horizontal bars
+    final = []
+    for cat in drawn:
+        if cat[0]!="numerical":
+                final.append( (cat[0], cat[1], '') )
+        else:
+            if "@" in cat[3]:
+                final.append( (cat[0], cat[1], cat[2], cat[3], '', cat[4]) )
+            else:
+                final.append( (cat[0], cat[1], cat[2], '', cat[3], cat[4]) )
+    return final
 
 # ----------------------------------------- Other functions ---------------------------------------------
 
-def get_string_name(categories, K1, i1, replace_polish=False):
+def get_string_name(categories, K1, i1, replace_polish=False, with_bar=False):
     if categories[K1][0]=='categorical' or categories[K1][0]=='ordinal':
         name = categories[K1][1][i1]
     else :
@@ -445,6 +457,12 @@ def get_string_name(categories, K1, i1, replace_polish=False):
             name = number.join(a)
         else:
             name = number
+    
+    if with_bar:
+        if categories[K1][0]=='categorical' or categories[K1][0]=='ordinal':
+            name = categories[K1][2]+":::"+name
+        else:
+            name = categories[K1][4]+":::"+name
     
     if replace_polish:
         if "ł" in name:
@@ -479,7 +497,8 @@ def get_string_name(categories, K1, i1, replace_polish=False):
 def do_categories_repeat(categories):
     all_cats = []
     for i, cat in enumerate(categories):
-        cats_i = [ get_string_name(categories, i, j) for j in range(len(cat[1])) ]
+        cats_i = [ get_string_name(categories, i, j, with_bar=True) for j in range(len(cat[1])) ]
         all_cats += cats_i
     return len(all_cats) != len(set(all_cats))
+
 
