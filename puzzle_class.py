@@ -1,9 +1,9 @@
 import numpy as np
-import pandas as pd
 import copy
 import generating_categories_functions as funs
 
 # ------------------ class methods ----------------------------
+     
 
 def grid_insert(self, K1, i1, K2, i2, val):
     if K1>=self.K or K2>=self.K or K1<0 or K2<0 or K1==K2:
