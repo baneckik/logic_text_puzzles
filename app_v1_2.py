@@ -5,6 +5,7 @@ from tkinter.ttk import Progressbar
 from tkinter import filedialog
 from os import path
 import copy
+from functools import partial
 from reportlab.pdfgen import canvas
 
 import numpy as np
@@ -13,7 +14,7 @@ import generating_categories_functions as funs
 from pdf_printing_functions import draw_on_canvas
 
 window = Tk()
-window.geometry('700x740')
+window.geometry('700x800')
 window.title("Text puzzle generator v1.2")
 
 def clicked_gen():
@@ -230,13 +231,70 @@ def clicked_gen():
 			e2 = Entry(num_frame, textvariable=v)
 			e2.grid(row=6, column=len(num_cats))
             
+			additives = [ clue["oper"]=="+" for clue in puzzle1.clues if clue["typ"]==3 and clue["K6"]==j ]
+			multiplicatives = [ clue["oper"]=="*" for clue in puzzle1.clues if clue["typ"]==3 and clue["K6"]==j ]
+			if cat[5]!="geometric" and all(additives):
+				can_first_el_be_changed = True
+				can_increment_be_changed = True
+			elif cat[5]=="geometric" and all(multiplicatives):
+				can_first_el_be_changed = True
+				can_increment_be_changed = True
+			elif cat[5]=="geometric" and all(additives):
+				can_first_el_be_changed = True
+				can_increment_be_changed = False
+			else:
+				can_first_el_be_changed = False
+				can_increment_be_changed = False
+            
+			if can_first_el_be_changed or can_increment_be_changed:
+				eval_frame = Frame(num_frame)
+				eval_frame.grid(row=7, column=len(num_cats))
+                
+				if str(cat[1][0]).endswith(".0"):
+					a = StringVar(eval_frame, value=str(cat[1][0])[:-2])
+				else:
+					a = StringVar(eval_frame, value=cat[1][0])
+				if cat[5]=="geometric":
+					r = cat[1][1]/cat[1][0]
+				else:
+					r = cat[1][1]-cat[1][0]
+				if str(r).endswith(".0"):
+					r = StringVar(eval_frame, value=str(r)[:-2])
+				else:
+					r = StringVar(eval_frame, value=r)
+				l6 = Label(eval_frame, text="first:", font=(std_font, std_font_size//2))
+				l6.grid(row=0, column=0)
+				e3 = Entry(eval_frame, textvariable=a, width=5)
+				e3.grid(row=0, column=1)
+				if cat[5]=="geometric":
+					l7 = Label(eval_frame, text="multiplier:", font=(std_font, std_font_size//2))
+				else:
+					l7 = Label(eval_frame, text="increment:", font=(std_font, std_font_size//2))
+				l7.grid(row=0, column=2)
+				e4 = Entry(eval_frame, textvariable=r, width=4)
+				e4.grid(row=0, column=3)
+				ev_btn = Button(eval_frame, text="eval", font=("Arial", std_font_size//2), command=partial(clicked_eval,j))
+				ev_btn.grid(row=0, column=4)
+				ev_btn.config( height = 1, width = 1 )
+                
+				if not can_first_el_be_changed:
+					e3.configure(state='disabled')
+				if not can_increment_be_changed:
+					e4.configure(state='disabled')
+            
 			entries.append(l)
-			entries.append(e)
-			entries.append(e2)
+			entries.append(e) # interpretation
+			entries.append(e2) # cross bar text
 			entries.append(l2)
 			entries.append(l3)
 			entries.append(l4)
 			entries.append(l5)
+			if can_first_el_be_changed or can_increment_be_changed:  
+				entries.append(l6)
+				entries.append(e3) # first number element
+				entries.append(l7)
+				entries.append(e4) # multiplier/increment
+				entries.append(eval_frame)
 			num_cats.append(entries)
 			
 	cat_frame.grid()
@@ -336,6 +394,72 @@ def clicked_new():
 	num_frame.grid_forget()
 	cat_frame.configure(pady=10)
 	num_frame.configure(pady=10)
+
+    
+def clicked_eval(j):
+	if len(num_cats)<1:
+		return
+	n = -1
+	for i, cat in enumerate(final_puzzle.categories):
+		if i<=j and cat[0]=="numerical":
+			n += 1
+		if i==j:
+			break
+    
+	try: 
+		float(num_cats[n][8].get())
+	except:
+		messagebox.showwarning('Warning', 'First element must be a number!')
+		return
+	try: 
+		float(num_cats[n][10].get())
+	except:
+		messagebox.showwarning('Warning', 'Increment/multiplier must be a number!')
+		return
+    
+	if final_puzzle.categories[j][0]=="numerical" and final_puzzle.categories[j][5]=="geometric" and float(num_cats[n][8].get())<=0:
+		messagebox.showwarning('Warning', 'First element in geometric sequence has to be greater than zero!')
+		return
+	if final_puzzle.categories[j][0]=="numerical" and final_puzzle.categories[j][5]=="arithmetic" and float(num_cats[n][10].get())<=0:
+		messagebox.showwarning('Warning', 'Sequence increment has to be greater than zero!')
+		return
+	if final_puzzle.categories[j][0]=="numerical" and final_puzzle.categories[j][5]=="geometric" and float(num_cats[n][10].get())<=0:
+		messagebox.showwarning('Warning', 'Sequence multiplier has to be greater than zero!')
+		return
+    
+	new_r = float(num_cats[n][10].get())
+    
+	old_vals = final_puzzle.categories[j][1]
+	new_vals = [float(num_cats[n][8].get())]
+	for i in range(final_puzzle.k-1):
+		if final_puzzle.categories[j][5]=="geometric":
+			new_vals.append(float(new_vals[-1])*new_r)
+		elif final_puzzle.categories[j][5]=="arithmetic":
+			new_vals.append(float(new_vals[-1])+new_r)
+		else:
+			new_vals.append( float(new_vals[-1])+new_r/(old_vals[1]-old_vals[0])*(old_vals[i+1]-old_vals[i]) )
+    
+	old_possible_clues_of_type_3 = final_puzzle.categories[j][2]
+	new_possible_clues_of_type_3 = []
+	for pc in old_possible_clues_of_type_3:
+		old_a = float(pc[4:])
+		if final_puzzle.categories[j][5]=="geometric":
+			old_r = old_vals[1]/old_vals[0]
+		else:
+			old_r = old_vals[1]-old_vals[0]
+		new_a = old_a/old_r*new_r
+		new_possible_clues_of_type_3.append(pc[:4]+str(new_a))
+    
+	for clue in final_puzzle.clues:
+		if clue["typ"]==3 and clue["K6"]==j:
+			clue["diff"] = clue["diff"]/old_r*new_r
+    
+	final_puzzle.categories[j] = (final_puzzle.categories[j][0], new_vals, new_possible_clues_of_type_3, final_puzzle.categories[j][3], final_puzzle.categories[j][4], final_puzzle.categories[j][5] )
+    
+	vals = [ str(val)[:-2] if str(val).endswith(".0") else str(val) for val in new_vals ]
+	if len(vals)>5:
+		vals = vals[:3]+["..."]+[vals[-1]]
+	num_cats[n][4].configure(text=" ("+", ".join(vals)+")", font=(std_font, 10))
 
 # ------------------------- Intro -----------------------------
 
