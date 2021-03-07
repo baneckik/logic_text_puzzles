@@ -445,7 +445,7 @@ def draw_category(K, k, diff=3, seed=0):
 
 # ----------------------------------------- Other functions ---------------------------------------------
 
-def get_string_name(categories, K1, i1, replace_polish=False, with_bar=False):
+def get_string_name(categories, K1, i1, replace_polish=False, with_bar=False, add_info=False):
     if categories[K1][0]=='categorical' or categories[K1][0]=='ordinal':
         name = categories[K1][1][i1]
     else :
@@ -491,13 +491,16 @@ def get_string_name(categories, K1, i1, replace_polish=False, with_bar=False):
             name = "Z".join(name.split("Ź"))
         if "ń" in name:
             name = "n".join(name.split("ń"))
-            
+    
+    if add_info:
+        name += "(K"+str(K1)+")"
+        
     return name
 
-def do_categories_repeat(categories):
+def do_categories_repeat(categories, with_bar=True):
     all_cats = []
     for i, cat in enumerate(categories):
-        cats_i = [ get_string_name(categories, i, j, with_bar=True) for j in range(len(cat[1])) ]
+        cats_i = [ get_string_name(categories, i, j, with_bar=with_bar) for j in range(len(cat[1])) ]
         all_cats += cats_i
     return len(all_cats) != len(set(all_cats))
 

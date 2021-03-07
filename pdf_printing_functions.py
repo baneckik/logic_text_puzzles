@@ -8,7 +8,7 @@ from math import pi, cos, sin
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
-pdfmetrics.registerFont(TTFont('sans-serif', 'Vera.ttf'))
+pdfmetrics.registerFont(TTFont('default_font', 'DejaVuSans.ttf'))
 from reportlab.lib import colors
 
 import generating_categories_functions as funs
@@ -30,9 +30,13 @@ def star(canvas, xcenter, ycenter, radius):
     canvas.drawPath(p)
 
 def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
-    normal_font = "sans-serif"
+    normal_font = "default_font"
     special_font = "Times-Bold"
     replace_polish = True
+    if funs.do_categories_repeat(categories, with_bar=False):
+        add_info = True    # additional (K0) with names in case of repeating names
+    else:
+        add_info = False
     
     x = X
     text0 = str(no+1)+". "
@@ -42,7 +46,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
     x += textWidth + 1
     
     if clue["typ"]==1:
-        text1 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
+        text1 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text1)
         textWidth = stringWidth(text1, special_font, width) 
@@ -55,7 +59,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
             textWidth = stringWidth(text2, normal_font, width) 
             x += textWidth + 1
             
-            text3 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
+            text3 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
             c.setFont(special_font, width)
             c.drawString(x, Y, text3)
         else:
@@ -65,7 +69,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
             textWidth = stringWidth(text2, normal_font, width) 
             x += textWidth + 1
 
-            text3 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
+            text3 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
             c.setFont(special_font, width)
             c.drawString(x, Y, text3)
             textWidth = stringWidth(text3, special_font, width) 
@@ -77,7 +81,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
             textWidth = stringWidth(text4, normal_font, width) 
             x += textWidth + 1
 
-            text5 = funs.get_string_name(categories, clue["K2"], clue["i3"], replace_polish)
+            text5 = funs.get_string_name(categories, clue["K2"], clue["i3"], replace_polish, add_info=add_info)
             c.setFont(special_font, width)
             c.drawString(x, Y, text5)
             textWidth = stringWidth(text5, special_font, width) 
@@ -89,7 +93,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
                 textWidth = stringWidth(text6, normal_font, width) 
                 x += textWidth + 1
 
-                text7 = funs.get_string_name(categories, clue["K2"], clue["i4"], replace_polish)
+                text7 = funs.get_string_name(categories, clue["K2"], clue["i4"], replace_polish, add_info=add_info)
                 c.setFont(special_font, width)
                 c.drawString(x, Y, text7)
     elif clue["typ"]==2:
@@ -110,7 +114,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -122,7 +126,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -133,7 +137,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text7 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
+        text7 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text7)
     elif clue["typ"]==3:
@@ -154,7 +158,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -166,7 +170,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -185,7 +189,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text1, normal_font, width) 
         x += textWidth + 1
         
-        text2 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
+        text2 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text2)
         textWidth = stringWidth(text2, special_font, width) 
@@ -197,7 +201,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -209,7 +213,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -221,7 +225,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text7, normal_font, width) 
         x += textWidth + 1
         
-        text8 = funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish)
+        text8 = funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text8)
         
@@ -234,7 +238,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text9, normal_font, width) 
         x += textWidth + 1
         
-        text10 = funs.get_string_name(categories, clue["K5"], clue["i5"], replace_polish)
+        text10 = funs.get_string_name(categories, clue["K5"], clue["i5"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y-width, text10)
         textWidth = stringWidth(text10, special_font, width) 
@@ -246,11 +250,11 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text11, normal_font, width) 
         x += textWidth + 1
         
-        text12 = funs.get_string_name(categories, clue["K6"], clue["i6"], replace_polish)
+        text12 = funs.get_string_name(categories, clue["K6"], clue["i6"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y-width, text12)
     elif clue["typ"]==5:
-        text2 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
+        text2 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text2)
         textWidth = stringWidth(text2, special_font, width) 
@@ -262,7 +266,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -274,7 +278,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -286,7 +290,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text7, normal_font, width) 
         x += textWidth + 1
         
-        text8 = funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish)
+        text8 = funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text8)
         textWidth = stringWidth(text8, special_font, width) 
@@ -302,7 +306,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
 #         textWidth = stringWidth(text1, normal_font, width) 
 #         x += textWidth + 1
         
-#         text2 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
+#         text2 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
 #         c.setFont(special_font, width)
 #         c.drawString(x, Y, text2)
 #         textWidth = stringWidth(text2, special_font, width) 
@@ -314,7 +318,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
 #         textWidth = stringWidth(text3, normal_font, width) 
 #         x += textWidth + 1
         
-#         text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
+#         text4 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
 #         c.setFont(special_font, width)
 #         c.drawString(x, Y, text4)
 #         textWidth = stringWidth(text4, special_font, width) 
@@ -326,7 +330,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
 #         textWidth = stringWidth(text5, normal_font, width) 
 #         x += textWidth + 1
         
-#         text6 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish)
+#         text6 = funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
 #         c.setFont(special_font, width)
 #         c.drawString(x, Y, text6)
 #         textWidth = stringWidth(text6, special_font, width) 
@@ -338,7 +342,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
 #         textWidth = stringWidth(text7, normal_font, width) 
 #         x += textWidth + 1
         
-#         text8 = funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish)
+#         text8 = funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
 #         c.setFont(special_font, width)
 #         c.drawString(x, Y, text8)
 #         textWidth = stringWidth(text8, special_font, width) 
@@ -367,7 +371,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text3, normal_font, width) 
         x += textWidth + 1
         
-        text4 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish)
+        text4 = funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text4)
         textWidth = stringWidth(text4, special_font, width) 
@@ -379,7 +383,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
         textWidth = stringWidth(text5, normal_font, width) 
         x += textWidth + 1
         
-        text6 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish)
+        text6 = funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         c.setFont(special_font, width)
         c.drawString(x, Y, text6)
         textWidth = stringWidth(text6, special_font, width) 
@@ -449,7 +453,7 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
     Yc = 810
     odstep = 0.15
     
-    c.setFont("sans-serif", width_clue)
+    c.setFont("default_font", width_clue)
     clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
     additional_rows = 0
     for i in range(len(clues)):
@@ -459,7 +463,7 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
     
     # ------------- drawing footnote and info
     width_foot = 8
-    c.setFont("sans-serif", width_foot)
+    c.setFont("default_font", width_foot)
     
     c.drawString(X+text_box_size+box_size+10, Y+3*width_foot, "diff: "+str(puzzle1.diff))
     
@@ -486,7 +490,7 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
     width_sol = 8
     c.setFont("Times-Bold", width_sol)
     c.drawString(X_sol, Y_sol, "Solution:")
-    c.setFont("sans-serif", width_sol)
+    c.setFont("default_font", width_sol)
     for i in range(k_cat):
         linijka = funs.get_string_name(categories, 0, i, replace_polish=False)
         for k2 in range(1, K_cat):
@@ -501,7 +505,7 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
     # ------------- typing categories names
     width2 = 10
     
-    normal_font = "sans-serif"
+    normal_font = "default_font"
     special_font = "Times-Bold"
     c.setFont(normal_font, width2)
     
@@ -570,19 +574,19 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
                 c.rect( X+text_box_size+box_size*(i-1), Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat, box_size, box_size/k_cat, fill=1)
             c.restoreState()
             
-            inter_width = stringWidth(text, "sans-serif", width) 
-            c.setFont("sans-serif", min([width, width*(1-odstep)*box_size/inter_width]))
+            inter_width = stringWidth(text, "default_font", width) 
+            c.setFont("default_font", min([width, width*(1-odstep)*box_size/inter_width]))
             # horizontal bar text at the top
             if i!=0:
-                draw_into_rectangle(c, X+text_box_size+box_size*(i-1)+odstep*width, Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat+odstep*width, text, "sans-serif", width, box_size)
+                draw_into_rectangle(c, X+text_box_size+box_size*(i-1)+odstep*width, Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat+odstep*width, text, "default_font", width, box_size)
             # horizontal bar text on the left
             if i!=1:
                 c.saveState()
                 c.rotate( 90 )
                 if i!=0:
-                    draw_into_rectangle(c, Y+(i-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, "sans-serif", width, box_size)
+                    draw_into_rectangle(c, Y+(i-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, "default_font", width, box_size)
                 else:
-                    draw_into_rectangle(c, Y+(K_cat-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, "sans-serif", width, box_size)
+                    draw_into_rectangle(c, Y+(K_cat-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, "default_font", width, box_size)
                 c.restoreState()
         
         for i, name in enumerate(nazwy):
@@ -592,16 +596,16 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
                 space_size = text_box_size
             # rysowanie poziome:
             if miejsce==1:
-                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name, "sans-serif", width, space_size)
+                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name, "default_font", width, space_size)
             elif miejsce!=2:
-                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name, "sans-serif", width, space_size)
+                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name, "default_font", width, space_size)
             c.saveState()
             # rysowanie pionowe:
             c.rotate( 90 )
             if miejsce==2:
-                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(i+1)*width+odstep*width, name, "sans-serif", width, space_size)
+                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(i+1)*width+odstep*width, name, "default_font", width, space_size)
             elif miejsce!=1:
-                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name, "sans-serif", width, space_size)
+                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name, "default_font", width, space_size)
 
             c.restoreState()
 

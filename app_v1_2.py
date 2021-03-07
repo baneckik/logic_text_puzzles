@@ -168,7 +168,7 @@ def clicked_gen():
 	bar['value'] = percent
 	
 	lbl7.grid(row=8, column=0)
-	lbl7.configure(text="You drew a puzzle from seed="+str(seed)+", estimated difficulty is: "+str(puzzle1.diff)+".\nYou may now alter category names if you wish. \nWhen you are done you can print your puzzle to pdf.\n@ is a special symbol for the place where numerical data is inserted.")
+	lbl7.configure(text="You drew a puzzle from seed="+str(seed)+" with estimated difficulty: "+str(puzzle1.diff)+".\nYou may now alter category names if you wish. \nWhen you are done you can print your puzzle to pdf.\n@ is a special symbol for the place where numerical data is inserted.")
 	
 	# -------------------- writing categories out -------------------
 	
@@ -274,13 +274,15 @@ def chosen_seed():
 
 def clicked_print():
 	input_categories = []
+	input_cross_bars = []
 	n = 0
 	for j, cat in enumerate(final_puzzle.categories):
 		if cat[0]=='categorical' or cat[0]=='ordinal':
 			names = []
 			for i in range(final_puzzle.k):
 				names.append(cat_cats[n][i+1].get())
-			input_categories.append( (cat[0], names) )
+			cross_text = cat_cats[n][final_puzzle.k+2].get()
+			input_categories.append( (cat[0], names, cross_text) )
 			n += 1
 			if any([name=="" for name in names]):
 				messagebox.showwarning('Warning', 'One or more object names are empty!')
@@ -288,7 +290,8 @@ def clicked_print():
 	n = 0
 	for j, cat in enumerate(final_puzzle.categories):
 		if cat[0]=='numerical':
-			input_categories.append( (cat[0], cat[1], cat[2], num_cats[n][1].get()) )
+			cross_text = num_cats[n][2].get()
+			input_categories.append( (cat[0], cat[1], cat[2], num_cats[n][1].get(),cross_text,cat[5]) )
 			n += 1
 	
 	print(input_categories)
