@@ -5,7 +5,7 @@ import generating_categories_functions as funs
 # ------------------ class methods ----------------------------
      
 
-def grid_insert(self, K1, i1, K2, i2, val):
+def grid_insert(self, K1, i1, K2, i2, val, solution_code=None, collect_solution=False):
     if K1>=self.K or K2>=self.K or K1<0 or K2<0 or K1==K2:
         raise(Exception("Category index out of range!"))
     if i1>=self.k or i2>=self.k or i1<0 or i2<0:
@@ -27,6 +27,8 @@ def grid_insert(self, K1, i1, K2, i2, val):
     
     if self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2] != val2:
         self.changed = True
+        if collect_solution:
+            self.solution += str(val2)+","+str(K1)+","+str(i1)+","+str(K2)+","+str(i2)+","+solution_code+";"
     self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2] = val2
 
 def print_grid(self):
@@ -104,7 +106,7 @@ def count_x_in_line(self, K1, i1, K2):
                 x_count += 1
     return x_count 
     
-def grid_concile1(self):
+def grid_concile1(self, collect_solution=False):
     """ 
     Conciliation no 1
     If there is an 'O' in the square add 'X's in all directions (cross like).
@@ -119,11 +121,11 @@ def grid_concile1(self):
                 if self.grid[key][i,j]==1:
                     for l in range(k):
                         if l!=i:
-                            self.grid_insert(K1, l, K2, j, "X")
+                            self.grid_insert(K1, l, K2, j, "X", "conc1", collect_solution)
                         if l!=j:
-                            self.grid_insert(K1, i, K2, l, "X")
+                            self.grid_insert(K1, i, K2, l, "X", "conc1", collect_solution)
 
-def grid_concile2(self):                
+def grid_concile2(self, collect_solution=False):                
     """ 
     Conciliation no 2
     If there is only one blank square in row/column insert 'O' in it (and add 'X's in all directions from it).
@@ -135,22 +137,22 @@ def grid_concile2(self):
             if self.count_x_in_line(K1,i,K2)==self.k-1 and not self.is_line_completed(K1, i, K2):
                 for j in range(self.k):
                     if self.get_grid_value(K1,i,K2,j)==0:
-                        self.grid_insert(K1, i, K2, j, "O")
+                        self.grid_insert(K1, i, K2, j, "O", "conc2", collect_solution)
                         for i2 in range(self.k):
                             if i2!=i:
-                                self.grid_insert(K1, i2, K2, j, "X")
+                                self.grid_insert(K1, i2, K2, j, "X", "conc2", collect_solution)
                         break
                 
             if self.count_x_in_line(K2,i,K1)==self.k-1 and not self.is_line_completed(K2, i, K1):
                 for j in range(self.k):
                     if self.get_grid_value(K2, i, K1, j)==0:
-                        self.grid_insert(K2, i, K1, j, "O")
+                        self.grid_insert(K2, i, K1, j, "O", "conc2", collect_solution)
                         for i2 in range(self.k):
                             if i2!=i:
-                                self.grid_insert(K2, i2, K1, j, "X")
+                                self.grid_insert(K2, i2, K1, j, "X", "conc2", collect_solution)
                         break
 
-def grid_concile3(self):
+def grid_concile3(self, collect_solution=False):
     """ 
     Conciliation no 3
     If there is an 'O' in the box linking object i1 to object i2, concile their 'X's.
@@ -168,11 +170,11 @@ def grid_concile3(self):
                         if K3!=K2 and K3!=K1:
                             for j2 in range(k):
                                 if self.get_grid_value(K1, i, K3, j2)==2:
-                                    self.grid_insert(K2, j, K3, j2, "X")
+                                    self.grid_insert(K2, j, K3, j2, "X", "conc3", collect_solution)
                                 if self.get_grid_value(K2, j, K3, j2)==2:
-                                    self.grid_insert(K1, i, K3, j2, "X")
+                                    self.grid_insert(K1, i, K3, j2, "X", "conc3", collect_solution)
     
-def grid_concile4(self):
+def grid_concile4(self, collect_solution=False):
     """ 
     Conciliation no 4
     Look for contradictory lines. If two lines with respect to some category K1 contradicts each other 
@@ -196,9 +198,9 @@ def grid_concile4(self):
                                         contradictory_lines = False
                                         break
                                 if contradictory_lines:
-                                    self.grid_insert(K2, j2, K3, j3, "X")
+                                    self.grid_insert(K2, j2, K3, j3, "X", "conc4", collect_solution)
 
-def grid_concile5(self):
+def grid_concile5(self, collect_solution=False):
     """ 
     Conciliation no 5
     If two/three line's blank spaces are restricted only to two/three the same options, then no other line can 
@@ -229,7 +231,7 @@ def grid_concile5(self):
                             for j in common_empty:
                                 for i3 in range(k):
                                     if i3!=i1 and i3!=i2:
-                                        self.grid_insert(K1, i3, K2, j, "X")
+                                        self.grid_insert(K1, i3, K2, j, "X", "conc5", collect_solution)
                 # triple lines to concile
                 if k>5:
                     for i1 in range(k):
@@ -250,18 +252,18 @@ def grid_concile5(self):
                                     for j in common_empty:
                                         for i4 in range(k):
                                             if i4!=i1 and i4!=i2 and i4!=i3:
-                                                self.grid_insert(K1, i4, K2, j, "X")
+                                                self.grid_insert(K1, i4, K2, j, "X", "conc5", collect_solution)
 
-def grid_concile(self):
+def grid_concile(self, collect_solution=False):
     #changed_copy = self.changed
     self.changed = True
     while self.changed == True:
         self.changed = False
-        self.grid_concile1()
-        self.grid_concile2()
-        self.grid_concile3()
-        self.grid_concile4()
-        self.grid_concile5()
+        self.grid_concile1(collect_solution)
+        self.grid_concile2(collect_solution)
+        self.grid_concile3(collect_solution)
+        self.grid_concile4(collect_solution)
+        self.grid_concile5(collect_solution)
         #if self.changed:
          #   changed_copy = True
     #self.changed = changed_copy
@@ -855,77 +857,77 @@ def add_clue6(self):
                     self.clues.append(clue_cand)
                     return
                         
-def use_clue1(self, c):
+def use_clue1(self, c, collect_solution=False):
     clue = self.clues[c]
-    self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X")
+    self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue1_"+str(c), collect_solution)
     if "i3" in clue:
-        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i3"], "X")
+        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i3"], "X", "clue1_"+str(c), collect_solution)
         if "i4" in clue:
-              self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i4"], "X")
+              self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i4"], "X", "clue1_"+str(c), collect_solution)
                 
-def use_clue2(self, c):
+def use_clue2(self, c, collect_solution=False):
     clue = self.clues[c]
-    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 0, "X")
-    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 1, "X")
-    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], 0, "X")
-    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-1, "X")
-    self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-2, "X")
-    self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-1, "X")
+    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 0, "X", "clue2_"+str(c), collect_solution)
+    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 1, "X", "clue2_"+str(c), collect_solution)
+    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], 0, "X", "clue2_"+str(c), collect_solution)
+    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-1, "X", "clue2_"+str(c), collect_solution)
+    self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-2, "X", "clue2_"+str(c), collect_solution)
+    self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-1, "X", "clue2_"+str(c), collect_solution)
     
     if clue["K1"]!=clue["K2"]:
-        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X")
+        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue2_"+str(c), collect_solution)
     if clue["K1"]!=clue["K3"]:
-        self.grid_insert(clue["K1"], clue["i1"], clue["K3"], clue["i3"], "X")
+        self.grid_insert(clue["K1"], clue["i1"], clue["K3"], clue["i3"], "X", "clue2_"+str(c), collect_solution)
     if clue["K2"]!=clue["K3"]:
-        self.grid_insert(clue["K2"], clue["i2"], clue["K3"], clue["i3"], "X")
+        self.grid_insert(clue["K2"], clue["i2"], clue["K3"], clue["i3"], "X", "clue2_"+str(c), collect_solution)
     
     for j in range(self.k-2):
         if self.get_grid_value(clue["K3"], clue["i3"], clue["K6"], j)==2:
-            self.grid_insert(clue["K2"], clue["i2"], clue["K6"], j+1, "X")
-            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X")          
+            self.grid_insert(clue["K2"], clue["i2"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
+            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X", "clue2_"+str(c), collect_solution)          
         else:
             break
     for j in range(self.k-1):
         if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], j)==2:
-            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+1, "X")
+            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
         else:
             break
             
     for j in range(self.k-2):
         if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], self.k-j-1)==2:
-            self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-j-2, "X")
-            self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-3, "X")
+            self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
+            self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-3, "X", "clue2_"+str(c), collect_solution)
         else:
             break
     for j in range(self.k-1):
         if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], self.k-j-1)==2:
-            self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-2, "X")
+            self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
         else:
             break
             
-def use_clue3(self, c):
+def use_clue3(self, c, collect_solution=False):
     clue = self.clues[c]
     operation = clue["oper"]
     diff = clue["diff"]
     values = self.categories[clue["K6"]][1]
     
     if clue["K1"]!=clue["K2"]:
-        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X")
+        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue3_"+str(c), collect_solution)
     
     if operation=="+":
         for i in range(self.k):
             if values[i]-diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]-diff))==2:
-                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X")
+                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
             if values[i]+diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))==2:
-                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X")
+                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
     elif operation=="*":
         for i in range(self.k):
             if values[i]/diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]/diff))==2:
-                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X")
+                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
             if values[i]*diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))==2:
-                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X")            
+                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)            
             
-def use_clue4(self, c):
+def use_clue4(self, c, collect_solution=False):
     clue = self.clues[c]    
     
     K1 = clue["K1"]
@@ -943,29 +945,29 @@ def use_clue4(self, c):
     
     if K3==K5 and K4==K6:
         if i3!=i5 and i4!=i6:
-            self.grid_insert(K3, i5, K4, i4, "X")
-            self.grid_insert(K3, i3, K4, i6, "X")
+            self.grid_insert(K3, i5, K4, i4, "X", "clue4_"+str(c), collect_solution)
+            self.grid_insert(K3, i3, K4, i6, "X", "clue4_"+str(c), collect_solution)
         elif i3==i5:
             for i in range(self.k):
                 if i!=i4 and i!=i6:
-                    self.grid_insert(K3, i3, K4, i, "X")
+                    self.grid_insert(K3, i3, K4, i, "X", "clue4_"+str(c), collect_solution)
         else:
             for i in range(self.k):
                 if i!=i3 and i!=i5:
-                    self.grid_insert(K3, i, K4, i4, "X")
+                    self.grid_insert(K3, i, K4, i4, "X", "clue4_"+str(c), collect_solution)
             
     if self.get_grid_value(K3, i3, K4, i4)==2:
-        self.grid_insert(K1, i1, K2, i2, "X")
+        self.grid_insert(K1, i1, K2, i2, "X", "clue4_"+str(c), collect_solution)
         
     if self.get_grid_value(K5, i5, K6, i6)==2:
-        self.grid_insert(K1, i1, K2, i2, "O")
+        self.grid_insert(K1, i1, K2, i2, "O", "clue4_"+str(c), collect_solution)
     
     if self.get_grid_value(K1, i1, K2, i2)==1:
-        self.grid_insert(K3, i3, K4, i4, "O")
+        self.grid_insert(K3, i3, K4, i4, "O", "clue4_"+str(c), collect_solution)
     elif self.get_grid_value(K1, i1, K2, i2)==2:
-        self.grid_insert(K5, i5, K6, i6, "O")
+        self.grid_insert(K5, i5, K6, i6, "O", "clue4_"+str(c), collect_solution)
         
-def use_clue5(self, c):
+def use_clue5(self, c, collect_solution=False):
     clue = self.clues[c]    
     
     K1 = clue["K1"]
@@ -979,23 +981,23 @@ def use_clue5(self, c):
     
     if K1==K3 and K2==K4:
         if i1!=i3 and i2!=i4:
-            self.grid_insert(K1, i3, K2, i2, "X")
-            self.grid_insert(K1, i1, K2, i4, "X")
+            self.grid_insert(K1, i3, K2, i2, "X", "clue5_"+str(c), collect_solution)
+            self.grid_insert(K1, i1, K2, i4, "X", "clue5_"+str(c), collect_solution)
         elif i1==i3:
             for i in range(self.k):
                 if i!=i2 and i!=i4:
-                    self.grid_insert(K1, i1, K2, i, "X")
+                    self.grid_insert(K1, i1, K2, i, "X", "clue5_"+str(c), collect_solution)
         else:
             for i in range(self.k):
                 if i!=i1 and i!=i3:
-                    self.grid_insert(K1, i, K2, i2, "X")
+                    self.grid_insert(K1, i, K2, i2, "X", "clue5_"+str(c), collect_solution)
             
     if self.get_grid_value(K1, i1, K2, i2)==2:
-        self.grid_insert(K3, i3, K4, i4, "O")
+        self.grid_insert(K3, i3, K4, i4, "O", "clue5_"+str(c), collect_solution)
     elif self.get_grid_value(K3, i3, K4, i4)==2:
-        self.grid_insert(K1, i1, K2, i2, "O")
+        self.grid_insert(K1, i1, K2, i2, "O", "clue5_"+str(c), collect_solution)
     
-def use_clue6(self, c):
+def use_clue6(self, c, collect_solution=False):
     clue = self.clues[c]
     K1 = clue["K1"]
     K2 = clue["K2"]
@@ -1006,20 +1008,20 @@ def use_clue6(self, c):
     for i in range(self.k):
         if self.get_grid_value(K1, i1, K6, i)==0:
             if (i==0 or self.get_grid_value(K2, i2, K6, i-1)==2) and (i==self.k-1 or self.get_grid_value(K2, i2, K6, i+1)==2):
-                self.grid_insert(K1, i1, K6, i, "X")
+                self.grid_insert(K1, i1, K6, i, "X", "clue6_"+str(c), collect_solution)
         elif self.get_grid_value(K1, i1, K6, i)==1:
             for j in range(self.k):
                 if j!=i-1 and j!=i+1:
-                    self.grid_insert(K2, i2, K6, j, "X")
+                    self.grid_insert(K2, i2, K6, j, "X", "clue6_"+str(c), collect_solution)
         if self.get_grid_value(K2, i2, K6, i)==0:
             if (i==0 or self.get_grid_value(K1, i1, K6, i-1)==2) and (i==self.k-1 or self.get_grid_value(K1, i1, K6, i+1)==2):
-                self.grid_insert(K2, i2, K6, i, "X")
+                self.grid_insert(K2, i2, K6, i, "X", "clue6_"+str(c), collect_solution)
         elif self.get_grid_value(K2, i2, K6, i)==1:
             for j in range(self.k):
                 if j!=i-1 and j!=i+1:
-                    self.grid_insert(K1, i1, K6, j, "X")
+                    self.grid_insert(K1, i1, K6, j, "X", "clue6_"+str(c), collect_solution)
     
-def use_clue(self, c):
+def use_clue(self, c, collect_solution=False):
     if len(self.clues)<=c or c<0:
         raise Exception("Wrong clue id provided!") 
     if self.clues[c]["typ"] not in [1, 2, 3, 4, 5, 6]:
@@ -1027,17 +1029,17 @@ def use_clue(self, c):
         
     typ = self.clues[c]["typ"]
     if typ==1:
-        self.use_clue1(c)
+        self.use_clue1(c, collect_solution)
     elif typ==2:
-        self.use_clue2(c)
+        self.use_clue2(c, collect_solution)
     elif typ==3:
-        self.use_clue3(c)
+        self.use_clue3(c, collect_solution)
     elif typ==4:
-        self.use_clue4(c)
+        self.use_clue4(c, collect_solution)
     elif typ==5:
-        self.use_clue5(c)
+        self.use_clue5(c, collect_solution)
     elif typ==6:
-        self.use_clue6(c)
+        self.use_clue6(c, collect_solution)
         
             
 def is_grid_contradictory_with_clue2(self, c):
@@ -1268,21 +1270,21 @@ def draw_clues(self, trace=False):
             self.print_grid()
             self.print_info()
             
-def try_to_solve2(self):
+def try_to_solve2(self, collect_solution=False):
     clues1 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==1 ]
     clues2 = [ i for i,clue in enumerate(self.clues) if clue["typ"]!=1 ]
     
     for c in clues1:
-        self.use_clue1(c)
-    self.grid_concile()
+        self.use_clue1(c, collect_solution)
+    self.grid_concile(collect_solution)
     
     #changed_copy = self.changed
     self.changed = True
     while self.changed:
         self.changed = False
         for c in clues2:
-            self.use_clue(c)
-            self.grid_concile()
+            self.use_clue(c, collect_solution)
+            self.grid_concile(collect_solution)
             if self.is_grid_contradictory() or self.is_grid_completed():
                 #if changed_copy and not self.changed:
                 #    self.changed = changed_copy
@@ -1291,7 +1293,7 @@ def try_to_solve2(self):
         #    changed_copy = True
     #self.changed = changed_copy
             
-def try_to_solve(self, max_iter=None):
+def try_to_solve(self, max_iter=None, collect_solution=False):
     self.solved = False
     self.contradictory = False
     grid_main_copy = copy.deepcopy(self.grid)
@@ -1300,7 +1302,7 @@ def try_to_solve(self, max_iter=None):
     it = 0
     while self.changed:
         self.changed = False
-        self.try_to_solve2()
+        self.try_to_solve2(collect_solution)
         key_candidates = np.random.permutation(list(self.grid.keys()))
         for key in key_candidates:
             for i in range(self.k):
@@ -1313,9 +1315,9 @@ def try_to_solve(self, max_iter=None):
                         self.try_to_solve2()
                         if self.is_grid_contradictory():
                             self.grid = grid_copy
-                            self.grid_insert(K1, i, K2, j, "X")
+                            self.grid_insert(K1, i, K2, j, "X", "contr", collect_solution)
                             self.diff += 1
-                            self.try_to_solve2()
+                            self.try_to_solve2(collect_solution)
                             if self.is_grid_contradictory():
                                 self.contradictory = True
                                 return
@@ -1370,7 +1372,6 @@ def try_to_restrict_clues(self, trace=False, max_iter=None):
             print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+", type: "+str(clues_copy[i]["typ"]))
             trace_i += 1
             
-    #print(to_restrict)
     self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
 
 def generate(self, seed=0, trace=False, max_iter=None):
@@ -1406,7 +1407,11 @@ def generate(self, seed=0, trace=False, max_iter=None):
     for n in range(N):
         self.clear_grid()
         self.diff = 0
-        self.try_to_solve()
+        if n==N-1:
+            self.solution = ""
+            self.try_to_solve(collect_solution=True)
+        else:
+            self.try_to_solve(collect_solution=False)
         diffs.append(self.diff)
     if trace:
         print("Difficulty: "+str(np.mean(diffs))+str(diffs))
@@ -1433,6 +1438,7 @@ class puzzle:
         self.clues = []
         self.seed = 0
         self.diff = 0
+        self.solution = ""
         
     get_grid_value = get_grid_value
     grid_insert = grid_insert
