@@ -1404,15 +1404,21 @@ def generate(self, seed=0, trace=False, max_iter=None):
         print("Final difficulty assessment...")
     N = 5
     diffs = []
+    best_solution = ""
+    lowest_diff = 1000000
     for n in range(N):
         self.clear_grid()
         self.diff = 0
-        if n==N-1:
-            self.solution = ""
-            self.try_to_solve(collect_solution=True)
-        else:
-            self.try_to_solve(collect_solution=False)
+        
+        self.solution = ""
+        self.try_to_solve(collect_solution=True)
+        
+        if self.diff<lowest_diff:
+            best_solution = self.solution
+            lowest_diff = self.diff
+        
         diffs.append(self.diff)
+    self.solution = best_solution
     if trace:
         print("Difficulty: "+str(np.mean(diffs))+str(diffs))
     self.diff = round(np.mean(diffs),2)
@@ -1422,8 +1428,116 @@ def print_info(self):
     print("Completed: "+str(self.is_grid_completed())+", Contradictory: "+str(self.is_grid_contradictory()) )
     clues_counts = [ len([i for i in self.clues if i["typ"]==j]) for j in range(1,7)]
     print("K: "+str(self.K)+", k: "+str(self.k)+", No of clues: "+str(len(self.clues))+str(clues_counts))
-    
-    
+
+def print_solution_txt(self, file_name):
+    if type(file_name)!=str:
+        raise Exception("file name should be a string!")
+    if not file_name.endswith(".txt"):
+        raise Exception("file name shoutd end with \".txt\"!")
+    sols = self.solution.split(";")[:-1]
+    try:
+        file = open(file_name,"r+")
+        file.truncate(0)
+        file.close()
+    except:
+        pass
+    file = open(file_name, "a")
+    for sol in sols:
+        if sol[0]=='1':
+            znak = 'O'
+        else:
+            znak = 'X'
+        name1 = funs.get_string_name(self.categories, int(sol[2]), int(sol[4]), add_info=True)
+        name2 = funs.get_string_name(self.categories, int(sol[6]), int(sol[8]), add_info=True)
+        code = sol.split(',')[-1]
+        line = "Wstaw \'"+znak+"\' pomiędzy "+name1+" a "+name2+"."
+        if code[:4]=='conc':
+            text1 = " Wynika to z zasady: \n"
+            if code[-1]=='1':
+                line2 = "\"Gdzieś w kolumnie/wierszu jest już znak \'O\'\""
+            elif code[-1]=='2':
+                line2 = "\"Jedyne wolne miejsce w wierszu/kolumnie\""
+            elif code[-1]=='3':
+                line2 = "\"Gdzieś na planszy jest \'O\'. Uzgodnienie znaków \'X\' dwóch połączonych obiektów.\""
+            elif code[-1]=='4':
+                line2 = "\"Wykluczenie tego pola ze względu na to, że dane obiekty mają wzajemnie wykluczające się wiersze/kolumny.\""
+            elif code[-1]=='5':
+                line2 = "\"2/3 wiersze/kolumny w boxie mają dostępne 2/3 pola dla tych samych kolumn/wierszy. Stąd wykluczenie tych kolumn/wierszy dla innych wierszy/kolumn\""
+        elif code=='contr':
+            text1 = " Wynika to z tego, że: \n"
+            line2 = "\"Wstawienie \'O\' w to pole skutkowałoby sprzecznością. Stąd wstaw \'X\'.\""
+        elif code[:4]=='clue':
+            text1 = " Wynika to ze wskazówki:\n "
+            n = int(code.split("_")[-1])
+            typ = int(code[4:].split("_")[0])
+            clue = self.clues[n]
+            if typ==1:
+                line2 = "\""+funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
+                if 'i3' not in clue:
+                    line2 += " nie pasuje do "
+                    line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
+                else:
+                    line2 += " nie pasuje ani do "
+                    line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
+                    line2 += " ani do "
+                    line2 += funs.get_string_name(self.categories, clue["K2"], clue["i3"], add_info=True)
+                    if 'i4' in clue:
+                        line2 += " ani do "
+                        line2 += funs.get_string_name(self.categories, clue["K2"], clue["i4"], add_info=True)
+            elif typ==2:
+                line2 = "\"Pod względem "
+                line2 += "Kategorii "+str(clue["K6"])
+                line2 += " zachodzi: "
+                line2 += funs.get_string_name(self.categories, clue["K3"], clue["i3"], add_info=True)
+                line2 += "<"
+                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
+                line2 += "<"
+                line2 += funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
+            elif typ==3:
+                line2 = "\"Pod względem "
+                line2 += "Kategorii "+str(clue["K6"])
+                line2 += " zachodzi: "
+                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
+                line2 += " = "
+                line2 += funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
+                if str(clue["diff"]).endswith(".0"):
+                    diff = str(clue["diff"])[:-2]
+                else:
+                    diff = str(clue["diff"])
+                line2 += " "+clue["oper"]+" "+diff
+            elif typ==4:
+                line2 = "\"Jeśli "
+                line2 += funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
+                line2 += " pasuje do "
+                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
+                line2 += ", to "
+                line2 += funs.get_string_name(self.categories, clue["K3"], clue["i3"], add_info=True)
+                line2 += " pasuje do "
+                line2 += funs.get_string_name(self.categories, clue["K4"], clue["i4"], add_info=True)
+                line2 += "\nW przeciwnym przypadku "
+                line2 += funs.get_string_name(self.categories, clue["K5"], clue["i5"], add_info=True)
+                line2 += " pasuje do "
+                line2 += funs.get_string_name(self.categories, clue["K6"], clue["i6"], add_info=True)
+            elif typ==5:
+                line = "\""+funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
+                line2 += " pasuje do "
+                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
+                line2 += " lub "
+                line2 += funs.get_string_name(self.categories, clue["K3"], clue["i3"], add_info=True)
+                line2 += " pasuje do "
+                line2 += funs.get_string_name(self.categories, clue["K4"], clue["i4"], add_info=True)
+                line2 += "(alt. nierozł.)"
+            elif typ==6:
+                line2 = "\"Pod względem "
+                line2 += "Kategorii "+str(clue["K6"])
+                line2 += " obiekt "
+                line2 += funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
+                line2 += " jest tuż obok "
+                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
+            line2 += "\""
+        file.write(line+text1)
+        file.write(line2+"\n")
+    file.close()
 # --------------------- class definition ------------------------------
     
 class puzzle:
@@ -1488,4 +1602,6 @@ class puzzle:
     try_to_solve = try_to_solve
     try_to_restrict_clues = try_to_restrict_clues
     generate = generate
+    
+    print_solution_txt = print_solution_txt
     
