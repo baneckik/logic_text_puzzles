@@ -400,8 +400,7 @@ def draw_into_rectangle(c, X, Y, text, font, rec_h, rec_w):
         
 # --------------------------------------- main printing function ----------------------------------
 
-def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
-    
+def draw_grid(puzzle1, c, X = 30, Y = 30):
     categories = puzzle1.categories
     clues = puzzle1.clues
     seed = puzzle1.seed
@@ -409,26 +408,11 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
     k_cat = puzzle1.k # liczba obiektów z każdej kategorii
     puzzle_h = 400 # height of the puzzle grid
     
-    if box_size == None:
-        box_size = puzzle_h/(K_cat+0.5)
+    box_size = puzzle_h/(K_cat+0.5)
     text_box_size = box_size*1.5
     
     N_rows = K_cat-1
     width = box_size/k_cat
-
-    # ------------ drawing stars
-    
-    if puzzle1.diff<2:
-        n = 1
-    elif puzzle1.diff<5:
-        n = 2
-    elif puzzle1.diff<10:
-        n = 3
-    else:
-        n = 4
-        
-    for i in range(n):
-        star(c, X+box_size*1.5-15-i*25, Y+puzzle_h-box_size*1.5+15, 10)
     
     # ------------ drawing boxes
     c.setLineWidth(2)
@@ -440,67 +424,6 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
         for k in range(k_cat):
             c.rect( X, Y+row*box_size, text_box_size+(row+1)*box_size, k*box_size/k_cat)
             c.rect( X+text_box_size+row*box_size, Y+row*box_size, k*box_size/k_cat, text_box_size+(N_rows-row)*box_size)
-    
-    # ------------- drawing clues
-    N_lines = len(puzzle1.clues)+len([c for c in puzzle1.clues if c["typ"]==4])
-    if N_lines<=18:
-        width_clue = 14
-    elif N_lines<25:
-        width_clue = 12
-    else:
-        width_clue = 10
-    Xc = 25
-    Yc = 810
-    odstep = 0.15
-    
-    c.setFont("default_font", width_clue)
-    clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
-    additional_rows = 0
-    for i in range(len(clues)):
-        draw_clues_on_canvas(categories, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*(i+additional_rows), i, width_clue)
-        if clues[clue_order[i]]["typ"]==4:
-            additional_rows += 1
-    
-    # ------------- drawing footnote and info
-    width_foot = 8
-    c.setFont("default_font", width_foot)
-    
-    c.drawString(X+text_box_size+box_size+10, Y+3*width_foot, "diff: "+str(puzzle1.diff))
-    
-    if puzzle1.is_grid_contradictory():
-        c.setFillColorRGB(1,0,0)
-    c.drawString(X+text_box_size+box_size+10, Y+2*width_foot, "Contradictory: "+str(puzzle1.is_grid_contradictory()))
-    c.setFillColorRGB(0,0,0)
-    
-    if not puzzle1.is_grid_completed():
-        c.setFillColorRGB(1,0,0)
-    c.drawString(X+text_box_size+box_size+10, Y+width_foot, "Solvable: "+str(puzzle1.is_grid_completed()))
-    c.setFillColorRGB(0,0,0)
-    
-    c.drawString(X+text_box_size+box_size+10, Y, "seed: "+str(seed))
-
-    c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
-    
-    # ------------- drawing solution
-    c.saveState()
-    c.rotate( 270 )
-    X_sol = -Y-350
-    Y_sol = 570
-    
-    width_sol = 8
-    c.setFont("Times-Bold", width_sol)
-    c.drawString(X_sol, Y_sol, "Solution:")
-    c.setFont("default_font", width_sol)
-    for i in range(k_cat):
-        linijka = funs.get_string_name(categories, 0, i, replace_polish=False)
-        for k2 in range(1, K_cat):
-            for j in range(k_cat):
-                if puzzle1.get_grid_value(0, i, k2, j)==1:
-                    break
-            linijka += " ~ "+funs.get_string_name(categories, k2, j, replace_polish=False)
-        c.drawString(X_sol, Y_sol-(i+1)*width_sol,linijka)
-    
-    c.restoreState()
     
     # ------------- typing categories names
     width2 = 10
@@ -608,6 +531,194 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, box_size = None):
                 draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name, "default_font", width, space_size)
 
             c.restoreState()
+    
+def draw_on_canvas(puzzle1, c, X = 30, Y = 30, puzzle_h = 400):
+    
+    categories = puzzle1.categories
+    clues = puzzle1.clues
+    seed = puzzle1.seed
+    K_cat = puzzle1.K # liczba kategorii
+    k_cat = puzzle1.k # liczba obiektów z każdej kategorii
+    #puzzle_h - height of the puzzle grid
+    
+    box_size = puzzle_h/(K_cat+0.5)
+    text_box_size = box_size*1.5
+    
+    N_rows = K_cat-1
+    width = box_size/k_cat
 
+    # ------------ drawing stars
+    
+    if puzzle1.diff<2:
+        n = 1
+    elif puzzle1.diff<5:
+        n = 2
+    elif puzzle1.diff<10:
+        n = 3
+    else:
+        n = 4
+        
+    for i in range(n):
+        star(c, X+box_size*1.5-15-i*25, Y+puzzle_h-box_size*1.5+15, 10)
+    
+    # ------------ drawing grid
+    
+    draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y)
+    
+    # ------------- drawing clues
+    N_lines = len(puzzle1.clues)+len([c for c in puzzle1.clues if c["typ"]==4])
+    if N_lines<=18:
+        width_clue = 14
+    elif N_lines<25:
+        width_clue = 12
+    else:
+        width_clue = 10
+    Xc = 25
+    Yc = 810
+    odstep = 0.15
+    
+    c.setFont("default_font", width_clue)
+    clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
+    additional_rows = 0
+    for i in range(len(clues)):
+        draw_clues_on_canvas(categories, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*(i+additional_rows), i, width_clue)
+        if clues[clue_order[i]]["typ"]==4:
+            additional_rows += 1
+    
+    # ------------- drawing footnote and info
+    width_foot = 8
+    c.setFont("default_font", width_foot)
+    
+    c.drawString(X+text_box_size+box_size+10, Y+3*width_foot, "diff: "+str(puzzle1.diff))
+    
+    if puzzle1.is_grid_contradictory():
+        c.setFillColorRGB(1,0,0)
+    c.drawString(X+text_box_size+box_size+10, Y+2*width_foot, "Contradictory: "+str(puzzle1.is_grid_contradictory()))
+    c.setFillColorRGB(0,0,0)
+    
+    if not puzzle1.is_grid_completed():
+        c.setFillColorRGB(1,0,0)
+    c.drawString(X+text_box_size+box_size+10, Y+width_foot, "Solvable: "+str(puzzle1.is_grid_completed()))
+    c.setFillColorRGB(0,0,0)
+    
+    c.drawString(X+text_box_size+box_size+10, Y, "seed: "+str(seed))
+
+    c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
+    
+    # ------------- drawing solution
+    c.saveState()
+    c.rotate( 270 )
+    X_sol = -Y-350
+    Y_sol = 570
+    
+    width_sol = 8
+    c.setFont("Times-Bold", width_sol)
+    c.drawString(X_sol, Y_sol, "Solution:")
+    c.setFont("default_font", width_sol)
+    for i in range(k_cat):
+        linijka = funs.get_string_name(categories, 0, i, replace_polish=False)
+        for k2 in range(1, K_cat):
+            for j in range(k_cat):
+                if puzzle1.get_grid_value(0, i, k2, j)==1:
+                    break
+            linijka += " ~ "+funs.get_string_name(categories, k2, j, replace_polish=False)
+        c.drawString(X_sol, Y_sol-(i+1)*width_sol,linijka)
+    
+    c.restoreState()
+    
+def draw_sign(puzzle1, c, sign, K1, i1, K2, i2, X=30, Y=30, red=False, puzzle_h=400):
+    
+    if K1>K2:
+        K1u = K2
+        K2u = K1
+        i1u = i2
+        i2u = i1
+    else:
+        K1u = K1
+        K2u = K2
+        i1u = i1
+        i2u = i2
+        
+    box_size = puzzle_h/(puzzle1.K+0.5)
+    k = puzzle1.k
+    K = puzzle1.K
+    margin = 0.13
+    if K1u==0:
+        Xu = X+box_size*(1.5+K2u-1)+box_size/k*i2u + box_size/k*margin
+        Yu = Y+box_size*(K-1)-box_size/k*(i1u+1) + box_size/k*margin
+    else:
+        Xu = X+box_size*(1.5+K1u-1)+box_size/k*i1u + box_size/k*margin
+        Yu = Y+box_size*(K2u-1)-box_size/k*(i2u+1) + box_size/k*margin
+    
+    c.setFont("default_font", box_size/k)
+    if red:
+        c.setFillColorRGB(1,0,0)
+    c.drawString(Xu, Yu, sign)
+    c.setFillColorRGB(0,0,0)
+    
+def draw_solution(puzzle1, c, X=30, Y=30, puzzle_h=400):
+    
+    signs_list = []
+    prev_val = puzzle1.solution.split(";")[0].split(",")[-1]
+    draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y)
+    for step in puzzle1.solution.split(";")[:-1]:
+        step2 = step.split(",")
+        if step2[0]=='1':
+            step2[0] = "O"
+        else:
+            step2[0] = "X"
+        #print(prev_val , step2[-1])
+        if step2[-1]!=prev_val:
+            c.showPage()
+            draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y)
+            for step3 in signs_list:
+                draw_sign(puzzle1, c, step3[0], int(step3[1]), int(step3[2]), int(step3[3]), int(step3[4]), X=X, Y=Y, red=False)
+        draw_sign(puzzle1, c, step2[0], int(step2[1]), int(step2[2]), int(step2[3]), int(step2[4]), X=X, Y=Y, red=True)
+        signs_list.append(step2)
+        prev_val = step2[-1]
+        
+        Xc = 20
+        Yc = 600
+        code = step2[-1]
+        width2 = 10
+        c.setFont("default_font", width2)
+        if code[:4]=='conc':
+            text1 = " Wynika to z zasady:"
+            if code[-1]=='1':
+                line2 = "\"Gdzieś w kolumnie/wierszu jest już znak \'O\'\""
+            elif code[-1]=='2':
+                line2 = "\"Jedyne wolne miejsce w wierszu/kolumnie\""
+            elif code[-1]=='3':
+                line2 = "\"Gdzieś na planszy jest \'O\'. Uzgodnienie znaków \'X\' dwóch połączonych obiektów.\""
+            elif code[-1]=='4':
+                line2 = "\"Wykluczenie tego pola ze względu na to, że dane obiekty mają wzajemnie wykluczające się wiersze/kolumny.\""
+            elif code[-1]=='5':
+                line2 = "\"2/3 wiersze/kolumny w boxie mają dostępne 2/3 pola dla tych samych kolumn/wierszy."
+                line3 = "Stąd wykluczenie tych kolumn/wierszy dla innych wierszy/kolumn\""
+                c.drawString(Xc, Yc-2*width2, line3)
+            c.setFillColorRGB(1,0,0)
+            c.drawString(Xc, Yc, text1)
+            c.setFillColorRGB(0,0,0)
+            c.drawString(Xc, Yc-width2, line2)
+        elif code=='contr':
+            text1 = " Wynika to z tego, że:"
+            line2 = "\"Wstawienie \'O\' w to pole skutkowałoby sprzecznością. Stąd wstaw \'X\'.\""
+            c.setFillColorRGB(1,0,0)
+            c.drawString(Xc, Yc, text1)
+            c.setFillColorRGB(0,0,0)
+            c.drawString(Xc, Yc-width2, line2)
+        elif code[:4]=='clue':
+            text1 = " Wynika to ze wskazówki:"
+            n = int(code.split("_")[-1])
+            c.setFillColorRGB(1,0,0)
+            c.drawString(Xc, Yc, text1)
+            c.setFillColorRGB(0,0,0)
+            draw_clues_on_canvas(puzzle1.categories, puzzle1.clues[n], c, Xc, Yc-width2, no=n, width=width2)
+    c.showPage()  
+            
+            
+            
+            
+            
             
             

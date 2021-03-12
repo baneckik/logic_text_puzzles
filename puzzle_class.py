@@ -1519,7 +1519,7 @@ def print_solution_txt(self, file_name):
                 line2 += " pasuje do "
                 line2 += funs.get_string_name(self.categories, clue["K6"], clue["i6"], add_info=True)
             elif typ==5:
-                line = "\""+funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
+                line2 = "\""+funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
                 line2 += " pasuje do "
                 line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
                 line2 += " lub "
