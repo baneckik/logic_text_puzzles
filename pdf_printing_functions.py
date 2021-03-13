@@ -578,11 +578,10 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, puzzle_h = 400):
     odstep = 0.15
     
     c.setFont("default_font", width_clue)
-    clue_order = np.random.choice(range(len(clues)), len(clues), replace=False)
     additional_rows = 0
     for i in range(len(clues)):
-        draw_clues_on_canvas(categories, clues[clue_order[i]], c, Xc+odstep*width_clue, Yc-width_clue*(i+additional_rows), i, width_clue)
-        if clues[clue_order[i]]["typ"]==4:
+        draw_clues_on_canvas(categories, clues[i], c, Xc+odstep*width_clue, Yc-width_clue*(i+additional_rows), i, width_clue)
+        if clues[i]["typ"]==4:
             additional_rows += 1
     
     # ------------- drawing footnote and info

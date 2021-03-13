@@ -11,7 +11,7 @@ from reportlab.pdfgen import canvas
 import numpy as np
 from puzzle_class import puzzle
 import generating_categories_functions as funs
-from pdf_printing_functions import draw_on_canvas
+from pdf_printing_functions import draw_on_canvas, draw_solution
 
 window = Tk()
 window.geometry('700x800')
@@ -139,7 +139,7 @@ def clicked_gen():
 		window.update()
 
 	puzzle1.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
-	
+	puzzle1.clues = list(np.random.permutation(puzzle1.clues))
 	#percent = int(np.floor(5+95/bar_N*(bar_N-5)))
 	#lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
 	#bar['value'] = percent
@@ -150,16 +150,25 @@ def clicked_gen():
 	print("Final difficulty assessment...")
 	N = 5
 	diffs = []
+	best_solution = ""
+	lowest_diff = 1000000
 	for n in range(N):
 		puzzle1.clear_grid()
 		puzzle1.diff = 0
-		puzzle1.try_to_solve()
+		
+		puzzle1.solution = ""
+		puzzle1.try_to_solve(collect_solution=True)
+        
+		if puzzle1.diff<lowest_diff:
+			best_solution = puzzle1.solution
+			lowest_diff = puzzle1.diff
 		diffs.append(puzzle1.diff)
 		
 		percent = int(np.floor(5+95/bar_N*(bar_N-4+n)))
 		lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
 		bar['value'] = percent
 		window.update()
+	puzzle1.solution = best_solution
 	puzzle1.diff = round(np.mean(diffs),2)
 	
 	puzzle1.print_info()
@@ -302,6 +311,7 @@ def clicked_gen():
 	
 	final_frame.grid()
 	print_btn['state'] = 'normal'
+	solution_btn['state'] = 'normal'
 	new_btn['state'] = 'normal'
 	final_lbl.grid()
 	
@@ -314,10 +324,12 @@ def clicked_gen():
 	final_puzzle.seed = puzzle1.seed
 	final_puzzle.solved = puzzle1.solved
 	final_puzzle.contradictory = puzzle1.contradictory
+	final_puzzle.solution = puzzle1.solution    
 	
 	final_name.configure(text="p"+str(puzzle1.seed)+"K"+str(puzzle1.K)+"k"+str(puzzle1.k)+"c"+str(len(puzzle1.clues))+".pdf")
-
-
+	final_name2.configure(text="p"+str(puzzle1.seed)+"K"+str(puzzle1.K)+"k"+str(puzzle1.k)+"c"+str(len(puzzle1.clues))+".svg")
+	final_name3.configure(text="sol"+str(puzzle1.seed)+"K"+str(puzzle1.K)+"k"+str(puzzle1.k)+"c"+str(len(puzzle1.clues))+".pdf")
+    
 def chosen_random():
 	txt.configure(state='disabled')
 	txt4['state'] = 'normal'
@@ -330,7 +342,7 @@ def chosen_seed():
 	txt5['state'] = 'normal'
 	txt.focus()
 
-def clicked_print():
+def check_and_save_categories():
 	input_categories = []
 	input_cross_bars = []
 	n = 0
@@ -344,7 +356,7 @@ def clicked_print():
 			n += 1
 			if any([name=="" for name in names]):
 				messagebox.showwarning('Warning', 'One or more object names are empty!')
-				return
+				return False
 	n = 0
 	for j, cat in enumerate(final_puzzle.categories):
 		if cat[0]=='numerical':
@@ -356,9 +368,14 @@ def clicked_print():
 	
 	if funs.do_categories_repeat(input_categories):
 		messagebox.showwarning('Warning', 'Repeating names detected!')
-		return
+		return False
 		
 	final_puzzle.categories = input_categories
+	return True
+    
+def clicked_print():
+	if not check_and_save_categories():
+		return
 	
 	direc = filedialog.askdirectory(initialdir= path.dirname(__file__))
 	
@@ -372,6 +389,25 @@ def clicked_print():
 	
 	final_lbl.configure(text="The puzzle has been printed to:\n"+direc+"/"+final_name.cget("text"))
 	
+    
+def clicked_svg():
+	messagebox.showwarning('Warning', 'TODO')
+
+def clicked_sol():
+	if not check_and_save_categories():
+		return
+	
+	direc = filedialog.askdirectory(initialdir= path.dirname(__file__))
+	
+	if not direc:
+		return
+	c = canvas.Canvas(direc+"/"+final_name3.cget("text"))
+	draw_solution(final_puzzle, c)
+	c.save()
+	
+	final_name3.configure(text="sol"+str(final_puzzle.seed)+"K"+str(final_puzzle.K)+"k"+str(final_puzzle.k)+"c"+str(len(final_puzzle.clues))+".pdf")
+	final_lbl3.configure(text="The solution has been printed to:\n"+direc+"/"+final_name3.cget("text"))
+    
 def clicked_new():
 	btn['state'] = 'normal'
 	lbl6.grid_forget()
@@ -542,18 +578,31 @@ print_btn = Button(final_frame, text="Print to PDF!", font=("Arial", std_font_si
 print_btn.grid(row=0, column=0)
 print_btn.configure(state='disabled')
 
+svg_btn = Button(final_frame, text="Print to SVG!", font=("Arial", std_font_size), command=clicked_svg)
+svg_btn.grid(row=0, column=1)
+svg_btn.configure(state='disabled')
+
+solution_btn = Button(final_frame, text="Get step-by-step solution!", font=("Arial", std_font_size), command=clicked_sol)
+solution_btn.grid(row=0, column=2)
+solution_btn.configure(state='disabled')
+
 new_btn = Button(final_frame, text="I want another puzzle!", font=("Arial", std_font_size), command=clicked_new)
-new_btn.grid(row=0, column=1)
+new_btn.grid(row=0, column=3)
 new_btn.configure(state='disabled')
 
 # -------------------- Final info ----------------------------
 
 final_puzzle = puzzle(3,3)
 final_name = Label(window, text="unknown_puzzle.pdf", font=font)
+final_name2 = Label(window, text="unknown_puzzle.svg", font=font)
+final_name3 = Label(window, text="unknown_solution.pdf", font=font)
 
 final_lbl = Label(window, text="", font=(std_font, 10))
 final_lbl.grid(row=12)
-
+final_lbl2 = Label(window, text="", font=(std_font, 10))
+final_lbl2.grid(row=13)
+final_lbl3 = Label(window, text="", font=(std_font, 10))
+final_lbl3.grid(row=14)
 
 
 window.mainloop()

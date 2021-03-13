@@ -1400,6 +1400,8 @@ def generate(self, seed=0, trace=False, max_iter=None):
         print("No of clues drawn = "+str(len(self.clues))+str(clues_counts))
         print("Restricting clues...")
     self.try_to_restrict_clues(trace=trace, max_iter=max_iter) 
+    self.clues = list(np.random.permutation(self.clues))
+    
     if trace:
         print("Final difficulty assessment...")
     N = 5
