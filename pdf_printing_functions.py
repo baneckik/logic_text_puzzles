@@ -400,13 +400,13 @@ def draw_into_rectangle(c, X, Y, text, font, rec_h, rec_w):
         
 # --------------------------------------- main printing function ----------------------------------
 
-def draw_grid(puzzle1, c, X = 30, Y = 30):
+def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
     categories = puzzle1.categories
     clues = puzzle1.clues
     seed = puzzle1.seed
     K_cat = puzzle1.K # liczba kategorii
     k_cat = puzzle1.k # liczba obiektów z każdej kategorii
-    puzzle_h = 400 # height of the puzzle grid
+    # puzzle_h - height of the puzzle grid
     
     box_size = puzzle_h/(K_cat+0.5)
     text_box_size = box_size*1.5
@@ -448,7 +448,7 @@ def draw_grid(puzzle1, c, X = 30, Y = 30):
             text0 = "Kategoria "+str(i)+":"
         widths.append( stringWidth(text0, special_font, width2) )
         
-        nazwy = [ funs.get_string_name(categories, i, j, False) for j in range(len(categories[i][1])) ]
+        nazwy = [ funs.get_string_name(categories, i, j) for j in range(len(categories[i][1])) ]
         c.drawString(X+x_shift, Ycat, text0)
         c.setFont(normal_font, width2)
         for col, name in enumerate(nazwy):
@@ -563,7 +563,7 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, puzzle_h = 400):
     
     # ------------ drawing grid
     
-    draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y)
+    draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y, puzzle_h=puzzle_h)
     
     # ------------- drawing clues
     N_lines = len(puzzle1.clues)+len([c for c in puzzle1.clues if c["typ"]==4])
@@ -602,20 +602,25 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, puzzle_h = 400):
     
     c.drawString(X+text_box_size+box_size+10, Y, "seed: "+str(seed))
 
-    c.drawString(450, 10, "Krzysztof Banecki, all rights reserved ©")
+    c.drawString(430, 10, "Krzysztof Banecki, all rights reserved ©")
     
     # ------------- drawing solution
     c.saveState()
     c.rotate( 270 )
     X_sol = -Y-350
     Y_sol = 570
-    
     width_sol = 8
+    
+    if funs.do_categories_repeat(puzzle1.categories, with_bar=False):
+        add_info = True    # additional (K0) with names in case of repeating names
+    else:
+        add_info = False
+    
     c.setFont("Times-Bold", width_sol)
     c.drawString(X_sol, Y_sol, "Solution:")
     c.setFont("default_font", width_sol)
     for i in range(k_cat):
-        linijka = funs.get_string_name(categories, 0, i, replace_polish=False)
+        linijka = funs.get_string_name(categories, 0, i, replace_polish=False, add_info=add_info)
         for k2 in range(1, K_cat):
             for j in range(k_cat):
                 if puzzle1.get_grid_value(0, i, k2, j)==1:
