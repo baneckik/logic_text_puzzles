@@ -7,17 +7,19 @@ from os import path
 import copy
 from functools import partial
 from reportlab.pdfgen import canvas
+import drawSvg
 
 import numpy as np
 from puzzle_class import puzzle
 import generating_categories_functions as funs
-from pdf_printing_functions import draw_on_canvas, draw_solution
+import pdf_printing_functions as pdf_funs
+import svg_printing_functions as svg_funs
 
 window = Tk()
 window.geometry('700x800')
 window.title("Text puzzle generator v1.2")
 
-def clicked_gen():
+def clicked_ok():
 	choice_int = choice.get()
 	if choice_int==1:
 		seed = np.random.randint(0,100000000)
@@ -30,6 +32,9 @@ def clicked_gen():
 		if seed<0:
 			messagebox.showwarning('Warning', 'Seed must be an integer greater or equal to 3!')
 			return
+	elif choice_int==3:
+		seed = np.random.randint(0,100000000)
+        
 	else:
 		messagebox.showwarning('Warning', 'Decide what you want to do first!')
 		return
@@ -55,8 +60,18 @@ def clicked_gen():
 		messagebox.showwarning('Warning', 'Number of objects in each category must be an integer greater or equal to 3!')
 		txt5.focus()
 		return
-	
+	btn_OK.configure(state='disabled')
+    
+	btn['state'] = 'normal'
+	btn.grid()
+
+def clicked_gen():
+	seed = np.random.randint(0,100000000)
+	K = int(txt4.get())
+	k = int(txt5.get())
+    
 	btn.configure(state='disabled')
+	btn_OK.configure(state='disabled')
 	lbl6.grid(row=6, column=0)
 	bar.grid(row=7, column=0)
 	
@@ -311,6 +326,7 @@ def clicked_gen():
 	
 	final_frame.grid()
 	print_btn['state'] = 'normal'
+	svg_btn['state'] = 'normal'
 	solution_btn['state'] = 'normal'
 	new_btn['state'] = 'normal'
 	final_lbl.grid()
@@ -335,13 +351,43 @@ def chosen_random():
 	txt4['state'] = 'normal'
 	txt5['state'] = 'normal'
 	txt4.focus()
-	
+	txt_categorical.delete(0, 'end')
+	txt_ordinal.delete(0, 'end')
+	txt_numerical.delete(0, 'end')
+	txt_categorical.insert(END, 'random')
+	txt_ordinal.insert(END, 'random')
+	txt_numerical.insert(END, 'random')
+	txt_categorical['state'] = 'disabled'
+	txt_ordinal['state'] = 'disabled'
+	txt_numerical['state'] = 'disabled'
+    
 def chosen_seed():
 	txt['state'] = 'normal'
 	txt4['state'] = 'normal'
 	txt5['state'] = 'normal'
 	txt.focus()
-
+	txt_categorical.delete(0, 'end')
+	txt_ordinal.delete(0, 'end')
+	txt_numerical.delete(0, 'end')
+	txt_categorical.insert(END, 'random')
+	txt_ordinal.insert(END, 'random')
+	txt_numerical.insert(END, 'random')
+	txt_categorical['state'] = 'disabled'
+	txt_ordinal['state'] = 'disabled'
+	txt_numerical['state'] = 'disabled'
+    
+def chosen_custom():
+	txt.configure(state='disabled')
+	txt4['state'] = 'normal'
+	txt5['state'] = 'normal'
+	txt4.focus()
+	txt_categorical['state'] = 'normal'
+	txt_ordinal['state'] = 'normal'
+	txt_numerical['state'] = 'normal'
+	txt_categorical.delete(0, 'end')
+	txt_ordinal.delete(0, 'end')
+	txt_numerical.delete(0, 'end')
+    
 def check_and_save_categories():
 	input_categories = []
 	input_cross_bars = []
@@ -383,7 +429,7 @@ def clicked_print():
 		return
 	
 	c = canvas.Canvas(direc+"/"+final_name.cget("text"))
-	draw_on_canvas(final_puzzle, c)
+	pdf_funs.draw_on_canvas(final_puzzle, c)
 	c.showPage()
 	c.save()
 	
@@ -391,7 +437,19 @@ def clicked_print():
 	
     
 def clicked_svg():
-	messagebox.showwarning('Warning', 'TODO')
+	if not check_and_save_categories():
+		return
+	
+	direc = filedialog.askdirectory(initialdir= path.dirname(__file__))
+	
+	if not direc:
+		return
+	
+	d = drawSvg.Drawing(616, 870, displayInline=False)
+	svg_funs.draw_on_canvas(final_puzzle, d)
+	d.setPixelScale(2)
+	d.saveSvg(direc+"/"+final_name.cget("text")[:-3]+"svg")
+	final_lbl.configure(text="The puzzle has been printed to:\n"+direc+"/"+final_name.cget("text")[:-3]+"svg")
 
 def clicked_sol():
 	if not check_and_save_categories():
@@ -402,7 +460,7 @@ def clicked_sol():
 	if not direc:
 		return
 	c = canvas.Canvas(direc+"/"+final_name3.cget("text"))
-	draw_solution(final_puzzle, c)
+	pdf_funs.draw_solution(final_puzzle, c)
 	c.save()
 	
 	final_name3.configure(text="sol"+str(final_puzzle.seed)+"K"+str(final_puzzle.K)+"k"+str(final_puzzle.k)+"c"+str(len(final_puzzle.clues))+".pdf")
@@ -497,6 +555,23 @@ def clicked_eval(j):
 		vals = vals[:3]+["..."]+[vals[-1]]
 	num_cats[n][4].configure(text=" ("+", ".join(vals)+")", font=(std_font, 10))
 
+# -------------------------- Scroll bar ---------------------------
+    
+# cTableContainer = Canvas(window)
+# fTable = Frame(cTableContainer)
+# sbHorizontalScrollBar = Scrollbar(window)
+# sbVerticalScrollBar = Scrollbar(window)
+
+# cTableContainer.config(xscrollcommand=sbHorizontalScrollBar.set,
+#         yscrollcommand=sbVerticalScrollBar.set, highlightthickness=0)
+# sbHorizontalScrollBar.config(orient=HORIZONTAL, command=cTableContainer.xview)
+# sbVerticalScrollBar.config(orient=VERTICAL, command=cTableContainer.yview)
+
+# sbHorizontalScrollBar.grid(row=20, columnspan=5, sticky="we")
+# sbVerticalScrollBar.grid(column=2, sticky="we")
+# cTableContainer.grid(column=2, sticky="ns")
+# cTableContainer.create_window(0, 0, window=fTable, anchor=NW)
+    
 # ------------------------- Intro -----------------------------
 
 std_font = 'sans-serif'
@@ -514,20 +589,27 @@ lbl2.grid(row=2, column=0, columnspan=2)
 
 # ------------ choosing frame ------------------
 
-choose_frame = Frame(window)
+choose_frame = Frame(window, bd=1, relief="solid")
 choose_frame.grid(row=3, column=0)
+
+choose_seed_frame = Frame(choose_frame)
+choose_seed_frame.grid(row=1, column=0, sticky="w")
 
 choice = IntVar()
 rad1 = Radiobutton(choose_frame, text='Generate random puzzle', value=1, variable=choice, command=chosen_random, font=font)
-rad2 = Radiobutton(choose_frame, text='Generate from seed', value=2, variable=choice, command=chosen_seed, font=font)
-rad1.grid(row=0, column=0)
-rad2.grid(row=0, column=1)
+rad2 = Radiobutton(choose_seed_frame, text='Generate from seed:  ', value=2, variable=choice, command=chosen_seed, font=font)
+rad3 = Radiobutton(choose_frame, text='Generate from custom categories', value=3, variable=choice, command=chosen_custom, font=font)
 
-txt = Entry(choose_frame, width=10)
-txt.grid(row=0, column=3)
+rad1.grid(row=0, column=0, sticky="w") # in choose_frame
+rad2.grid(row=0, column=0) # in choose_seed_frame
+rad3.grid(row=2, column=0, sticky="w") # in choose_frame
+
+txt = Entry(choose_seed_frame, width=10)
+txt.grid(row=0, column=1)
 txt.configure(state='disabled')
 
 # -------------- specifying sizes frame ---------------
+text_box_width = 6
 
 size_frame = Frame(window)
 size_frame.grid(row=4)
@@ -537,20 +619,53 @@ lbl3.grid(row=0, column=0, columnspan=2)
 
 lbl4 = Label(size_frame, text="Number of categories(>2): ", font=font, pady=0)
 lbl4.grid(row=1, column=0)
-txt4 = Entry(size_frame, width=5)
+txt4 = Entry(size_frame, width=text_box_width)
 txt4.grid(row=1, column=1)
 txt4.configure(state='disabled')
 
 lbl5 = Label(size_frame, text="Number of objects in each category(>2):", font=font, pady=0)
 lbl5.grid(row=2, column=0)
-txt5 = Entry(size_frame, width=5)
+txt5 = Entry(size_frame, width=text_box_width)
 txt5.grid(row=2, column=1)
 txt5.configure(state='disabled')
 
+lbl_custom = Label(size_frame, text="Only for custom categories generation:", font=(std_font, std_font_size//2))
+lbl_custom.grid(row=3, column=0)
+
+lbl_categorical = Label(size_frame, text="Number of categorical categories:", font=font, pady=0)
+lbl_categorical.grid(row=4, column=0)
+txt_categorical = Entry(size_frame, width=text_box_width)
+txt_categorical.insert(END, 'random')
+txt_categorical.grid(row=4, column=1)
+txt_categorical.configure(state='disabled')
+
+lbl_ordinal = Label(size_frame, text="Number of ordinal categories:", font=font, pady=0)
+lbl_ordinal.grid(row=5, column=0)
+txt_ordinal = Entry(size_frame, width=text_box_width)
+txt_ordinal.insert(END, 'random')
+txt_ordinal.grid(row=5, column=1)
+txt_ordinal.configure(state='disabled')
+
+lbl_numerical = Label(size_frame, text="Number of numerical categories:", font=font, pady=0)
+lbl_numerical.grid(row=6, column=0)
+txt_numerical = Entry(size_frame, width=text_box_width)
+txt_numerical.insert(END, 'random')
+txt_numerical.grid(row=6, column=1)
+txt_numerical.configure(state='disabled')
+
+
+
 # ------------ Generate -------------------
 
-btn = Button(window, text="Generate!", font=("Arial", std_font_size), command=clicked_gen)
-btn.grid(row=5, column=0, pady=(10,0))
+gen_frame = Frame(window)
+gen_frame.grid(row=5, column=0)
+
+btn_OK = Button(gen_frame, text="OK", font=("Arial", std_font_size), command=clicked_ok)
+btn_OK.grid(row=0, column=0, pady=(10,0), padx=(0,10))
+
+btn = Button(gen_frame, text="Generate!", font=("Arial", std_font_size), command=clicked_gen)
+btn.grid(row=0, column=1, pady=(10,0))
+btn.configure(state='disabled')
 
 lbl6 = Label(window, text="Generating puzzle...(0%)", font=font)
 
