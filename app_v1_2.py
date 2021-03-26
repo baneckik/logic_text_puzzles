@@ -22,10 +22,10 @@ window.title("Text puzzle generator v1.2")
 def clicked_ok():
     choice_int = choice.get()
     if choice_int==1:
-        seed = np.random.randint(0,100000000)
+        pass
     elif choice_int==2:
         try:
-            seed = int(txt.get())
+            seed = int(seed1_entry.get())
         except:
             messagebox.showwarning('Warning', 'Seed must be a number!')
             return
@@ -33,8 +33,14 @@ def clicked_ok():
             messagebox.showwarning('Warning', 'Seed must be an integer greater or equal to 3!')
             return
     elif choice_int==3:
-        seed = np.random.randint(0,100000000)
-        
+        try:
+            seed = int(seed2_entry.get())
+        except:
+            messagebox.showwarning('Warning', 'Seed must be a number!')
+            return
+        if seed<0:
+            messagebox.showwarning('Warning', 'Seed must be an integer greater or equal to 3!')
+            return
     else:
         messagebox.showwarning('Warning', 'Decide what you want to do first!')
         return
@@ -56,8 +62,16 @@ def clicked_ok():
         messagebox.showwarning('Warning', 'Number of categories must be an integer greater or equal to 3!')
         txt4.focus()
         return
+    if K>11:
+        messagebox.showwarning('Warning', str(K)+' categories? You must be kidding!')
+        txt4.focus()
+        return
     if k<3:
         messagebox.showwarning('Warning', 'Number of objects in each category must be an integer greater or equal to 3!')
+        txt5.focus()
+        return
+    if k>11:
+        messagebox.showwarning('Warning', str(k)+' objects in category? You must be kidding!')
         txt5.focus()
         return
     if choice_int==3:
@@ -79,20 +93,22 @@ def clicked_ok():
             messagebox.showwarning('Warning', 'Number of numerical categories must be an integer!')
             txt_numerical.focus()
             return
-        if K_cat<1 or K_ord<1 or K_num<1:
-            messagebox.showwarning('Warning', 'Number of categories must be an integer larger than 0!')
+        if K_cat<0 or K_ord<0 or K_num<0:
+            messagebox.showwarning('Warning', 'Number of categories must be a non-negative integer!')
             txt_categorical.focus()
             return
         if K_cat+K_ord+K_num!=K:
-            messagebox.showwarning('Warning', 'Number of the sum of categorical, ordinal and numerical categories does not match the total number of categories!')
+            messagebox.showwarning('Warning', 'Sum of categorical, ordinal and numerical categories does not match the total number of categories!')
             txt_categorical.focus()
             return
     
+    clear_cat_entries()
     #btn_OK.configure(state='disabled')
     btn['state'] = 'normal'
     new_btn['state'] = 'normal'
     btn.grid()
     
+    global final_puzzle
     if choice_int==3:
         final_puzzle = puzzle(K,k)
         # creating artificial categories
@@ -110,9 +126,10 @@ def clicked_ok():
             categories.append( (los[0], los[1], los[2], "", "", los[3]) )
         final_puzzle.categories = categories
         puzzle1 = final_puzzle
-        
-        # -------------------- writing categories out -------------------
 
+        # -------------------- writing categories out -------------------
+        
+        clear_cat_entries()
         cat_cats.clear()
         num_cats.clear()
 
@@ -236,15 +253,47 @@ def clicked_ok():
                     entries.append(e4) # multiplier/increment
                     entries.append(eval_frame)
                 num_cats.append(entries)
-
-        cat_frame.grid()
-        num_frame.grid()
+        
+        cat_frame.grid(row=9, column=0, pady=(0,5))
+        num_frame.grid(row=10, column=0, pady=(0,10))
                               
                               
 def clicked_gen():
-    seed = np.random.randint(0,100000000)
+    choice_int = choice.get()
+    if choice_int==1:
+        seed = np.random.randint(0,100000000)
+    elif choice_int==2:
+        seed = int(seed1_entry.get())
+    elif choice_int==3:
+        seed = int(seed2_entry.get())
+    else:
+        messagebox.showwarning('Warning', 'No option was chosen!')
+        return
+    if choice_int==3:
+        flag = False
+        try:
+            flag = check_and_save_categories()
+        except:
+            messagebox.showwarning('Warning', 'A problem with custom categories detected!')
+            return
+        if not flag:
+            messagebox.showwarning('Warning', 'A problem with custom categories detected!')
+            return
+    
+    
     K = int(txt4.get())
     k = int(txt5.get())
+    
+    rad1.configure(state='disabled')
+    rad2.configure(state='disabled')
+    rad3.configure(state='disabled')
+    seed1_entry['state'] = 'disabled'
+    seed2_entry['state'] = 'disabled'
+    txt4['state'] = 'disabled'
+    txt5['state'] = 'disabled'
+    txt_categorical['state'] = 'disabled'
+    txt_ordinal['state'] = 'disabled'
+    txt_numerical['state'] = 'disabled'
     
     btn.configure(state='disabled')
     btn_OK.configure(state='disabled')
@@ -261,10 +310,17 @@ def clicked_gen():
     # ----------------- Generating --------------
     
     puzzle1 = puzzle(K, k)
-    #puzzle1.generate(seed, trace=True)
     
     puzzle1.set_seed(seed)
-    puzzle1.draw_categories()
+    if choice_int==1 or choice_int==2:
+        puzzle1.draw_categories()
+    elif choice_int==3:
+        if not check_and_save_categories():
+            return
+        puzzle1.categories = final_puzzle.categories
+    print("Categories: ", puzzle1.categories)
+    print("Categories: ", final_puzzle.categories)
+    
     puzzle1.print_info()
     i_max = 100
     for i in range(i_max):
@@ -331,10 +387,6 @@ def clicked_gen():
 
     puzzle1.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
     puzzle1.clues = list(np.random.permutation(puzzle1.clues))
-    #percent = int(np.floor(5+95/bar_N*(bar_N-5)))
-    #lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
-    #bar['value'] = percent
-    #window.update()
     
     # ---------------- difficulty assessment -------------------
     
@@ -369,10 +421,11 @@ def clicked_gen():
     bar['value'] = percent
     
     lbl7.grid(row=8, column=0)
-    lbl7.configure(text="You drew a puzzle from seed="+str(seed)+" with estimated difficulty: "+str(puzzle1.diff)+".\nYou may now alter category names if you wish. \nWhen you are done you can print your puzzle to pdf.\n@ is a special symbol for the place where numerical data is inserted.")
+    lbl7.configure(text="You drew a puzzle from seed="+str(seed)+" with estimated difficulty: "+str(puzzle1.diff)+".\nYou may now alter object names if you wish.\n@ is a special symbol for the place where numerical data will be inserted.")
     
     # -------------------- writing categories out -------------------
     
+    clear_cat_entries()
     cat_cats.clear()
     num_cats.clear()
     
@@ -496,16 +549,15 @@ def clicked_gen():
                 entries.append(e4) # multiplier/increment
                 entries.append(eval_frame)
             num_cats.append(entries)
-            
-    cat_frame.grid()
-    num_frame.grid()
     
-    final_frame.grid()
+    cat_frame.grid(row=9, column=0, pady=(0,5))
+    num_frame.grid(row=10, column=0, pady=(0,10))
+    
+    final_frame.grid(row=11, column=0)
     print_btn['state'] = 'normal'
     svg_btn['state'] = 'normal'
     solution_btn['state'] = 'normal'
     new_btn['state'] = 'normal'
-    final_lbl.grid()
     
     final_puzzle.K = K
     final_puzzle.k = k
@@ -523,7 +575,8 @@ def clicked_gen():
     final_name3.configure(text="sol"+str(puzzle1.seed)+"K"+str(puzzle1.K)+"k"+str(puzzle1.k)+"c"+str(len(puzzle1.clues))+".pdf")
     
 def chosen_random():
-    txt.configure(state='disabled')
+    seed1_entry.configure(state='disabled')
+    seed2_entry.configure(state='disabled')
     txt4['state'] = 'normal'
     txt5['state'] = 'normal'
     txt4.focus()
@@ -538,10 +591,12 @@ def chosen_random():
     txt_numerical['state'] = 'disabled'
     
 def chosen_seed():
-    txt['state'] = 'normal'
+    seed1_entry['state'] = 'normal'
+    seed1_entry.focus()
+    seed2_entry.configure(state='disabled')
+    
     txt4['state'] = 'normal'
     txt5['state'] = 'normal'
-    txt.focus()
     txt_categorical.delete(0, 'end')
     txt_ordinal.delete(0, 'end')
     txt_numerical.delete(0, 'end')
@@ -553,10 +608,12 @@ def chosen_seed():
     txt_numerical['state'] = 'disabled'
     
 def chosen_custom():
-    txt.configure(state='disabled')
+    seed1_entry.configure(state='disabled')
+    seed2_entry['state'] = 'normal'
+    seed2_entry.focus()
+    
     txt4['state'] = 'normal'
     txt5['state'] = 'normal'
-    txt4.focus()
     txt_categorical['state'] = 'normal'
     txt_ordinal['state'] = 'normal'
     txt_numerical['state'] = 'normal'
@@ -565,6 +622,8 @@ def chosen_custom():
     txt_numerical.delete(0, 'end')
     
 def check_and_save_categories():
+    global final_puzzle
+    
     input_categories = []
     input_cross_bars = []
     n = 0
@@ -583,7 +642,7 @@ def check_and_save_categories():
     for j, cat in enumerate(final_puzzle.categories):
         if cat[0]=='numerical':
             cross_text = num_cats[n][2].get()
-            input_categories.append( (cat[0], cat[1], cat[2], num_cats[n][1].get(),cross_text,cat[5]) )
+            input_categories.append( (cat[0], cat[1], cat[2], num_cats[n][1].get(), cross_text,cat[5]) )
             n += 1
     
     print(input_categories)
@@ -610,7 +669,7 @@ def clicked_print():
     c.save()
     
     final_lbl.configure(text="The puzzle has been printed to:\n"+direc+"/"+final_name.cget("text"))
-    
+    final_lbl.grid(row=12, column=0)
     
 def clicked_svg():
     if not check_and_save_categories():
@@ -626,6 +685,7 @@ def clicked_svg():
     d.setPixelScale(2)
     d.saveSvg(direc+"/"+final_name.cget("text")[:-3]+"svg")
     final_lbl.configure(text="The puzzle has been printed to:\n"+direc+"/"+final_name.cget("text")[:-3]+"svg")
+    final_lbl.grid(row=12, column=0)
 
 def clicked_sol():
     if not check_and_save_categories():
@@ -640,18 +700,10 @@ def clicked_sol():
     c.save()
     
     final_name3.configure(text="sol"+str(final_puzzle.seed)+"K"+str(final_puzzle.K)+"k"+str(final_puzzle.k)+"c"+str(len(final_puzzle.clues))+".pdf")
-    final_lbl3.configure(text="The solution has been printed to:\n"+direc+"/"+final_name3.cget("text"))
+    final_lbl.configure(text="The solution has been printed to:\n"+direc+"/"+final_name3.cget("text"))
+    final_lbl.grid(row=12, column=0)
     
-def clicked_new():
-    btn_OK['state'] = 'normal'
-    lbl6.grid_forget()
-    bar.grid_forget()
-    lbl7.grid_forget()
-    
-    final_frame.grid_forget()
-    final_lbl.configure(text="")
-    final_lbl.grid_forget()
-    
+def clear_cat_entries():
     for cat in cat_cats:
         for entry in cat:
             entry.grid_forget()
@@ -659,11 +711,41 @@ def clicked_new():
         for entry in cat:
             entry.grid_forget()
             
-
     cat_frame.grid_forget()
     num_frame.grid_forget()
     cat_frame.configure(pady=10)
     num_frame.configure(pady=10)
+    
+    
+def clicked_new():
+    rad1['state'] = 'normal'
+    rad2['state'] = 'normal'
+    rad3['state'] = 'normal'
+    txt4['state'] = 'normal'
+    txt5['state'] = 'normal'
+    if choice.get()==2:
+        seed1_entry['state'] = 'normal'
+        seed1_entry.focus()
+    elif choice.get()==3:
+        seed2_entry['state'] = 'normal'
+        seed2_entry.focus()
+        txt_categorical['state'] = 'normal'
+        txt_ordinal['state'] = 'normal'
+        txt_numerical['state'] = 'normal'
+        txt_categorical.delete(0, 'end')
+        txt_ordinal.delete(0, 'end')
+        txt_numerical.delete(0, 'end')
+    
+    btn_OK['state'] = 'normal'
+    lbl6.grid_forget()
+    bar.grid_forget()
+    lbl7.grid_forget()
+    
+    final_frame.grid_forget()
+    final_lbl.configure(text="")
+    #final_lbl.grid_forget()
+    
+    clear_cat_entries()
 
     
 def clicked_eval(j):
@@ -757,8 +839,8 @@ font = (std_font, std_font_size)
 lbl0 = Label(window, text="Welcome to my text puzzle generator!", font=(std_font, 23), pady=10)
 lbl0.grid(row=0, column=0, columnspan=2)
 
-lbl1 = Label(window, text="This is version 1.2.", font=font, bd=1, relief="solid")
-lbl1.grid(row=1, column=0, columnspan=2)
+#lbl1 = Label(window, text="This is version 1.2.", font=font, bd=1, relief="solid")
+#lbl1.grid(row=1, column=0, columnspan=2)
 
 lbl2 = Label(window, text="Choose what you want to do:", font=font, pady=10)
 lbl2.grid(row=2, column=0, columnspan=2)
@@ -768,27 +850,29 @@ lbl2.grid(row=2, column=0, columnspan=2)
 choose_frame = Frame(window, bd=1, relief="solid")
 choose_frame.grid(row=3, column=0)
 
-choose_seed_frame = Frame(choose_frame)
-choose_seed_frame.grid(row=1, column=0, sticky="w")
-
 choice = IntVar()
 rad1 = Radiobutton(choose_frame, text='Generate random puzzle', value=1, variable=choice, command=chosen_random, font=font)
-rad2 = Radiobutton(choose_seed_frame, text='Generate from seed:  ', value=2, variable=choice, command=chosen_seed, font=font)
-rad3 = Radiobutton(choose_frame, text='Generate from custom categories', value=3, variable=choice, command=chosen_custom, font=font)
+rad2 = Radiobutton(choose_frame, text='Generate from random categories and seed: ', value=2, variable=choice, command=chosen_seed, font=font)
+rad3 = Radiobutton(choose_frame, text='Generate from custom categories and seed: ', value=3, variable=choice, command=chosen_custom, font=font)
 
-rad1.grid(row=0, column=0, sticky="w") # in choose_frame
-rad2.grid(row=0, column=0) # in choose_seed_frame
-rad3.grid(row=2, column=0, sticky="w") # in choose_frame
+rad1.grid(row=0, column=0, sticky="w")
+rad2.grid(row=1, column=0, sticky="w")
+rad3.grid(row=2, column=0, sticky="w")
 
-txt = Entry(choose_seed_frame, width=10)
-txt.grid(row=0, column=1)
-txt.configure(state='disabled')
+seed1_entry = Entry(choose_frame, width=10)
+seed1_entry.grid(row=1, column=1, padx=(5,5))
+seed1_entry.configure(state='disabled')
+
+seed2_entry = Entry(choose_frame, width=10)
+seed2_entry.grid(row=2, column=1, padx=(5,5), pady=(0,5))
+seed2_entry.configure(state='disabled')
+
 
 # -------------- specifying sizes frame ---------------
 text_box_width = 6
 
 size_frame = Frame(window)
-size_frame.grid(row=4)
+size_frame.grid(row=4, column=0)
 
 lbl3 = Label(size_frame, text="Specify dimensions for your puzzle:", font=font, pady=10)
 lbl3.grid(row=0, column=0, columnspan=2)
@@ -799,7 +883,7 @@ txt4 = Entry(size_frame, width=text_box_width)
 txt4.grid(row=1, column=1)
 txt4.configure(state='disabled')
 
-lbl5 = Label(size_frame, text="Number of objects in each category(>2):", font=font, pady=0)
+lbl5 = Label(size_frame, text="Number of objects in each category(>2): ", font=font, pady=0)
 lbl5.grid(row=2, column=0)
 txt5 = Entry(size_frame, width=text_box_width)
 txt5.grid(row=2, column=1)
@@ -856,14 +940,14 @@ num_cats = []
 lbl7 = Label(window, text="", font=font)
 
 cat_frame = Frame(window)
-cat_frame.grid(row=9, column=0, pady=(10,10))
+cat_frame.grid(row=9, column=0, pady=(0,5))
 num_frame = Frame(window)
 num_frame.grid(row=10, column=0, pady=(0,10))
 
 # --------------------- Final buttons ------------------------
 
 final_frame = Frame(window)
-final_frame.grid(row=11)
+final_frame.grid(row=11, column=0)
 
 print_btn = Button(final_frame, text="Print to PDF!", font=("Arial", std_font_size), command=clicked_print)
 print_btn.grid(row=0, column=0, padx=(10,10))
@@ -891,11 +975,6 @@ final_name2 = Label(window, text="unknown_puzzle.svg", font=font)
 final_name3 = Label(window, text="unknown_solution.pdf", font=font)
 
 final_lbl = Label(window, text="", font=(std_font, 10))
-final_lbl.grid(row=12)
-final_lbl2 = Label(window, text="", font=(std_font, 10))
-final_lbl2.grid(row=13)
-final_lbl3 = Label(window, text="", font=(std_font, 10))
-final_lbl3.grid(row=14)
-
+final_lbl.grid(row=12, column=0)
 
 window.mainloop()
