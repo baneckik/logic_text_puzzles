@@ -1220,8 +1220,16 @@ def draw_categories(self, diff=3):
 
 def draw_clues(self, trace=False):
     non_1_clues = int(np.ceil(self.k*self.K/2.3))
+    are_categoricals = any([cat[0]=='categorical' for cat in self.categories ])
+    are_ordinals = any([cat[0]=='ordinal' for cat in self.categories ])
+    are_numericals = any([cat[0]=='numerical' for cat in self.categories ])
     for i in range(non_1_clues):
-        typ = np.random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
+        if are_numericals:
+            typ = np.random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
+        elif are_ordinals:
+            typ = np.random.choice([2, 4, 5, 6], 1, p=[0.25, 0.25, 0.25, 0.25])[0]
+        else:
+            typ = np.random.choice([4, 5], 1, p=[0.5, 0.5])[0]
         if trace:
             print("Trying to fit clue of type "+str(typ))
         if typ==2:
