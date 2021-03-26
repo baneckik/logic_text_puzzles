@@ -101,27 +101,27 @@ def draw_clues_on_canvas(categories, clue, canvas, X, Y, no, width):
         text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
     canvas.append(draw.Text(text0, width, X, Y, fill='black')) 
 
-def textwidth(text, fontsize=14):
+def textwidth(text, fontsize=14, fname="undefined.svg"):
     try:
         import cairo
     except e:
         return len(str) * fontsize
-    surface = cairo.SVGSurface('undefined.svg', 1280, 200)
+    surface = cairo.SVGSurface(fname, 1280, 200)
     cr = cairo.Context(surface)
     cr.select_font_face('Arial', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
     cr.set_font_size(fontsize)
     xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(text)
     return width
     
-def draw_into_rectangle(c, X, Y, text, rec_h, rec_w, angle=0):
+def draw_into_rectangle(c, X, Y, text, rec_h, rec_w, angle=0, fname="undefined123124.svg"):
     width = rec_h
-    length = textwidth(text, width) 
-    while length>rec_w*0.91:
+    length = textwidth(text, width, fname=fname) 
+    while length>rec_w*0.88:
         width -= rec_h/100
-        length = textwidth(text, width) 
+        length = textwidth(text, width, fname=fname) 
     c.append(draw.Text(text, width, X, Y, fill='black', transform='rotate('+str(angle)+')')) 
         
-def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
+def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg"):
     categories = puzzle1.categories
     clues = puzzle1.clues
     seed = puzzle1.seed
@@ -160,16 +160,16 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
             text0 = "Kat. "+str(i)+":\n"
         else:
             text0 = "Kategoria "+str(i)+":\n"
-        widths.append( textwidth(text0, width2) )
+        widths.append( textwidth(text0, width2, fname=fname) )
         
         nazwy = [ funs.get_string_name(categories, i, j) for j in range(len(categories[i][1])) ]
         for col, name in enumerate(nazwy):
             if k_cat>5 and col>3:
                 text0 += "...\n"
-                widths.append( textwidth("...", width2) )
+                widths.append( textwidth("...", width2, fname=fname) )
                 break
             text0 += name+"\n"
-            widths.append( textwidth(name, width2) )
+            widths.append( textwidth(name, width2, fname=fname) )
         c.append(draw.Text( text0, width2, X+x_shift, Ycat ))
         x_shift += int(np.max(widths))+10
         
@@ -207,16 +207,16 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
             if i!=0:
                 c.append(draw.Rectangle( X+text_box_size+box_size*(i-1), Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat, box_size, box_size/k_cat, fill='white', stroke_width=2, stroke='black'))
             
-            inter_width = textwidth(text, width) 
+            inter_width = textwidth(text, width, fname=fname) 
             # horizontal bar text at the top
             if i!=0:
-                draw_into_rectangle(c, X+text_box_size+box_size*(i-1)+odstep*width, Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat+odstep*width, text, width, box_size)
+                draw_into_rectangle(c, X+text_box_size+box_size*(i-1)+odstep*width, Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat+odstep*width, text, width, box_size, fname=fname)
             # horizontal bar text on the left
             if i!=1:
                 if i!=0:
-                    draw_into_rectangle(c, Y+(i-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, width, box_size, angle=270)
+                    draw_into_rectangle(c, Y+(i-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, width, box_size, angle=270, fname=fname)
                 else:
-                    draw_into_rectangle(c, Y+(K_cat-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, width, box_size, angle=270)
+                    draw_into_rectangle(c, Y+(K_cat-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, width, box_size, angle=270, fname=fname)
         
         for i, name in enumerate(nazwy):
             if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
@@ -225,17 +225,17 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
                 space_size = text_box_size
             # rysowanie poziome:
             if miejsce==1:
-                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name, width, space_size)
+                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name, width, space_size, fname=fname)
             elif miejsce!=2:
-                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name, width, space_size)
+                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name, width, space_size, fname=fname)
             # rysowanie pionowe:
             if miejsce==2:
-                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(i+1)*width+odstep*width, name, width, space_size, angle=270)
+                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(i+1)*width+odstep*width, name, width, space_size, angle=270, fname=fname)
             elif miejsce!=1:
-                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name, width, space_size, angle=270)
+                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name, width, space_size, angle=270, fname=fname)
 
             
-def draw_on_canvas(puzzle1, c, X = 30, Y = 30, puzzle_h = 400):
+def draw_on_canvas(puzzle1, c, fname="undefgewgwegined.svg", X = 30, Y = 30, puzzle_h = 400):
     categories = puzzle1.categories
     clues = puzzle1.clues
     seed = puzzle1.seed
@@ -264,7 +264,7 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, puzzle_h = 400):
         star(c, X+box_size*1.5-15-i*25, Y+puzzle_h-box_size*1.5+15, 10)
     
     # ------------ drawing grid
-    draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y, puzzle_h=puzzle_h)
+    draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y, puzzle_h=puzzle_h, fname=fname)
     
     # ------------- drawing clues
     N_lines = len(puzzle1.clues)+len([c for c in puzzle1.clues if c["typ"]==4])

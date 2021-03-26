@@ -277,9 +277,7 @@ def clicked_gen():
             messagebox.showwarning('Warning', 'A problem with custom categories detected!')
             return
         if not flag:
-            messagebox.showwarning('Warning', 'A problem with custom categories detected!')
             return
-    
     
     K = int(txt4.get())
     k = int(txt5.get())
@@ -680,11 +678,12 @@ def clicked_svg():
     if not direc:
         return
     
+    fname = direc+"/"+final_name.cget("text")[:-3]+"svg"
     d = drawSvg.Drawing(616, 870, displayInline=False)
-    svg_funs.draw_on_canvas(final_puzzle, d)
+    svg_funs.draw_on_canvas(final_puzzle, d, fname=fname)
     d.setPixelScale(2)
     d.saveSvg(direc+"/"+final_name.cget("text")[:-3]+"svg")
-    final_lbl.configure(text="The puzzle has been printed to:\n"+direc+"/"+final_name.cget("text")[:-3]+"svg")
+    final_lbl.configure(text="The puzzle has been printed to:\n"+fname)
     final_lbl.grid(row=12, column=0)
 
 def clicked_sol():
