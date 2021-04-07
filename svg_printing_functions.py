@@ -104,8 +104,8 @@ def draw_clues_on_canvas(categories, clue, canvas, X, Y, no, width):
 def textwidth(text, fontsize=14, fname="undefined.svg"):
     try:
         import cairo
-    except e:
-        return len(str) * fontsize
+    except:
+        return len(text) * fontsize
     surface = cairo.SVGSurface(fname, 1280, 200)
     cr = cairo.Context(surface)
     cr.select_font_face('Arial', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
@@ -113,7 +113,7 @@ def textwidth(text, fontsize=14, fname="undefined.svg"):
     xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(text)
     return width
     
-def draw_into_rectangle(c, X, Y, text, rec_h, rec_w, angle=0, fname="undefined123124.svg"):
+def draw_into_rectangle(c, X, Y, text, rec_h, rec_w, angle=0, fname="undefined.svg"):
     width = rec_h
     length = textwidth(text, width, fname=fname) 
     while length>rec_w*0.88:
