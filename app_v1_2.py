@@ -8,12 +8,13 @@ import copy
 from functools import partial
 from reportlab.pdfgen import canvas
 import drawSvg
+import svgwrite
 
 import numpy as np
 from puzzle_class import puzzle
 import generating_categories_functions as funs
 import pdf_printing_functions as pdf_funs
-import svg_printing_functions as svg_funs
+import svg_printing_functions2 as svg_funs
 
 window = Tk()
 window.geometry('680x900')
@@ -679,10 +680,9 @@ def clicked_svg():
         return
     
     fname = direc+"/"+final_name.cget("text")[:-3]+"svg"
-    d = drawSvg.Drawing(616, 870, displayInline=False)
-    svg_funs.draw_on_canvas(final_puzzle, d, fname=fname)
-    d.setPixelScale(2)
-    d.saveSvg(direc+"/"+final_name.cget("text")[:-3]+"svg")
+    dwg = svgwrite.Drawing(direc+"/"+final_name.cget("text")[:-3]+"svg", size=(616, 870), profile='tiny')
+    svg_funs.draw_on_canvas(final_puzzle, dwg, fname=fname)
+    dwg.save()
     final_lbl.configure(text="The puzzle has been printed to:\n"+fname)
     final_lbl.grid(row=12, column=0)
 
@@ -868,7 +868,8 @@ seed2_entry.configure(state='disabled')
 
 
 # -------------- specifying sizes frame ---------------
-text_box_width = 6
+
+text_box_width = 7
 
 size_frame = Frame(window)
 size_frame.grid(row=4, column=0)
@@ -911,8 +912,6 @@ txt_numerical = Entry(size_frame, width=text_box_width)
 txt_numerical.insert(END, 'random')
 txt_numerical.grid(row=6, column=1)
 txt_numerical.configure(state='disabled')
-
-
 
 # ------------ Generate -------------------
 
