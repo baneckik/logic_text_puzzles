@@ -79,7 +79,7 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
             names = list(np.random.choice(kat.iloc[:,0], puzzle_k, replace=False))
         chosen_out.append(names)
     
-    return [ ("categorical", chosen_out[i]) for i in range(len(chosen_out)) ]
+    return [ {'typ': "categorical", 'names': chosen_out[i], 'cross_bar': "", 'groups': [0]*puzzle_k} for i in range(len(chosen_out)) ]
 
 # ----------------------------------------- Drawing ordinal categories ---------------------------------------------
 
@@ -109,7 +109,7 @@ def draw_ord_scheme(ile=1, puzzle_k=5):
         names = list(kat.iloc[start:(start+puzzle_k),0])
         chosen_out.append(names)
     
-    return [ ("ordinal", chosen_out[i]) for i in range(len(chosen_out)) ]
+    return [ {'typ': "ordinal", 'names': chosen_out[i], 'cross_bar': ""} for i in range(len(chosen_out)) ]
 
 # ----------------------------------------- Drawing numerical categories ---------------------------------------------
 
@@ -247,7 +247,7 @@ def draw_num_scheme(puzzle_k=5):
                     clues_candidates.append("x=y*"+str(2**i))
 
     #return schemat[0], values, clues_candidates
-    return "numerical", values, clues_candidates, scheme[0].split("_")[0]
+    return {'typ': "numerical", 'names': values, 'pre_clues': clues_candidates, 'seq_scheme': scheme[0].split("_")[0]}
 
 # ----------------------------- drawing numerical interpretations ---------------------------------------------
 
@@ -425,45 +425,48 @@ def draw_category(K, k, diff=3, seed=0):
         los = draw_num_scheme(puzzle_k=k)
         # trying to draw an interpretation, without repetitions
         for j in range(50):
-            los_interpret = draw_num_interpretation(los[1])
+            los_interpret = draw_num_interpretation(los["names"])
             if not los_interpret[0] in interpretations:
                 interpretations.append(los_interpret[0])
                 break
-        drawn.append( (los[0], los[1], los[2], los_interpret[0], los[3]) )
+        if "@" in los_interpret[0]:
+            los["interpretation"] = los_interpret[0]
+            los["cross_bar"] = ""
+        else:
+            los["interpretation"] = ""
+            los["cross_bar"] = los_interpret[0]
+        drawn.append( los )
     
     # adding empty horizontal bars
-    final = []
-    for cat in drawn:
-        if cat[0]!="numerical":
-                final.append( (cat[0], cat[1], '') )
-        else:
-            if "@" in cat[3]:
-                final.append( (cat[0], cat[1], cat[2], cat[3], '', cat[4]) )
-            else:
-                final.append( (cat[0], cat[1], cat[2], '', cat[3], cat[4]) )
-    return final
+#     final = []
+#     for cat in drawn:
+#         if cat[0]!="numerical":
+#                 final.append( (cat[0], cat[1], '') )
+#         else:
+#             if "@" in cat[3]:
+#                 final.append( (cat[0], cat[1], cat[2], cat[3], '', cat[4]) )
+#             else:
+#                 final.append( (cat[0], cat[1], cat[2], '', cat[3], cat[4]) )
+    return drawn
 
 # ----------------------------------------- Other functions ---------------------------------------------
 
 def get_string_name(categories, K1, i1, replace_polish=False, with_bar=False, add_info=False):
-    if categories[K1][0]=='categorical' or categories[K1][0]=='ordinal':
-        name = categories[K1][1][i1]
+    if categories[K1]['typ']=='categorical' or categories[K1]['typ']=='ordinal':
+        name = categories[K1]['names'][i1]
     else :
-        number = str(categories[K1][1][i1])
+        number = str(categories[K1]['names'][i1])
         if number.endswith(".0"):
             number = number[:-2] 
-        if "@" in categories[K1][3]:
-            a = categories[K1][3].split("@")
+        if "@" in categories[K1]['interpretation']:
+            a = categories[K1]['interpretation'].split("@")
             name = number.join(a)
         else:
             name = number
     
     if with_bar:
-        if categories[K1][0]=='categorical' or categories[K1][0]=='ordinal':
-            name = categories[K1][2]+":::"+name
-        else:
-            name = categories[K1][4]+":::"+name
-    
+        name = categories[K1]['cross_bar']+":::"+name
+
     if replace_polish:
         if "ł" in name:
             name = "l".join(name.split("ł"))
@@ -500,7 +503,7 @@ def get_string_name(categories, K1, i1, replace_polish=False, with_bar=False, ad
 def do_categories_repeat(categories, with_bar=True):
     all_cats = []
     for i, cat in enumerate(categories):
-        cats_i = [ get_string_name(categories, i, j, with_bar=with_bar) for j in range(len(cat[1])) ]
+        cats_i = [ get_string_name(categories, i, j, with_bar=with_bar) for j in range(len(cat['names'])) ]
         all_cats += cats_i
     return len(all_cats) != len(set(all_cats))
 

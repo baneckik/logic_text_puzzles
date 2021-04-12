@@ -448,7 +448,7 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
             text0 = "Kategoria "+str(i)+":"
         widths.append( stringWidth(text0, special_font, width2) )
         
-        nazwy = [ funs.get_string_name(categories, i, j) for j in range(len(categories[i][1])) ]
+        nazwy = [ funs.get_string_name(categories, i, j) for j in range(len(categories[i]['names'])) ]
         c.drawString(X+x_shift, Ycat, text0)
         c.setFont(normal_font, width2)
         for col, name in enumerate(nazwy):
@@ -464,24 +464,21 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
     # ------------- typing categories names into boxes
     
     for i, category in enumerate(categories):
-        nazwy = [ str(k) for k in category[1] ]
-        if category[0]=='numerical':
+        nazwy = [ str(k) for k in category['names'] ]
+        if category['typ']=='numerical':
             nazwy = [ k[:-2] if k.endswith(".0") else k for k in nazwy ]
-            if "@" in category[3]:
-                a = category[3].split("@")
+            if "@" in category['interpretation']:
+                a = category['interpretation'].split("@")
                 nazwy = [ k.join(a) for k in nazwy ]
         
         miejsce = i+1
         odstep = 0.15
-        odstep2 = 0 # only for categories with horizontal bars
+        odstep2 = 0 # only for categories with cross bar text
         
         # if there is a horizontal bar to draw
-        if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
+        if category['cross_bar']!="":
             
-            if category[0]=='numerical':
-                text = category[4]
-            else:
-                text = category[2]
+            text = category['cross_bar']
             odstep2 = width
             c.saveState()
             c.setLineWidth(2)
@@ -513,7 +510,7 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
                 c.restoreState()
         
         for i, name in enumerate(nazwy):
-            if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
+            if category['cross_bar']!="":
                 space_size = text_box_size-box_size/k_cat
             else:
                 space_size = text_box_size
@@ -631,7 +628,6 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, puzzle_h = 400):
     c.restoreState()
     
 def draw_sign(puzzle1, c, sign, K1, i1, K2, i2, X=30, Y=30, red=False, puzzle_h=400):
-    
     if K1>K2:
         K1u = K2
         K2u = K1

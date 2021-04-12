@@ -189,7 +189,7 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
             text0 = "Kategoria "+str(i)+":\n"
         widths.append( textwidth(text0, width2, fname=fname) )
         
-        nazwy = [ funs.get_string_name(categories, i, j) for j in range(len(categories[i][1])) ]
+        nazwy = [ funs.get_string_name(categories, i, j) for j in range(len(categories[i]['names'])) ]
         dwg.add(dwg.text(text0,
             insert=(X+x_shift, 870-Ycat),
             stroke='black',
@@ -210,17 +210,17 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
                 font_size=width2
             ))
             widths.append( textwidth(name, width2, fname=fname) )
-        x_shift += int(np.max(widths))+10
+        x_shift += int(max(widths))+10
         
     
     # ------------- typing categories names into boxes
     
     for i, category in enumerate(categories):
-        nazwy = [ str(k) for k in category[1] ]
-        if category[0]=='numerical':
+        nazwy = [ str(k) for k in category['names'] ]
+        if category['typ']=='numerical':
             nazwy = [ k[:-2] if k.endswith(".0") else k for k in nazwy ]
-            if "@" in category[3]:
-                a = category[3].split("@")
+            if "@" in category['interpretation']:
+                a = category['interpretation'].split("@")
                 nazwy = [ k.join(a) for k in nazwy ]
         
         miejsce = i+1
@@ -228,12 +228,9 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
         odstep2 = 0 # only for categories with horizontal bars
         
         # if there is a horizontal bar to draw
-        if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
+        if category['cross_bar']!="":
             
-            if category[0]=='numerical':
-                text = category[4]
-            else:
-                text = category[2]
+            text = category['cross_bar']
             odstep2 = width
             
             # cross bar on the left
@@ -264,7 +261,7 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
                     draw_into_rectangle(dwg, X+box_size/k_cat-odstep*width, 870-Y-(K_cat-2)*box_size-odstep*width, text, width, box_size, angle=270, fname=fname)
         
         for i, name in enumerate(nazwy):
-            if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
+            if category['cross_bar']!="":
                 space_size = text_box_size-box_size/k_cat
             else:
                 space_size = text_box_size

@@ -297,7 +297,7 @@ def get_critical_squares(self, clue):
     elif clue["typ"]==3:
         operation = clue["oper"]
         diff = clue["diff"]
-        values = self.categories[clue["K6"]][1]
+        values = self.categories[clue["K6"]]['names']
 
         if clue["K1"]!=clue["K2"]:
             critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
@@ -563,7 +563,7 @@ def add_clue2(self):
     K = self.K
     k = self.k
     
-    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat[0] in ['numerical','ordinal'] ]
+    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat['typ'] in ['numerical','ordinal'] ]
     K6 = np.random.choice(K6_candidates, 1)[0]
     
     i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
@@ -617,11 +617,11 @@ def add_clue3(self):
     K = self.K
     k = self.k
     
-    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat[0]=='numerical' ]
+    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat['typ']=='numerical' ]
     K6 = np.random.choice(K6_candidates, 1)[0]
-    values = self.categories[K6][1]
+    values = self.categories[K6]['names']
     
-    possible_randomized = np.random.permutation(list(self.categories[K6][2]))
+    possible_randomized = np.random.permutation(list(self.categories[K6]['pre_clues']))
     diff_list = [ float(diff_string.split("y")[-1][1:]) for diff_string in possible_randomized ]
     operations = [ diff_string.split("y")[-1][0] for diff_string in possible_randomized ]
     
@@ -830,7 +830,7 @@ def add_clue6(self):
     K = self.K
     k = self.k
     
-    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat[0] in ['numerical','ordinal'] ]
+    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat['typ'] in ['numerical','ordinal'] ]
     K6 = np.random.choice(K6_candidates, 1)[0]
     
     i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
@@ -909,7 +909,7 @@ def use_clue3(self, c, collect_solution=False):
     clue = self.clues[c]
     operation = clue["oper"]
     diff = clue["diff"]
-    values = self.categories[clue["K6"]][1]
+    values = self.categories[clue["K6"]]['names']
     
     if clue["K1"]!=clue["K2"]:
         self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue3_"+str(c), collect_solution)
@@ -1074,7 +1074,7 @@ def is_grid_contradictory_with_clue3(self, c):
     clue = self.clues[c]
     operation = clue["oper"]
     diff = clue["diff"]
-    values = self.categories[clue["K6"]][1]
+    values = self.categories[clue["K6"]]['names']
     
     if operation=="+":
         for i in range(self.k):
@@ -1220,9 +1220,9 @@ def draw_categories(self, diff=3):
 
 def draw_clues(self, trace=False):
     non_1_clues = int(np.ceil(self.k*self.K/2.3))
-    are_categoricals = any([cat[0]=='categorical' for cat in self.categories ])
-    are_ordinals = any([cat[0]=='ordinal' for cat in self.categories ])
-    are_numericals = any([cat[0]=='numerical' for cat in self.categories ])
+    are_categoricals = any([cat['typ']=='categorical' for cat in self.categories ])
+    are_ordinals = any([cat['typ']=='ordinal' for cat in self.categories ])
+    are_numericals = any([cat['typ']=='numerical' for cat in self.categories ])
     for i in range(non_1_clues):
         if are_numericals:
             typ = np.random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
