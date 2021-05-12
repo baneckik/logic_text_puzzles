@@ -38,13 +38,22 @@ def draw_clues_on_canvas(categories, clue, dwg, X, Y, no, width):
     text0 = str(no+1)+". "
     text1 = "error"
     if clue["typ"]==1:
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "Zaden obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         if "i3" not in clue:
             text0 += " nie pasuje do "
-            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+            if "g2" in clue:
+                text0 += "zadnego obiektu z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+            else:
+                text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         else:
             text0 += " nie pasuje ani do "
-            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+            if "g2" in clue:
+                text0 += "zadnego obiektu z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+            else:
+                text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
             text0 += " ani do "
             text0 += funs.get_string_name(categories, clue["K2"], clue["i3"], replace_polish, add_info=add_info)
             if "i4" in clue:
@@ -54,18 +63,33 @@ def draw_clues_on_canvas(categories, clue, dwg, X, Y, no, width):
         text0 += "Pod względem "
         text0 += "Kategorii "+str(clue["K6"])
         text0 += " zachodzi: "
-        text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)    
+        if "g3" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K3"])+"gr."+str(clue["g3"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)    
         text0 += "<"
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         text0 += "<"
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
     elif clue["typ"]==3:
         text0 += "Pod względem "
         text0 += "Kategorii "+str(clue["K6"])
         text0 += " zachodzi: "
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         text0 += " = "
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         if str(clue["diff"]).endswith(".0"):
             diff = str(clue["diff"])[:-2]
         else:
@@ -73,26 +97,56 @@ def draw_clues_on_canvas(categories, clue, dwg, X, Y, no, width):
         text0 += " "+clue["oper"]+" "+diff
     elif clue["typ"]==4:
         text0 += "Jeśli "
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakiegos z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         text0 += ", to "
-        text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
+        if "g3" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K3"])+"gr."+str(clue["g3"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
         text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
+        if "g4" in clue:
+            text0 += "jakiegos obiektu z Kat."+str(clue["K4"])+"gr."+str(clue["g4"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
         
         text1 = "W przeciwnym przypadku "
-        text1 += funs.get_string_name(categories, clue["K5"], clue["i5"], replace_polish, add_info=add_info)
+        if "g5" in clue:
+            text1 += "jakis obiekt z Kat."+str(clue["K5"])+"gr."+str(clue["g5"])
+        else:
+            text1 += funs.get_string_name(categories, clue["K5"], clue["i5"], replace_polish, add_info=add_info)
         text1 += " pasuje do "
-        text1 += funs.get_string_name(categories, clue["K6"], clue["i6"], replace_polish, add_info=add_info)
+        if "g6" in clue:
+            text1 += "jakiegos obiektu z Kat."+str(clue["K6"])+"gr."+str(clue["g6"])
+        else:
+            text1 += funs.get_string_name(categories, clue["K6"], clue["i6"], replace_polish, add_info=add_info)
     elif clue["typ"]==5:
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakiegos obiektu z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         text0 += " lub "
-        text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
+        if "g3" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K3"])+"gr."+str(clue["g3"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
         text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
+        if "g4" in clue:
+            text0 += "jakiegos obiektu z Kat."+str(clue["K4"])+"gr."+str(clue["g4"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
         text0 += "(alt. nierozł.)"
 #         text0 += "Albo "    
 #         text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
@@ -107,9 +161,15 @@ def draw_clues_on_canvas(categories, clue, dwg, X, Y, no, width):
         text0 += "Pod względem "
         text0 += "Kategorii "+str(clue["K6"])
         text0 += " obiekt "
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         text0 += " jest tuż obok "
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakiegos obiektu z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
     dwg.add(dwg.text(text0,
         insert=(X, Y),
         stroke='none',
@@ -204,12 +264,21 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
                 ))
                 widths.append( textwidth("...", width2, fname=fname) )
                 break
-            dwg.add(dwg.text(name,
-                insert=(X+x_shift, 870-Ycat+width2*(col+1)),
-                stroke='none',
-                font_size=width2
-            ))
-            widths.append( textwidth(name, width2, fname=fname) )
+            if 'groups' in categories[i] and len(np.unique(categories[i]["groups"]))>1:
+                name2 = name+" (gr. "+str(categories[i]["groups"][col])+")"
+                dwg.add(dwg.text(name2,
+                    insert=(X+x_shift, 870-Ycat+width2*(col+1)),
+                    stroke='none',
+                    font_size=width2
+                ))
+                widths.append( textwidth(name2, width2, fname=fname) )
+            else:
+                dwg.add(dwg.text(name,
+                    insert=(X+x_shift, 870-Ycat+width2*(col+1)),
+                    stroke='none',
+                    font_size=width2
+                ))
+                widths.append( textwidth(name, width2, fname=fname) )
         x_shift += int(max(widths))+10
         
     
@@ -252,13 +321,13 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
             inter_width = textwidth(text, width, fname=fname) 
             # cross bar text at the top
             if i!=0:
-                draw_into_rectangle(dwg, X+text_box_size+box_size*(i-1)+odstep*width, 870-Y-(K_cat-1)*box_size-text_box_size+box_size/k_cat-odstep*width, text, width, box_size, fname=fname)
+                draw_into_rectangle(dwg, X+text_box_size+box_size*(i-1)+odstep*width, 870-Y-(K_cat-1)*box_size-text_box_size+box_size/k_cat-odstep*width, text.upper(), width, box_size, fname=fname)
             # cross bar text on the left
             if i!=1:
                 if i!=0:
-                    draw_into_rectangle(dwg, X+box_size/k_cat-odstep*width, 870-Y-(i-2)*box_size-odstep*width, text, width, box_size, angle=270, fname=fname)
+                    draw_into_rectangle(dwg, X+box_size/k_cat-odstep*width, 870-Y-(i-2)*box_size-odstep*width, text.upper(), width, box_size, angle=270, fname=fname)
                 else:
-                    draw_into_rectangle(dwg, X+box_size/k_cat-odstep*width, 870-Y-(K_cat-2)*box_size-odstep*width, text, width, box_size, angle=270, fname=fname)
+                    draw_into_rectangle(dwg, X+box_size/k_cat-odstep*width, 870-Y-(K_cat-2)*box_size-odstep*width, text.upper(), width, box_size, angle=270, fname=fname)
         
         for i, name in enumerate(nazwy):
             if category['cross_bar']!="":
@@ -267,12 +336,12 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
                 space_size = text_box_size
             # rysowanie poziome:
             if miejsce==1:
-                draw_into_rectangle(dwg, X+odstep*width+odstep2, 870-Y-(K_cat-1)*box_size+(i+1)*width-odstep*width, name, width, space_size, fname=fname)
+                draw_into_rectangle(dwg, X+odstep*width+odstep2, 870-Y-(K_cat-1)*box_size+(i+1)*width-odstep*width, name.upper(), width, space_size, fname=fname)
             elif miejsce!=2:
-                draw_into_rectangle(dwg, X+odstep*width+odstep2, 870-Y-(miejsce-2)*box_size+(i+1)*width-odstep*width, name, width, space_size, fname=fname)
+                draw_into_rectangle(dwg, X+odstep*width+odstep2, 870-Y-(miejsce-2)*box_size+(i+1)*width-odstep*width, name.upper(), width, space_size, fname=fname)
             # rysowanie pionowe:
             if miejsce!=1:
-                draw_into_rectangle(dwg, X+text_box_size+(i+1)*width-odstep*width+(miejsce-2)*box_size, 870-Y-(K_cat-1)*box_size-odstep*width, name, width, space_size, angle=270, fname=fname)
+                draw_into_rectangle(dwg, X+text_box_size+(i+1)*width-odstep*width+(miejsce-2)*box_size, 870-Y-(K_cat-1)*box_size-odstep*width, name.upper(), width, space_size, angle=270, fname=fname)
 
             
 def draw_on_canvas(puzzle1, dwg, fname="undefined.svg", X = 30, Y = 30, puzzle_h = 400):

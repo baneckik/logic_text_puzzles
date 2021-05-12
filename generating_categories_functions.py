@@ -79,7 +79,56 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
             names = list(np.random.choice(kat.iloc[:,0], puzzle_k, replace=False))
         chosen_out.append(names)
     
-    return [ {'typ': "categorical", 'names': chosen_out[i], 'cross_bar': "", 'groups': [0]*puzzle_k} for i in range(len(chosen_out)) ]
+    chosen_out2 = [ {'typ': "categorical", 'names': chosen_out[i], 'cross_bar': "", 'groups': [0]*puzzle_k} for i in range(len(chosen_out)) ]
+    
+    # replacement some categories for grouped categories
+    
+    # possible grouped data:
+    grouped_data = [
+        (10, ["Anna","Aleksandra","Amelia","Agata","Anastazja","Alicja", "Aniela", "Apolonia", "Adrianna", "Aneta", "Anita", "Antonina"],
+         ["Adam", "Artur","Albert","Alfons","Adolf","Ambroży","Adrian", "Aleksander", "Andrzej", "Arnold", "Alojzy", "Antoni"]),
+        (15, ["Zuzanna", "Julia", "Zofia", "Hanna", "Maja", "Lena", "Alicja", "Oliwia", "Laura", "Maria", "Pola", "Amelia", "Emilia", "Antonina", "Wiktoria", "Aleksandra", "Marcelina", "Liliana", "Iga", "Helena", "Katarzyna", "Teresa", "Danuta"],
+         ["Jan", "Antoni", "Jakub", "Aleksander", "Franciszek", "Szymon", "Filip", "Mikołaj", "Stanisław", "Wojciech", "Leon", "Adam", "Kacper", "Nikodem", "Marcel", "Tymon", "Ignacy", "Michał", "Wiktor", "Piotr", "Krzysztof", "Ryszard", "Grzegorz"]),
+        (4, ["kot", "pies", "koza", "krowa", "koń", "byk", "owca", "jeleń", "sarna", "małpa", "słoń", "żyrafa", "lew", "tygrys", "zebra", "antylopa", "łoś", "dzik", "mysz", "szczur", "wiewiórka", "kret", "królik", "zając", "wilk"],
+         ["krokodyl", "gawial", "aligator", "jaszczurka", "kameleon", "zwinka", "bazyliszek", "gekon", "iguana", "legwan", "żółw", "zaskroniec", "boa", "wąż Eskulapa", "żmija", "kobra"]),
+        (5, ["Portugalia", "Hiszpania", "Francja", "Anglia", "Irlandia", "Islandia", "Włochy", "Luksemburg", "Belgia", "Holandia", "Niemcy", "Dania", "Szwecja", "Norwegia", "Finlandia", "Estonia", "Łotwa", "Litwa", "Białoruś", "Polska", "Ukraina", "Mołdawia", "Rumunia", "Bułgaria", "Grecja", "Malta", "Albania", "Macedonia Płn.", "Serbia", "Kosowo", "Czarnogóra", "Bośnia", "Chorwacja", "Słowenia", "Austria", "Liechtenstein", "Szwajcaria", "Czechy", "Słowacja", "Węgry"],
+         ["ALgieria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Czad", "Dżibuti", "Egipt", "Erytrea", "Etiopia", "Gabon", "Gambia", "Ghana", "Gwinea", "Kamerun", "Kenia", "Komory", "Kongo", "Lesotho", "Liberia", "Libia", "Madagaskar", "Malawi", "Mali", "Maroko", "Mauretania", "Mauritius", "Mozambik", "Namibia", "Niger", "Nigeria", "RPA", "Rwanda", "Senegal", "Seszele", "Sierra Leone", "Somalia", "Sudan", "Tanzania", "Togo", "Tunezja", "Uganda", "Zambia", "Zimbabwe"])
+         ]
+    poss_grouped_data = [gp for gp in grouped_data if len(gp[1])>=puzzle_k and len(gp[2])>=puzzle_k]
+    
+    # how many categorical categories are to be replaced by grouped categories (to_replace):
+    if ile==1:
+        to_replace = np.random.choice([1,0,0,0,0])
+    elif ile==2:
+        to_replace = np.random.choice([2,1,1,0,0,0,0])
+    else:
+        to_replace = np.random.choice([3,2,2,1,1,1,0,0,0,0,0])
+    
+    if to_replace>0:
+        weights = [p[0] for p in poss_grouped_data]
+        chosen_i = np.random.choice(range(len(poss_grouped_data)), to_replace, p=[w/sum(weights) for w in weights], replace=False)
+        chosen = [ poss_grouped_data[chosen_i[i]] for i in range(to_replace) ]
+        
+        replacements = []
+        for ch in chosen:
+            if puzzle_k==3:
+                ile0 = np.random.randint(1,3)
+                ile1 = puzzle_k-ile0
+            else:
+                ile0 = np.random.randint(2,puzzle_k-1)
+                ile1 = puzzle_k-ile0
+            group0_names = np.random.choice(ch[1], ile0, replace=False)
+            group1_names = np.random.choice(ch[2], ile1, replace=False)
+            rand_order = np.random.permutation( [(0,g0) for g0 in group0_names] + [(1,g1) for g1 in group1_names] )
+            g_names = [ g[1] for g in rand_order ]
+            g_groups = [ g[0] for g in rand_order ]
+            replacements.append({'typ': "categorical", 'names': g_names, 'cross_bar': "", 'groups': g_groups})
+            
+        cat_to_replace = np.random.choice(range(ile), to_replace)
+        for i, j in enumerate(cat_to_replace):
+            chosen_out2[j] = replacements[i]
+    
+    return chosen_out2
 
 # ----------------------------------------- Drawing ordinal categories ---------------------------------------------
 
@@ -436,17 +485,7 @@ def draw_category(K, k, diff=3, seed=0):
             los["interpretation"] = ""
             los["cross_bar"] = los_interpret[0]
         drawn.append( los )
-    
-    # adding empty horizontal bars
-#     final = []
-#     for cat in drawn:
-#         if cat[0]!="numerical":
-#                 final.append( (cat[0], cat[1], '') )
-#         else:
-#             if "@" in cat[3]:
-#                 final.append( (cat[0], cat[1], cat[2], cat[3], '', cat[4]) )
-#             else:
-#                 final.append( (cat[0], cat[1], cat[2], '', cat[3], cat[4]) )
+   
     return drawn
 
 # ----------------------------------------- Other functions ---------------------------------------------

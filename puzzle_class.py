@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 import generating_categories_functions as funs
+from collections import Counter
 
 # ------------------ class methods ----------------------------
      
@@ -105,9 +106,23 @@ def count_x_in_line(self, K1, i1, K2):
             if box[j, i1]==2:
                 x_count += 1
     return x_count 
+
+def is_line_possible_for_group(self, K1, i1, K2, group):
+    box = self.grid[str(min(K1,K2))+","+str(max(K1,K2))]
+    groups = self.categories[K2]["groups"]
+    x_count = 0
+    if K1<K2:
+        for j in range(self.k):
+            if groups[j]==group and box[i1, j]!=2:
+                return True
+    else:
+        for j in range(self.k):
+            if groups[j]==group and box[j, i1]!=2:
+                return True
+    return False
     
 def grid_concile1(self, collect_solution=False):
-    """ 
+    """
     Conciliation no 1
     If there is an 'O' in the square add 'X's in all directions (cross like).
     """
@@ -275,51 +290,58 @@ def get_critical_squares(self, clue):
     """
     critical = []
     if clue["typ"]==1:
-        critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
-        if "i3" in clue:
+        if "i1" in clue and "i2" in clue:
+            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        if "i1" in clue and "i3" in clue:
             critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i3"])]
-        if "i4" in clue:
+        if "i1" in clue and "i4" in clue:
             critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i4"])]
     elif clue["typ"]==2:
-        critical += [(clue["K1"], clue["i1"], clue["K6"], 0)]
-        critical += [(clue["K1"], clue["i1"], clue["K6"], 1)]
-        critical += [(clue["K2"], clue["i2"], clue["K6"], 0)]
-        critical += [(clue["K2"], clue["i2"], clue["K6"], self.k-1)]
-        critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-2)]
-        critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-1)]
+        if "i1" in clue:
+            critical += [(clue["K1"], clue["i1"], clue["K6"], 0)]
+            critical += [(clue["K1"], clue["i1"], clue["K6"], 1)]
+        if "i2" in clue:
+            critical += [(clue["K2"], clue["i2"], clue["K6"], 0)]
+            critical += [(clue["K2"], clue["i2"], clue["K6"], self.k-1)]
+        if "i3" in clue:
+            critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-2)]
+            critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-1)]
 
-        if clue["K1"]!=clue["K2"]:
+        if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
             critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
-        if clue["K1"]!=clue["K3"]:
+        if clue["K1"]!=clue["K3"] and "i1" in clue and "i3" in clue:
             critical += [(clue["K1"], clue["i1"], clue["K3"], clue["i3"])]
-        if clue["K2"]!=clue["K3"]:
+        if clue["K2"]!=clue["K3"] and "i2" in clue and "i3" in clue:
             critical += [(clue["K2"], clue["i2"], clue["K3"], clue["i3"])]
     elif clue["typ"]==3:
         operation = clue["oper"]
         diff = clue["diff"]
         values = self.categories[clue["K6"]]['names']
 
-        if clue["K1"]!=clue["K2"]:
+        if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
             critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
 
         if operation=="+":
             for i in range(self.k):
-                if values[i]-diff not in values:
+                if values[i]-diff not in values and "i2" in clue:
                     critical += [(clue["K2"], clue["i2"], clue["K6"], i)]
-                if values[i]+diff not in values:
+                if values[i]+diff not in values and "i1" in clue:
                     critical += [(clue["K1"], clue["i1"], clue["K6"], i)]
         elif operation=="*":
             for i in range(self.k):
-                if values[i]/diff not in values:
+                if values[i]/diff not in values and "i2" in clue:
                     critical += [(clue["K2"], clue["i2"], clue["K6"], i)]
-                if values[i]*diff not in values:
+                if values[i]*diff not in values and "i1" in clue:
                     critical += [(clue["K1"], clue["i1"], clue["K6"], i)]
     elif clue["typ"]==4:
-        critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
-        critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
-        critical += [(clue["K5"], clue["i5"], clue["K6"], clue["i6"])]
+        if "i1" in clue and "i2" in clue:
+            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        if "i3" in clue and "i4" in clue:    
+            critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
+        if "i5" in clue and "i6" in clue:
+            critical += [(clue["K5"], clue["i5"], clue["K6"], clue["i6"])]
         
-        if clue["K3"]==clue["K5"] and clue["K4"]==clue["K6"]:
+        if clue["K3"]==clue["K5"] and clue["K4"]==clue["K6"] and "i3" in clue and "i4" in clue and "i5" in clue and "i6" in clue:
             if clue["i3"]!=clue["i5"] and clue["i4"]!=clue["i6"]:
                 critical += [(clue["K3"], clue["i5"], clue["K4"], clue["i4"])]
                 critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i6"])]
@@ -333,10 +355,12 @@ def get_critical_squares(self, clue):
                         critical += [(clue["K3"], i, clue["K4"], clue["i4"])]
 
     elif clue["typ"]==5:
-        critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
-        critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
+        if "i1" in clue and "i2" in clue:
+            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        if "i3" in clue and "i4" in clue:
+            critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
         
-        if clue["K1"]==clue["K3"] and clue["K2"]==clue["K4"]:
+        if clue["K1"]==clue["K3"] and clue["K2"]==clue["K4"] and "i1" in clue and "i2" in clue and "i3" in clue and "i4" in clue:
             if clue["i1"]!=clue["i3"] and clue["i2"]!=clue["i4"]:
                 critical += [(clue["K1"], clue["i3"], clue["K2"], clue["i2"])]
                 critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i4"])]
@@ -349,7 +373,7 @@ def get_critical_squares(self, clue):
                     if i!=clue["i1"] and i!=clue["i3"]:
                         critical += [(clue["K1"], i, clue["K2"], clue["i2"])]
     elif clue["typ"]==6:
-        if clue["K1"]!=clue["K2"]:
+        if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
             critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
     return critical
     
@@ -374,35 +398,37 @@ def is_forbidden(self, clue_cand):
     if clue_cand["typ"]==2 and self.k<6:
         # checking if clue of type 2 do not solve any clue of type 2 immediately 
         for clue in [ c for c in self.clues if c["typ"]==2 ]:
-            if clue["K6"]==clue_cand["K6"]:
-                if clue["K1"]==clue_cand["K3"] and clue["i1"]==clue_cand["i3"]:
-                    return True
-                if clue["K3"]==clue_cand["K1"] and clue["i3"]==clue_cand["i1"]:
-                    return True
+            if clue["K6"]==clue_cand["K6"] :
+                if "g1" not in clue and "g3" not in clue_cand:
+                    if clue["K1"]==clue_cand["K3"] and clue["i1"]==clue_cand["i3"]:
+                        return True
+                if "g3" not in clue and "g1" not in clue_cand:
+                    if clue["K3"]==clue_cand["K1"] and clue["i3"]==clue_cand["i1"]:
+                        return True
                 if self.k<5:
-                    if clue["K2"]==clue_cand["K3"] and clue["i2"]==clue_cand["i3"]:
+                    if clue["K2"]==clue_cand["K3"] and "i2" in clue and "i3" in clue_cand and clue["i2"]==clue_cand["i3"]:
                         return True
-                    if clue["K2"]==clue_cand["K1"] and clue["i2"]==clue_cand["i1"]:
+                    if clue["K2"]==clue_cand["K1"] and "i2" in clue and "i1" in clue_cand and clue["i2"]==clue_cand["i1"]:
                         return True
-                    if clue["K3"]==clue_cand["K2"] and clue["i3"]==clue_cand["i2"]:
+                    if clue["K3"]==clue_cand["K2"] and "i3" in clue and "i2" in clue_cand and clue["i3"]==clue_cand["i2"]:
                         return True
-                    if clue["K1"]==clue_cand["K2"] and clue["i1"]==clue_cand["i2"]:
+                    if clue["K1"]==clue_cand["K2"] and "i1" in clue and "i2" in clue_cand and clue["i1"]==clue_cand["i2"]:
                         return True
         if self.k<5:
             for clue in [ c for c in self.clues if c["typ"]==3 ]:
                 if clue["K6"]==clue_cand["K6"]:
-                    if clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
+                    if clue["K1"]==clue_cand["K1"] and "i1" in clue and "i1" in clue_cand and clue["i1"]==clue_cand["i1"]:
                         return True
-                    if clue["K2"]==clue_cand["K2"] and clue["i2"]==clue_cand["i2"]:
+                    if clue["K2"]==clue_cand["K2"] and "i2" in clue and "i2" in clue_cand and clue["i2"]==clue_cand["i2"]:
                         return True
     elif clue_cand["typ"]==3 and self.k<5:
         # checking if clue of type 3 do not solve any clue of type 2 immediately 
         # assuming only one 'X' for either of two objects in clue 3
         for clue in [ c for c in self.clues if c["typ"]==2 ]:
             if clue["K6"]==clue_cand["K6"]:
-                if clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
+                if clue["K1"]==clue_cand["K1"] and "i1" in clue and "i1" in clue_cand and clue["i1"]==clue_cand["i1"]:
                     return True
-                if clue["K3"]==clue_cand["K2"] and clue["i3"]==clue_cand["i2"]:
+                if clue["K3"]==clue_cand["K2"] and "i3" in clue and "i2" in clue_cand and clue["i3"]==clue_cand["i2"]:
                     return True
     
     # checking if clue of type 2/3 do not solve any clue of type 2/3 immediately 
@@ -410,51 +436,163 @@ def is_forbidden(self, clue_cand):
     if clue_cand["typ"]==3 and self.k>3:
         for clue in [ c for c in self.clues if c["typ"]==2 ]:
             if clue["K6"]==clue_cand["K6"]:
-                if clue["K3"]==clue_cand["K2"] and clue["i3"]==clue_cand["i2"]:
+                if clue["K3"]==clue_cand["K2"] and "i3" in clue and "i2" in clue_cand and clue["i3"]==clue_cand["i2"]:
                     critical_sum = 0
                     critical1 = self.get_critical_squares(clue_cand)
                     critical2 = self.get_critical_squares(clue)
                     critical_list = critical1 + critical2
-                    for i in range(self.k):
-                        if (clue["K3"], clue["i3"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K3"], clue["i3"]) in critical_list:
-                            critical_sum += 1
-                    if critical_sum >= self.k-1:
-                        return True
-                elif clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
+                    if "i3" in clue:
+                        for i in range(self.k):
+                            if (clue["K3"], clue["i3"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K3"], clue["i3"]) in critical_list:
+                                critical_sum += 1
+                        if critical_sum >= self.k-1:
+                            return True
+                elif clue["K1"]==clue_cand["K1"] and "i1" in clue and "i1" in clue_cand and clue["i1"]==clue_cand["i1"]:
                     critical_sum = 0
                     critical1 = self.get_critical_squares(clue_cand)
                     critical2 = self.get_critical_squares(clue)
                     critical_list = critical1 + critical2
-                    for i in range(self.k):
-                        if (clue["K1"], clue["i1"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K1"], clue["i1"]) in critical_list:
-                            critical_sum += 1
-                    if critical_sum >= self.k-1:
-                        return True
+                    if "i1" in clue:
+                        for i in range(self.k):
+                            if (clue["K1"], clue["i1"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K1"], clue["i1"]) in critical_list:
+                                critical_sum += 1
+                        if critical_sum >= self.k-1:
+                            return True
     elif clue_cand["typ"]==2 and self.k>3:
         for clue in [ c for c in self.clues if c["typ"]==3 ]:
             if clue["K6"]==clue_cand["K6"]:
-                if clue_cand["K3"]==clue["K2"] and clue_cand["i3"]==clue["i2"]:
+                if clue_cand["K3"]==clue["K2"] and "i3" in clue and "i2" in clue_cand and clue_cand["i3"]==clue["i2"]:
                     critical_sum = 0
                     critical1 = self.get_critical_squares(clue_cand)
                     critical2 = self.get_critical_squares(clue)
                     critical_list = critical1 + critical2
-                    for i in range(self.k):
-                        if (clue["K2"], clue["i2"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K2"], clue["i2"]) in critical_list:
-                            critical_sum += 1
-                    if critical_sum >= self.k-1:
-                        return True
-                elif clue["K1"]==clue_cand["K1"] and clue["i1"]==clue_cand["i1"]:
+                    if "i2" in clue:
+                        for i in range(self.k):
+                            if (clue["K2"], clue["i2"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K2"], clue["i2"]) in critical_list:
+                                critical_sum += 1
+                        if critical_sum >= self.k-1:
+                            return True
+                elif clue["K1"]==clue_cand["K1"] and "i1" in clue and "i1" in clue_cand and clue["i1"]==clue_cand["i1"]:
                     critical_sum = 0
                     critical1 = self.get_critical_squares(clue_cand)
                     critical2 = self.get_critical_squares(clue)
                     critical_list = critical1 + critical2
-                    for i in range(self.k):
-                        if (clue["K1"], clue["i1"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K1"], clue["i1"]) in critical_list:
-                            critical_sum += 1
-                    if critical_sum >= self.k-1:
-                        return True
+                    if "i1" in clue:
+                        for i in range(self.k):
+                            if (clue["K1"], clue["i1"], clue["K6"], i) in critical_list or (clue["K6"], i, clue["K1"], clue["i1"]) in critical_list:
+                                critical_sum += 1
+                        if critical_sum >= self.k-1:
+                            return True
     return False
-                                                
+
+def propose_clue1_cand(self, clue_cand):
+    """
+    Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
+    (only if there are actually groups in this category).
+    """
+    prob_of_group = 0.8
+    
+    if "groups" in self.categories[clue_cand["K1"]] and len(np.unique(self.categories[clue_cand["K1"]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+        cnt = dict(Counter(self.categories[clue_cand["K1"]]["groups"]))
+        possible_groups = [ k for k in cnt.keys() if cnt[k]<self.k-1 ] #excluding groups that will exclude too much options
+        group = np.random.choice(possible_groups, 1)[0]
+        del clue_cand["i1"]
+        clue_cand["g1"] = group
+    elif "groups" in self.categories[clue_cand["K2"]] and len(np.unique(self.categories[clue_cand["K2"]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+        cnt = dict(Counter(self.categories[clue_cand["K2"]]["groups"]))
+        possible_groups = [ k for k in cnt.keys() if cnt[k]<self.k-1 ] #excluding groups that will exclude too much options
+        group = np.random.choice(possible_groups, 1)[0]
+        del clue_cand["i2"]
+        clue_cand["g2"] = group
+            
+    return clue_cand
+
+def propose_clue2_cand(self, clue_cand):
+    """
+    Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
+    (only if there are actually groups in this category).
+    """
+    prob_of_group = 0.8
+    
+    order = np.random.permutation(["1", "2", "3"])
+    for i in order:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+            cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
+            possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
+            group = np.random.choice(possible_groups, 1)[0]
+            del clue_cand["i"+i]
+            clue_cand["g"+i] = group
+            
+    return clue_cand
+
+def propose_clue3_cand(self, clue_cand):
+    """
+    Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
+    (only if there are actually groups in this category).
+    """
+    prob_of_group = 0.8
+    order = np.random.permutation(["1", "2"])
+    for i in order:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+            cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
+            possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
+            group = np.random.choice(possible_groups, 1)[0]
+            del clue_cand["i"+i]
+            clue_cand["g"+i] = group
+            
+    return clue_cand
+
+def propose_clue4_cand(self, clue_cand):
+    """
+    Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
+    (only if there are actually groups in this category).
+    """
+    prob_of_group = 0.8
+    order = np.random.permutation(["1", "2", "3", "4", "5", "6"])
+    for i in order:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+            cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
+            possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
+            group = np.random.choice(possible_groups, 1)[0]
+            del clue_cand["i"+i]
+            clue_cand["g"+i] = group
+            
+    return clue_cand
+
+def propose_clue5_cand(self, clue_cand):
+    """
+    Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
+    (only if there are actually groups in this category).
+    """
+    prob_of_group = 0.8
+    order = np.random.permutation(["1", "2", "3", "4"])
+    for i in order:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+            cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
+            possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
+            group = np.random.choice(possible_groups, 1)[0]
+            del clue_cand["i"+i]
+            clue_cand["g"+i] = group
+            
+    return clue_cand
+
+def propose_clue6_cand(self, clue_cand):
+    """
+    Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
+    (only if there are actually groups in this category).
+    """
+    prob_of_group = 0.8
+    order = np.random.permutation(["1", "2"])
+    for i in order:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+            cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
+            possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
+            group = np.random.choice(possible_groups, 1)[0]
+            del clue_cand["i"+i]
+            clue_cand["g"+i] = group
+            
+    return clue_cand
+
 def add_clue1(self):
     """
     Adding clue of type 1:
@@ -479,6 +617,7 @@ def add_clue1(self):
                 if self.get_grid_value(K1, i, K2, j)==0:
                     if no_of_x==1:
                         clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j}
+                        clue_cand = propose_clue1_cand(self, clue_cand)        
                         if self.is_forbidden(clue_cand):
                             break
                         self.clues.append(clue_cand)
@@ -493,6 +632,7 @@ def add_clue1(self):
                             other_j.append(j2)
                     if len(other_i)<=no_of_x-1 and len(other_j)<=no_of_x-1:
                         clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j}
+                        clue_cand = propose_clue1_cand(self, clue_cand)     
                         if self.is_forbidden(clue_cand):
                             break
                         self.clues.append(clue_cand)
@@ -502,12 +642,14 @@ def add_clue1(self):
                             to_fill = np.random.choice(other_i, no_of_x-1, replace=False)
                             if no_of_x==2:
                                 clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]}
+                                clue_cand = propose_clue1_cand(self, clue_cand)     
                                 if self.is_forbidden(clue_cand):
                                     break
                                 self.clues.append(clue_cand)
                                 return
                             else:
                                 clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0], "i4":to_fill[1]}
+                                clue_cand = propose_clue1_cand(self, clue_cand)     
                                 if self.is_forbidden(clue_cand):
                                     break
                                 self.clues.append(clue_cand)
@@ -516,12 +658,14 @@ def add_clue1(self):
                             to_fill = np.random.choice(other_j, no_of_x-1, replace=False)
                             if no_of_x==2:
                                 clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]}
+                                clue_cand = propose_clue1_cand(self, clue_cand)     
                                 if self.is_forbidden(clue_cand):
                                     break
                                 self.clues.append(clue_cand)
                                 return
                             else:
                                 clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0], "i4":to_fill[1]}
+                                clue_cand = propose_clue1_cand(self, clue_cand)     
                                 if self.is_forbidden(clue_cand):
                                     break
                                 self.clues.append(clue_cand)
@@ -530,12 +674,14 @@ def add_clue1(self):
                         to_fill = np.random.choice(other_i, no_of_x-1, replace=False)
                         if no_of_x==2:
                             clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]}
+                            clue_cand = propose_clue1_cand(self, clue_cand)     
                             if self.is_forbidden(clue_cand):
                                 break
                             self.clues.append(clue_cand)
                             return
                         else:
                             clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0], "i4":to_fill[1]}
+                            clue_cand = propose_clue1_cand(self, clue_cand)     
                             if self.is_forbidden(clue_cand):
                                 break
                             self.clues.append(clue_cand)
@@ -544,12 +690,14 @@ def add_clue1(self):
                         to_fill = np.random.choice(other_j, no_of_x-1, replace=False)
                         if no_of_x==2:
                             clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]}
+                            clue_cand = propose_clue1_cand(self, clue_cand)     
                             if self.is_forbidden(clue_cand):
                                 break
                             self.clues.append(clue_cand)
                             return
                         else:
                             clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0], "i4":to_fill[1]}
+                            clue_cand = propose_clue1_cand(self, clue_cand)     
                             if self.is_forbidden(clue_cand):
                                 break
                             self.clues.append(clue_cand)
@@ -602,11 +750,12 @@ def add_clue2(self):
                     sum_of_free = sum([val==0 for val in values])
                     if sum_of_free>5:
                         clue_cand = {"typ":2, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K3":K3, "i3":i3, "K6": K6}
+                        clue_cand = propose_clue2_cand(self, clue_cand) 
                         if self.is_forbidden(clue_cand):
                             break
                         self.clues.append(clue_cand)
                         return
-    #print("Program couldn't fit any clue of type no 2!")
+    
            
 def add_clue3(self):
     """
@@ -651,6 +800,7 @@ def add_clue3(self):
                         sum_of_free = sum([val==0 for val in vals_for_X])
                         if sum_of_free>1:
                             clue_cand = {"typ":3, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6, "diff":diff, "oper": operation}
+                            clue_cand = propose_clue3_cand(self, clue_cand) 
                             if self.is_forbidden(clue_cand):
                                 break
                             self.clues.append(clue_cand)
@@ -669,13 +819,13 @@ def add_clue3(self):
                         sum_of_free = sum([val==0 for val in vals_for_X])
                         if sum_of_free>1:
                             clue_cand = {"typ":3, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6, "diff":diff, "oper": operation}
+                            clue_cand = propose_clue3_cand(self, clue_cand) 
                             if self.is_forbidden(clue_cand):
                                 break
                             self.clues.append(clue_cand)
                             return
                     else:
                         raise Exception("Unknown operation type: "+operation+"!")
-    #print("Program couldn't fit any clue of type no 3!")
     
 def add_clue4(self):
     """
@@ -743,12 +893,14 @@ def add_clue4(self):
                                                     sum_of_free = sum([val==0 for val in vals_for_X])
                                                     if sum_of_free>1:
                                                         clue_cand = {"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6}
+                                                        clue_cand = propose_clue4_cand(self, clue_cand) 
                                                         if self.is_forbidden(clue_cand):
                                                             break
                                                         self.clues.append(clue_cand)
                                                         return
                                                 else:
                                                     clue_cand = {"typ":4, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4, "K5":K5, "i5":i5, "K6": K6, "i6": i6}
+                                                    clue_cand = propose_clue4_cand(self, clue_cand) 
                                                     if self.is_forbidden(clue_cand):
                                                         break
                                                     self.clues.append(clue_cand)
@@ -811,12 +963,14 @@ def add_clue5(self):
                                     sum_of_free = sum([val==0 for val in vals_for_X])
                                     if sum_of_free>1:
                                         clue_cand = {"typ":5, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4}
+                                        clue_cand = propose_clue5_cand(self, clue_cand) 
                                         if self.is_forbidden(clue_cand):
                                             break
                                         self.clues.append(clue_cand)
                                         return
                                 else:
                                     clue_cand = {"typ":5, "K1":K1, "i1":i1, "K2":K2, "i2": i2, "K3":K3, "i3":i3, "K4":K4, "i4":i4}
+                                    clue_cand = propose_clue5_cand(self, clue_cand) 
                                     if self.is_forbidden(clue_cand):
                                         break
                                     self.clues.append(clue_cand)
@@ -852,6 +1006,7 @@ def add_clue6(self):
                         possible_pairs += 1
                 if possible_pairs>k-1:
                     clue_cand = {"typ":6, "K1":K1, "i1":i1, "K2":K2, "i2":i2, "K6": K6}
+                    clue_cand = propose_clue6_cand(self, clue_cand) 
                     if self.is_forbidden(clue_cand):
                         break
                     self.clues.append(clue_cand)
@@ -859,51 +1014,66 @@ def add_clue6(self):
                         
 def use_clue1(self, c, collect_solution=False):
     clue = self.clues[c]
-    self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue1_"+str(c), collect_solution)
-    if "i3" in clue:
-        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i3"], "X", "clue1_"+str(c), collect_solution)
-        if "i4" in clue:
-              self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i4"], "X", "clue1_"+str(c), collect_solution)
+    if "g1" not in clue and "g2" not in clue: # with no groups
+        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue1_"+str(c), collect_solution)
+        if "i3" in clue:
+            self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i3"], "X", "clue1_"+str(c), collect_solution)
+            if "i4" in clue:
+                  self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i4"], "X", "clue1_"+str(c), collect_solution)
+    else: # with groups
+        if "g1" in clue:
+            for i in range(self.k):
+                if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                    self.grid_insert(clue["K1"], i, clue["K2"], clue["i2"], "X", "clue1_"+str(c), collect_solution)
+        if "g2" in clue:
+            for i in range(self.k):
+                if self.categories[clue["K2"]]["groups"][i]==clue["g2"]:
+                    self.grid_insert(clue["K1"], clue["i1"], clue["K2"], i, "X", "clue1_"+str(c), collect_solution)
+        
                 
 def use_clue2(self, c, collect_solution=False):
     clue = self.clues[c]
-    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 0, "X", "clue2_"+str(c), collect_solution)
-    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 1, "X", "clue2_"+str(c), collect_solution)
-    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], 0, "X", "clue2_"+str(c), collect_solution)
-    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-1, "X", "clue2_"+str(c), collect_solution)
-    self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-2, "X", "clue2_"+str(c), collect_solution)
-    self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-1, "X", "clue2_"+str(c), collect_solution)
+    if "i1" in clue:
+        self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 0, "X", "clue2_"+str(c), collect_solution)
+        self.grid_insert(clue["K1"], clue["i1"], clue["K6"], 1, "X", "clue2_"+str(c), collect_solution)
+    if "i2" in clue:
+        self.grid_insert(clue["K2"], clue["i2"], clue["K6"], 0, "X", "clue2_"+str(c), collect_solution)
+        self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-1, "X", "clue2_"+str(c), collect_solution)
+    if "i3" in clue:
+        self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-2, "X", "clue2_"+str(c), collect_solution)
+        self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-1, "X", "clue2_"+str(c), collect_solution)
     
-    if clue["K1"]!=clue["K2"]:
+    if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
         self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue2_"+str(c), collect_solution)
-    if clue["K1"]!=clue["K3"]:
+    if clue["K1"]!=clue["K3"] and "i1" in clue and "i3" in clue:
         self.grid_insert(clue["K1"], clue["i1"], clue["K3"], clue["i3"], "X", "clue2_"+str(c), collect_solution)
-    if clue["K2"]!=clue["K3"]:
+    if clue["K2"]!=clue["K3"] and "i2" in clue and "i3" in clue:
         self.grid_insert(clue["K2"], clue["i2"], clue["K3"], clue["i3"], "X", "clue2_"+str(c), collect_solution)
     
-    for j in range(self.k-2):
-        if self.get_grid_value(clue["K3"], clue["i3"], clue["K6"], j)==2:
-            self.grid_insert(clue["K2"], clue["i2"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
-            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X", "clue2_"+str(c), collect_solution)          
-        else:
-            break
-    for j in range(self.k-1):
-        if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], j)==2:
-            self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
-        else:
-            break
-            
-    for j in range(self.k-2):
-        if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], self.k-j-1)==2:
-            self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
-            self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-3, "X", "clue2_"+str(c), collect_solution)
-        else:
-            break
-    for j in range(self.k-1):
-        if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], self.k-j-1)==2:
-            self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
-        else:
-            break
+    if "g1" not in clue and "g2" not in clue and "g3" not in clue:
+        for j in range(self.k-2):
+            if self.get_grid_value(clue["K3"], clue["i3"], clue["K6"], j)==2:
+                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
+                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X", "clue2_"+str(c), collect_solution)          
+            else:
+                break
+        for j in range(self.k-1):
+            if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], j)==2:
+                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
+            else:
+                break
+
+        for j in range(self.k-2):
+            if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], self.k-j-1)==2:
+                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
+                self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-3, "X", "clue2_"+str(c), collect_solution)
+            else:
+                break
+        for j in range(self.k-1):
+            if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], self.k-j-1)==2:
+                self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
+            else:
+                break
             
 def use_clue3(self, c, collect_solution=False):
     clue = self.clues[c]
@@ -911,21 +1081,22 @@ def use_clue3(self, c, collect_solution=False):
     diff = clue["diff"]
     values = self.categories[clue["K6"]]['names']
     
-    if clue["K1"]!=clue["K2"]:
+    if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
         self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue3_"+str(c), collect_solution)
     
-    if operation=="+":
-        for i in range(self.k):
-            if values[i]-diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]-diff))==2:
-                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
-            if values[i]+diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))==2:
-                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
-    elif operation=="*":
-        for i in range(self.k):
-            if values[i]/diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]/diff))==2:
-                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
-            if values[i]*diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))==2:
-                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)            
+    if "i1" in clue and "i2" in clue:
+        if operation=="+":
+            for i in range(self.k):
+                if values[i]-diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]-diff))==2:
+                    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+                if values[i]+diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))==2:
+                    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+        elif operation=="*":
+            for i in range(self.k):
+                if values[i]/diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]/diff))==2:
+                    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+                if values[i]*diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))==2:
+                    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)            
             
 def use_clue4(self, c, collect_solution=False):
     clue = self.clues[c]    
@@ -936,90 +1107,197 @@ def use_clue4(self, c, collect_solution=False):
     K4 = clue["K4"]
     K5 = clue["K5"]
     K6 = clue["K6"]
-    i1 = clue["i1"]
-    i2 = clue["i2"]
-    i3 = clue["i3"]
-    i4 = clue["i4"]
-    i5 = clue["i5"]
-    i6 = clue["i6"]
     
     if K3==K5 and K4==K6:
-        if i3!=i5 and i4!=i6:
-            self.grid_insert(K3, i5, K4, i4, "X", "clue4_"+str(c), collect_solution)
-            self.grid_insert(K3, i3, K4, i6, "X", "clue4_"+str(c), collect_solution)
-        elif i3==i5:
-            for i in range(self.k):
-                if i!=i4 and i!=i6:
-                    self.grid_insert(K3, i3, K4, i, "X", "clue4_"+str(c), collect_solution)
-        else:
-            for i in range(self.k):
-                if i!=i3 and i!=i5:
-                    self.grid_insert(K3, i, K4, i4, "X", "clue4_"+str(c), collect_solution)
-            
-    if self.get_grid_value(K3, i3, K4, i4)==2:
-        self.grid_insert(K1, i1, K2, i2, "X", "clue4_"+str(c), collect_solution)
-        
-    if self.get_grid_value(K5, i5, K6, i6)==2:
-        self.grid_insert(K1, i1, K2, i2, "O", "clue4_"+str(c), collect_solution)
+        if "i3" in clue and "i4" in clue and "i5" in clue and "i6" in clue:
+            i3 = clue["i3"]
+            i4 = clue["i4"]
+            i5 = clue["i5"]
+            i6 = clue["i6"]
+            if i3!=i5 and i4!=i6:
+                self.grid_insert(K3, i5, K4, i4, "X", "clue4_"+str(c), collect_solution)
+                self.grid_insert(K3, i3, K4, i6, "X", "clue4_"+str(c), collect_solution)
+            elif i3==i5:
+                for i in range(self.k):
+                    if i!=i4 and i!=i6:
+                        self.grid_insert(K3, i3, K4, i, "X", "clue4_"+str(c), collect_solution)
+            else:
+                for i in range(self.k):
+                    if i!=i3 and i!=i5:
+                        self.grid_insert(K3, i, K4, i4, "X", "clue4_"+str(c), collect_solution)
     
-    if self.get_grid_value(K1, i1, K2, i2)==1:
-        self.grid_insert(K3, i3, K4, i4, "O", "clue4_"+str(c), collect_solution)
-    elif self.get_grid_value(K1, i1, K2, i2)==2:
-        self.grid_insert(K5, i5, K6, i6, "O", "clue4_"+str(c), collect_solution)
+    # contition12: premise is false
+    if "i1" in clue and "i2" in clue:
+        condition12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==2
+    elif "i1" in clue:
+        condition12 = not self.is_line_possible_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
+    elif "i2" in clue:
+        condition12 = not self.is_line_possible_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
+    else: # if both are group type
+        condition12 = True
+        for i in range(self.k):
+            if self.categories[clue["K2"]]["groups"][i]==clue["g2"] and self.is_line_possible_for_group(clue["K1"], clue["g1"], clue["K2"], i):
+                condition12 = False
+                break
+    
+    # condition12anti: premise is true
+    if "i1" in clue and "i2" in clue:
+        condition12anti = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==1
+    elif "i1" in clue:
+        condition12anti = False
+        for i in range(self.k):
+            if self.categories[clue["K2"]]["groups"][i]==clue["g2"]:
+                if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], i)==1:
+                    condition12anti = True
+                    break
+    elif "i2" in clue:
+        condition12anti = False
+        for i in range(self.k):
+            if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                if self.get_grid_value(clue["K2"], clue["i2"], clue["K1"], i)==1:
+                    condition12anti = True
+                    break
+    else: # both are group type
+        condition12anti = False
+        for i in range(self.k):
+            if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                for j in range(self.k):
+                    if self.categories[clue["K2"]]["groups"][j]==clue["g2"]:
+                        if self.get_grid_value(clue["K1"], i, clue["K2"], j)==1:
+                            condition12anti = True
+                            break
+                
+    # contition34: positive conclusion is false            
+    if "i3" in clue and "i4" in clue:
+        condition34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"])==2
+    elif "i3" in clue:
+        condition34 = not self.is_line_possible_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
+    elif "i4" in clue:
+        condition34 = not self.is_line_possible_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
+    else: # both are group type
+        condition34 = True
+        for i in range(self.k):
+            if self.categories[clue["K4"]]["groups"][i]==clue["g4"] and self.is_line_possible_for_group(clue["K3"], clue["g3"], clue["K4"], i):
+                condition34 = False
+                break
+    
+    # contition56: negative conclusion is false 
+    if "i5" in clue and "i6" in clue:
+        condition56 = self.get_grid_value(clue["K5"], clue["i5"], clue["K6"], clue["i6"])==2
+    elif "i5" in clue:
+        condition56 = not self.is_line_possible_for_group(clue["K5"], clue["i5"], clue["K6"], clue["g6"])
+    elif "i6" in clue:
+        condition56 = not self.is_line_possible_for_group(clue["K6"], clue["i6"], clue["K5"], clue["g5"])
+    else: # both are group type
+        condition56 = True
+        for i in range(self.k):
+            if self.categories[clue["K6"]]["groups"][i]==clue["g6"] and self.is_line_possible_for_group(clue["K5"], clue["g5"], clue["K6"], i):
+                condition56 = False
+                break
+    
+    if condition34 and "i1" in clue and "i2" in clue:
+        self.grid_insert(K1, clue["i1"], K2, clue["i2"], "X", "clue4_"+str(c), collect_solution)
+        
+    if condition56 and "i1" in clue and "i2" in clue:
+        self.grid_insert(K1, clue["i1"], K2, clue["i2"], "O", "clue4_"+str(c), collect_solution)
+    
+    if condition12anti and "i3" in clue and "i4" in clue:
+        self.grid_insert(K3, clue["i3"], K4, clue["i4"], "O", "clue4_"+str(c), collect_solution)
+    elif condition12 and "i5" in clue and "i6" in clue:
+        self.grid_insert(K5, clue["i5"], K6, clue["i6"], "O", "clue4_"+str(c), collect_solution)
         
 def use_clue5(self, c, collect_solution=False):
     clue = self.clues[c]    
-    
     K1 = clue["K1"]
     K2 = clue["K2"]
     K3 = clue["K3"]
     K4 = clue["K4"]
-    i1 = clue["i1"]
-    i2 = clue["i2"]
-    i3 = clue["i3"]
-    i4 = clue["i4"]
     
     if K1==K3 and K2==K4:
-        if i1!=i3 and i2!=i4:
-            self.grid_insert(K1, i3, K2, i2, "X", "clue5_"+str(c), collect_solution)
-            self.grid_insert(K1, i1, K2, i4, "X", "clue5_"+str(c), collect_solution)
-        elif i1==i3:
-            for i in range(self.k):
-                if i!=i2 and i!=i4:
-                    self.grid_insert(K1, i1, K2, i, "X", "clue5_"+str(c), collect_solution)
-        else:
-            for i in range(self.k):
-                if i!=i1 and i!=i3:
-                    self.grid_insert(K1, i, K2, i2, "X", "clue5_"+str(c), collect_solution)
-            
-    if self.get_grid_value(K1, i1, K2, i2)==2:
-        self.grid_insert(K3, i3, K4, i4, "O", "clue5_"+str(c), collect_solution)
-    elif self.get_grid_value(K3, i3, K4, i4)==2:
-        self.grid_insert(K1, i1, K2, i2, "O", "clue5_"+str(c), collect_solution)
+        if "i1" in clue and "i2" in clue and "i3" in clue and "i4" in clue:
+            i1 = clue["i1"]
+            i2 = clue["i2"]
+            i3 = clue["i3"]
+            i4 = clue["i4"]
+            if i1!=i3 and i2!=i4:
+                self.grid_insert(K1, i3, K2, i2, "X", "clue5_"+str(c), collect_solution)
+                self.grid_insert(K1, i1, K2, i4, "X", "clue5_"+str(c), collect_solution)
+            elif i1==i3:
+                for i in range(self.k):
+                    if i!=i2 and i!=i4:
+                        self.grid_insert(K1, i1, K2, i, "X", "clue5_"+str(c), collect_solution)
+            else:
+                for i in range(self.k):
+                    if i!=i1 and i!=i3:
+                        self.grid_insert(K1, i, K2, i2, "X", "clue5_"+str(c), collect_solution)
+    
+    if "i1" in clue and "i2" in clue:
+        condition12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==2
+    elif "i1" in clue:
+        condition12 = not self.is_line_possible_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
+    elif "i2" in clue:
+        condition12 = not self.is_line_possible_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
+    else: # both are group type
+        condition12 = True
+        for i in range(self.k):
+            if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                if self.is_line_possible_for_group(clue["K1"], i, clue["K2"], clue["g2"]):
+                    condition12 = False
+                    break
+                    
+    if "i3" in clue and "i4" in clue:
+        condition34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"])==2
+    elif "i3" in clue:
+        condition34 = not self.is_line_possible_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
+    elif "i4" in clue:
+        condition34 = not self.is_line_possible_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
+    else: # both are group type
+        condition34 = True
+        for i in range(self.k):
+            if self.categories[clue["K3"]]["groups"][i]==clue["g3"]:
+                if self.is_line_possible_for_group(clue["K3"], i, clue["K4"], clue["g4"]):
+                    condition34 = False
+                    break
+    
+    if condition12 and "i3" in clue and "i4" in clue:
+        self.grid_insert(K3, clue["i3"], K4, clue["i4"], "O", "clue5_"+str(c), collect_solution)
+    elif condition34 and "i1" in clue and "i2" in clue:
+        self.grid_insert(K1, clue["i1"], K2, clue["i2"], "O", "clue5_"+str(c), collect_solution)
     
 def use_clue6(self, c, collect_solution=False):
     clue = self.clues[c]
     K1 = clue["K1"]
     K2 = clue["K2"]
     K6 = clue["K6"]
-    i1 = clue["i1"]
-    i2 = clue["i2"]
-        
+    
     for i in range(self.k):
-        if self.get_grid_value(K1, i1, K6, i)==0:
-            if (i==0 or self.get_grid_value(K2, i2, K6, i-1)==2) and (i==self.k-1 or self.get_grid_value(K2, i2, K6, i+1)==2):
-                self.grid_insert(K1, i1, K6, i, "X", "clue6_"+str(c), collect_solution)
-        elif self.get_grid_value(K1, i1, K6, i)==1:
-            for j in range(self.k):
-                if j!=i-1 and j!=i+1:
-                    self.grid_insert(K2, i2, K6, j, "X", "clue6_"+str(c), collect_solution)
-        if self.get_grid_value(K2, i2, K6, i)==0:
-            if (i==0 or self.get_grid_value(K1, i1, K6, i-1)==2) and (i==self.k-1 or self.get_grid_value(K1, i1, K6, i+1)==2):
-                self.grid_insert(K2, i2, K6, i, "X", "clue6_"+str(c), collect_solution)
-        elif self.get_grid_value(K2, i2, K6, i)==1:
-            for j in range(self.k):
-                if j!=i-1 and j!=i+1:
-                    self.grid_insert(K1, i1, K6, j, "X", "clue6_"+str(c), collect_solution)
+        if "i1" in clue:
+            if "i2" in clue:
+                if self.get_grid_value(K1, clue["i1"], K6, i)==0:
+                    if (i==0 or self.get_grid_value(K2, clue["i2"], K6, i-1)==2) and (i==self.k-1 or self.get_grid_value(K2, clue["i2"], K6, i+1)==2):
+                        self.grid_insert(K1, clue["i1"], K6, i, "X", "clue6_"+str(c), collect_solution)
+                elif self.get_grid_value(K1, clue["i1"], K6, i)==1:
+                    for j in range(self.k):
+                        if j!=i-1 and j!=i+1:
+                            self.grid_insert(K2, clue["i2"], K6, j, "X", "clue6_"+str(c), collect_solution)
+            else:
+                if self.get_grid_value(K1, clue["i1"], K6, i)==0:
+                    if (i==0 or not self.is_line_possible_for_group(K6, i-1, K2, clue["g2"])) and (i==self.k-1 or not self.is_line_possible_for_group(K6, i+1, K2, clue["g2"])):
+                        self.grid_insert(K1, clue["i1"], K6, i, "X", "clue6_"+str(c), collect_solution)
+                                   
+        if "i2" in clue:
+            if "i1" in clue:
+                if self.get_grid_value(K2, clue["i2"], K6, i)==0:
+                    if (i==0 or self.get_grid_value(K1, clue["i1"], K6, i-1)==2) and (i==self.k-1 or self.get_grid_value(K1, clue["i1"], K6, i+1)==2):
+                        self.grid_insert(K2, clue["i2"], K6, i, "X", "clue6_"+str(c), collect_solution)
+                elif self.get_grid_value(K2, clue["i2"], K6, i)==1:
+                    for j in range(self.k):
+                        if j!=i-1 and j!=i+1:
+                            self.grid_insert(K1, clue["i1"], K6, j, "X", "clue6_"+str(c), collect_solution)
+            else:
+                if self.get_grid_value(K2, clue["i2"], K6, i)==0:
+                    if (i==0 or self.is_line_possible_for_group(K6, i-1, K1, clue["g1"])) and (i==self.k-1 or self.is_line_possible_for_group(K6, i+1, K1, clue["g1"])):
+                        self.grid_insert(K2, clue["i2"], K6, i, "X", "clue6_"+str(c), collect_solution)
     
 def use_clue(self, c, collect_solution=False):
     if len(self.clues)<=c or c<0:
@@ -1040,24 +1318,55 @@ def use_clue(self, c, collect_solution=False):
         self.use_clue5(c, collect_solution)
     elif typ==6:
         self.use_clue6(c, collect_solution)
+
         
+def is_grid_contradictory_with_clue1(self, c):
+    clue = self.clues[c]
+    if "g1" not in clue and "g2" not in clue: # with no groups
+        if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==1:
+            return True
+        if "i3" in clue:
+            if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i3"])==1:
+                return True
+            if "i4" in clue:
+                if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i4"])==1:
+                    return True
+    else: # with groups
+        if "g1" in clue:
+            for i in range(self.k):
+                if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                    if self.get_grid_value(clue["K1"], i, clue["K2"], clue["i2"])==1:
+                        return True
+        if "g2" in clue:
+            for i in range(self.k):
+                if self.categories[clue["K2"]]["groups"][i]==clue["g2"]:
+                    if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], i)==1:
+                        return True
             
 def is_grid_contradictory_with_clue2(self, c):
-    if len(self.clues)<=c or c<0:
-        raise Exception("Wrong clue id provided!")
-    if self.clues[c]["typ"]!=2:
-        raise Exception("Wrong clue type provided!")
-       
     clue = self.clues[c]
     i1 = None
     i2 = None
     i3 = None
     for j in range(self.k):
-        if i3==None and self.get_grid_value(clue["K3"], clue["i3"], clue["K6"], j)!=2:
+        if "i3" in clue:
+            condition3 = self.get_grid_value(clue["K3"], clue["i3"], clue["K6"], j)!=2
+        else:
+            condition3 = self.is_line_possible_for_group(clue["K6"], j, clue["K3"], clue["g3"])
+        if "i2" in clue:
+            condition2 = self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], j)!=2
+        else:
+            condition2 = self.is_line_possible_for_group(clue["K6"], j, clue["K2"], clue["g2"])
+        if "i1" in clue:
+            condition1 = self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], j)!=2
+        else:
+            condition1 = self.is_line_possible_for_group(clue["K6"], j, clue["K1"], clue["g1"])
+        
+        if i3==None and condition3:
             i3 = j
-        elif i2==None and i3!=None and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], j)!=2:
+        elif i2==None and i3!=None and condition2:
             i2 = j
-        elif i2!=None and self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], j)!=2:
+        elif i2!=None and condition1:
             i1 = j
             break
     if i1==None:
@@ -1066,11 +1375,6 @@ def is_grid_contradictory_with_clue2(self, c):
         return False
           
 def is_grid_contradictory_with_clue3(self, c):
-    if len(self.clues)<=c or c<0:
-        raise Exception("Wrong clue id provided!")
-    if self.clues[c]["typ"]!=3:
-        raise Exception("Wrong clue type provided!")
-       
     clue = self.clues[c]
     operation = clue["oper"]
     diff = clue["diff"]
@@ -1078,71 +1382,202 @@ def is_grid_contradictory_with_clue3(self, c):
     
     if operation=="+":
         for i in range(self.k):
-            if values[i]+diff in values and self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)!=2 and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))!=2:
+            if "i1" in clue:
+                condition1 = self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)!=2
+            else:
+                condition1 = self.is_line_possible_for_group(clue["K6"], i, clue["K1"], clue["g1"])
+            if "i2" in clue:
+                condition2 = values[i]+diff in values and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))!=2
+            else:
+                condition2 = values[i]+diff in values and self.is_line_possible_for_group(clue["K6"], values.index(values[i]+diff), clue["K2"], clue["g2"])
+            
+            if condition1 and condition2:
                 return False
     elif operation=="*":
         for i in range(self.k):
-            if values[i]*diff in values and self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)!=2 and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))!=2:
+            if "i1" in clue:
+                condition1 = self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)!=2
+            else:
+                condition1 = self.is_line_possible_for_group(clue["K6"], i, clue["K1"], clue["g1"])
+            if "i2" in clue:
+                condition2 = values[i]*diff in values and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))!=2
+            else:
+                condition2 = values[i]*diff in values and self.is_line_possible_for_group(clue["K6"], values.index(values[i]*diff), clue["K2"], clue["g2"])
+            
+            if condition1 and condition2:
                 return False
     return True
 
 def is_grid_contradictory_with_clue4(self, c):
-    if len(self.clues)<=c or c<0:
-        raise Exception("Wrong clue id provided!")
-    if self.clues[c]["typ"]!=4:
-        raise Exception("Wrong clue type provided!")
-       
     clue = self.clues[c]
-    if self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"])==2 and self.get_grid_value(clue["K5"], clue["i5"], clue["K6"], clue["i6"])==2:
+    
+    # contition12: premise is false
+    if "i1" in clue and "i2" in clue:
+        condition12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==2
+    elif "i1" in clue:
+        condition12 = not self.is_line_possible_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
+    elif "i2" in clue:
+        condition12 = not self.is_line_possible_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
+    else: # if both are group type
+        condition12 = True
+        for i in range(self.k):
+            if self.categories[clue["K2"]]["groups"][i]==clue["g2"] and self.is_line_possible_for_group(clue["K1"], clue["g1"], clue["K2"], i):
+                condition12 = False
+                break
+    
+    # condition12anti: premise is true
+    if "i1" in clue and "i2" in clue:
+        condition12anti = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==1
+    elif "i1" in clue:
+        condition12anti = False
+        for i in range(self.k):
+            if self.categories[clue["K2"]]["groups"][i]==clue["g2"]:
+                if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], i)==1:
+                    condition12anti = True
+                    break
+    elif "i2" in clue:
+        condition12anti = False
+        for i in range(self.k):
+            if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                if self.get_grid_value(clue["K2"], clue["i2"], clue["K1"], i)==1:
+                    condition12anti = True
+                    break
+    else: # both are group type
+        condition12anti = False
+        for i in range(self.k):
+            if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                for j in range(self.k):
+                    if self.categories[clue["K2"]]["groups"][j]==clue["g2"]:
+                        if self.get_grid_value(clue["K1"], i, clue["K2"], j)==1:
+                            condition12anti = True
+                            break
+                
+    # contition34: positive conclusion is false            
+    if "i3" in clue and "i4" in clue:
+        condition34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"])==2
+    elif "i3" in clue:
+        condition34 = not self.is_line_possible_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
+    elif "i4" in clue:
+        condition34 = not self.is_line_possible_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
+    else: # both are group type
+        condition34 = True
+        for i in range(self.k):
+            if self.categories[clue["K4"]]["groups"][i]==clue["g4"] and self.is_line_possible_for_group(clue["K3"], clue["g3"], clue["K4"], i):
+                condition34 = False
+                break
+    
+    # contition56: negative conclusion is false 
+    if "i5" in clue and "i6" in clue:
+        condition56 = self.get_grid_value(clue["K5"], clue["i5"], clue["K6"], clue["i6"])==2
+    elif "i5" in clue:
+        condition56 = not self.is_line_possible_for_group(clue["K5"], clue["i5"], clue["K6"], clue["g6"])
+    elif "i6" in clue:
+        condition56 = not self.is_line_possible_for_group(clue["K6"], clue["i6"], clue["K5"], clue["g5"])
+    else: # both are group type
+        condition56 = True
+        for i in range(self.k):
+            if self.categories[clue["K6"]]["groups"][i]==clue["g6"] and self.is_line_possible_for_group(clue["K5"], clue["g5"], clue["K6"], i):
+                condition56 = False
+                break
+    
+    # checking conditions:
+    if condition34 and condition56:
         return True
-    if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==1 and self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"])==2:
+    if condition12anti and condition34:
         return True
-    if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==2 and self.get_grid_value(clue["K5"], clue["i5"], clue["K6"], clue["i6"])==2:
+    if condition12 and condition56:
         return True
     return False
 
 def is_grid_contradictory_with_clue5(self, c):
-    if len(self.clues)<=c or c<0:
-        raise Exception("Wrong clue id provided!")
-    if self.clues[c]["typ"]!=5:
-        raise Exception("Wrong clue type provided!")
-       
     clue = self.clues[c]
-    if self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==2 and self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"])==2:
+    if "i1" in clue and "i2" in clue:
+        condition12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"])==2
+    elif "i1" in clue:
+        condition12 = not self.is_line_possible_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
+    elif "i2" in clue:
+        condition12 = not self.is_line_possible_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
+    else: # both are group type
+        condition12 = True
+        for i in range(self.k):
+            if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                if self.is_line_possible_for_group(clue["K1"], i, clue["K2"], clue["g2"]):
+                    condition12 = False
+                    break
+                    
+    if "i3" in clue and "i4" in clue:
+        condition34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"])==2
+    elif "i3" in clue:
+        condition34 = not self.is_line_possible_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
+    elif "i4" in clue:
+        condition34 = not self.is_line_possible_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
+    else: # both are group type
+        condition34 = True
+        for i in range(self.k):
+            if self.categories[clue["K3"]]["groups"][i]==clue["g3"]:
+                if self.is_line_possible_for_group(clue["K3"], i, clue["K4"], clue["g4"]):
+                    condition34 = False
+                    break
+                    
+    if condition12 and condition34:
         return True
     return False
 
-def is_grid_contradictory_with_clue6(self, c):
-    if len(self.clues)<=c or c<0:
-        raise Exception("Wrong clue id provided!")
-    if self.clues[c]["typ"]!=6:
-        raise Exception("Wrong clue type provided!")
-       
+def is_grid_contradictory_with_clue6(self, c):  
     clue = self.clues[c]
     k = self.k
     K1 = clue["K1"]
     K2 = clue["K2"]
     K6 = clue["K6"]
-    i1 = clue["i1"]
-    i2 = clue["i2"]
     
+    # checking if there is possible pair
     possible_pairs = 0
-    for i in range(k):
-        if i!=0 and self.get_grid_value(K1, i1, K6, i)!=2 and self.get_grid_value(K2, i2, K6, i-1)!=2:
-            possible_pairs += 1
-            break
-        if i!=k-1 and self.get_grid_value(K1, i1, K6, i)!=2 and self.get_grid_value(K2, i2, K6, i+1)!=2:
-            possible_pairs += 1
-            break
+    if "i1" in clue and "i2" in clue:
+        for i in range(k):
+            if i!=0 and self.get_grid_value(K1, clue["i1"], K6, i)!=2 and self.get_grid_value(K2, clue["i2"], K6, i-1)!=2:
+                possible_pairs += 1
+                break
+            if i!=k-1 and self.get_grid_value(K1, clue["i1"], K6, i)!=2 and self.get_grid_value(K2, clue["i2"], K6, i+1)!=2:
+                possible_pairs += 1
+                break
+    elif "i1" in clue:
+        for i in range(k):
+            if i!=0 and self.get_grid_value(K1, clue["i1"], K6, i)!=2 and self.is_line_possible_for_group(K6, i-1, K2, clue["g2"]):
+                possible_pairs += 1
+                break
+            if i!=k-1 and self.get_grid_value(K1, clue["i1"], K6, i)!=2 and self.is_line_possible_for_group(K6, i+1, K2, clue["g2"]):
+                possible_pairs += 1
+                break
+    elif "i2" in clue:
+        for i in range(k):
+            if i!=0 and self.is_line_possible_for_group(K6, i, K1, clue["g1"]) and self.get_grid_value(K2, clue["i2"], K6, i-1)!=2:
+                possible_pairs += 1
+                break
+            if i!=k-1 and self.is_line_possible_for_group(K6, i, K1, clue["g1"]) and self.get_grid_value(K2, clue["i2"], K6, i+1)!=2:
+                possible_pairs += 1
+                break
+    else: # both are group type
+        for i in range(k):
+            if i!=0 and self.is_line_possible_for_group(K6, i, K1, clue["g1"]) and self.is_line_possible_for_group(K6, i-1, K2, clue["g2"]):
+                possible_pairs += 1
+                break
+            if i!=0 and self.is_line_possible_for_group(K6, i, K2, clue["g2"]) and self.is_line_possible_for_group(K6, i-1, K1, clue["g1"]):
+                possible_pairs += 1
+                break
     if possible_pairs==0:
         return True
-    for i in range(k):
-        if self.get_grid_value(K1, i1, K6, i)==1:
-            if (i==0 or self.get_grid_value(K2, i2, K6, i-1)==2) and (i==k-1 or self.get_grid_value(K2, i2, K6, i+1)==2):
-                return True
-        if self.get_grid_value(K2, i2, K6, i)==1:
-            if (i==0 or self.get_grid_value(K1, i1, K6, i-1)==2) and (i==k-1 or self.get_grid_value(K1, i1, K6, i+1)==2):
-                return True
+    
+    # checking when there is already 'O' somewhere
+    if "i1" in clue and "i2" in clue:
+        i1 = clue["i1"]
+        i2 = clue["i2"]
+        for i in range(k):
+            if self.get_grid_value(K1, i1, K6, i)==1:
+                if (i==0 or self.get_grid_value(K2, i2, K6, i-1)==2) and (i==k-1 or self.get_grid_value(K2, i2, K6, i+1)==2):
+                    return True
+            if self.get_grid_value(K2, i2, K6, i)==1:
+                if (i==0 or self.get_grid_value(K1, i1, K6, i-1)==2) and (i==k-1 or self.get_grid_value(K1, i1, K6, i+1)==2):
+                    return True
             
 def is_grid_completed(self):
     for box in self.grid.values():
@@ -1175,6 +1610,11 @@ def is_grid_contradictory(self):
             if o_count>1 or x_count==self.k:
                 return True
     
+    clues1 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==1 ]
+    for c in clues1:
+        if self.is_grid_contradictory_with_clue1(c):
+            #print("Puzzle is contradictory with clue 2!")
+            return True
     clues2 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==2 ]
     for c in clues2:
         if self.is_grid_contradictory_with_clue2(c):
@@ -1439,115 +1879,6 @@ def print_info(self):
     clues_counts = [ len([i for i in self.clues if i["typ"]==j]) for j in range(1,7)]
     print("K: "+str(self.K)+", k: "+str(self.k)+", No of clues: "+str(len(self.clues))+str(clues_counts))
 
-def print_solution_txt(self, file_name):
-    if type(file_name)!=str:
-        raise Exception("file name should be a string!")
-    if not file_name.endswith(".txt"):
-        raise Exception("file name shoutd end with \".txt\"!")
-    sols = self.solution.split(";")[:-1]
-    try:
-        file = open(file_name,"r+")
-        file.truncate(0)
-        file.close()
-    except:
-        pass
-    file = open(file_name, "a")
-    for sol in sols:
-        if sol[0]=='1':
-            znak = 'O'
-        else:
-            znak = 'X'
-        name1 = funs.get_string_name(self.categories, int(sol[2]), int(sol[4]), add_info=True)
-        name2 = funs.get_string_name(self.categories, int(sol[6]), int(sol[8]), add_info=True)
-        code = sol.split(',')[-1]
-        line = "Wstaw \'"+znak+"\' pomiędzy "+name1+" a "+name2+"."
-        if code[:4]=='conc':
-            text1 = " Wynika to z zasady: \n"
-            if code[-1]=='1':
-                line2 = "\"Gdzieś w kolumnie/wierszu jest już znak \'O\'\""
-            elif code[-1]=='2':
-                line2 = "\"Jedyne wolne miejsce w wierszu/kolumnie\""
-            elif code[-1]=='3':
-                line2 = "\"Gdzieś na planszy jest \'O\'. Uzgodnienie znaków \'X\' dwóch połączonych obiektów.\""
-            elif code[-1]=='4':
-                line2 = "\"Wykluczenie tego pola ze względu na to, że dane obiekty mają wzajemnie wykluczające się wiersze/kolumny.\""
-            elif code[-1]=='5':
-                line2 = "\"2/3 wiersze/kolumny w boxie mają dostępne 2/3 pola dla tych samych kolumn/wierszy. Stąd wykluczenie tych kolumn/wierszy dla innych wierszy/kolumn\""
-        elif code=='contr':
-            text1 = " Wynika to z tego, że: \n"
-            line2 = "\"Wstawienie \'O\' w to pole skutkowałoby sprzecznością. Stąd wstaw \'X\'.\""
-        elif code[:4]=='clue':
-            text1 = " Wynika to ze wskazówki:\n "
-            n = int(code.split("_")[-1])
-            typ = int(code[4:].split("_")[0])
-            clue = self.clues[n]
-            if typ==1:
-                line2 = "\""+funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
-                if 'i3' not in clue:
-                    line2 += " nie pasuje do "
-                    line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
-                else:
-                    line2 += " nie pasuje ani do "
-                    line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
-                    line2 += " ani do "
-                    line2 += funs.get_string_name(self.categories, clue["K2"], clue["i3"], add_info=True)
-                    if 'i4' in clue:
-                        line2 += " ani do "
-                        line2 += funs.get_string_name(self.categories, clue["K2"], clue["i4"], add_info=True)
-            elif typ==2:
-                line2 = "\"Pod względem "
-                line2 += "Kategorii "+str(clue["K6"])
-                line2 += " zachodzi: "
-                line2 += funs.get_string_name(self.categories, clue["K3"], clue["i3"], add_info=True)
-                line2 += "<"
-                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
-                line2 += "<"
-                line2 += funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
-            elif typ==3:
-                line2 = "\"Pod względem "
-                line2 += "Kategorii "+str(clue["K6"])
-                line2 += " zachodzi: "
-                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
-                line2 += " = "
-                line2 += funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
-                if str(clue["diff"]).endswith(".0"):
-                    diff = str(clue["diff"])[:-2]
-                else:
-                    diff = str(clue["diff"])
-                line2 += " "+clue["oper"]+" "+diff
-            elif typ==4:
-                line2 = "\"Jeśli "
-                line2 += funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
-                line2 += " pasuje do "
-                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
-                line2 += ", to "
-                line2 += funs.get_string_name(self.categories, clue["K3"], clue["i3"], add_info=True)
-                line2 += " pasuje do "
-                line2 += funs.get_string_name(self.categories, clue["K4"], clue["i4"], add_info=True)
-                line2 += "\nW przeciwnym przypadku "
-                line2 += funs.get_string_name(self.categories, clue["K5"], clue["i5"], add_info=True)
-                line2 += " pasuje do "
-                line2 += funs.get_string_name(self.categories, clue["K6"], clue["i6"], add_info=True)
-            elif typ==5:
-                line2 = "\""+funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
-                line2 += " pasuje do "
-                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
-                line2 += " lub "
-                line2 += funs.get_string_name(self.categories, clue["K3"], clue["i3"], add_info=True)
-                line2 += " pasuje do "
-                line2 += funs.get_string_name(self.categories, clue["K4"], clue["i4"], add_info=True)
-                line2 += "(alt. nierozł.)"
-            elif typ==6:
-                line2 = "\"Pod względem "
-                line2 += "Kategorii "+str(clue["K6"])
-                line2 += " obiekt "
-                line2 += funs.get_string_name(self.categories, clue["K1"], clue["i1"], add_info=True)
-                line2 += " jest tuż obok "
-                line2 += funs.get_string_name(self.categories, clue["K2"], clue["i2"], add_info=True)
-            line2 += "\""
-        file.write(line+text1)
-        file.write(line2+"\n")
-    file.close()
 # --------------------- class definition ------------------------------
     
 class puzzle:
@@ -1578,6 +1909,8 @@ class puzzle:
     
     is_line_completed = is_line_completed
     count_x_in_line = count_x_in_line
+    is_line_possible_for_group = is_line_possible_for_group
+    
     grid_concile1 = grid_concile1
     grid_concile2 = grid_concile2
     grid_concile3 = grid_concile3
@@ -1602,6 +1935,7 @@ class puzzle:
     use_clue5 = use_clue5
     use_clue6 = use_clue6
     
+    is_grid_contradictory_with_clue1 = is_grid_contradictory_with_clue1
     is_grid_contradictory_with_clue2 = is_grid_contradictory_with_clue2
     is_grid_contradictory_with_clue3 = is_grid_contradictory_with_clue3
     is_grid_contradictory_with_clue4 = is_grid_contradictory_with_clue4
@@ -1612,6 +1946,5 @@ class puzzle:
     try_to_solve = try_to_solve
     try_to_restrict_clues = try_to_restrict_clues
     generate = generate
-    
-    print_solution_txt = print_solution_txt
+
     
