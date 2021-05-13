@@ -26,11 +26,30 @@ def grid_insert(self, K1, i1, K2, i2, val, solution_code=None, collect_solution=
     else:
         raise(Exception("Wrong value format! value must be either one of {0,1,2} or {-,O,X}"))
     
+    # if new value is being inserted:
     if self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2] != val2:
         self.changed = True
         if collect_solution:
             self.solution += str(val2)+","+str(K1)+","+str(i1)+","+str(K2)+","+str(i2)+","+solution_code+";"
-    self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2] = val2
+        self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2] = val2
+        
+        if val2 == 1:
+            for l in range(self.k):
+                if l!=i1:
+                    self.grid_insert(K1, l, K2, i2, "X", "conc1", collect_solution)
+                if l!=i2:
+                    self.grid_insert(K1, i1, K2, l, "X", "conc1", collect_solution)
+        elif val2 == 2:
+            if self.count_x_in_line(K1, i1, K2)==self.k-1 and not self.is_line_completed(K1, i1, K2):
+                for j in range(self.k):
+                    if self.get_grid_value(K1, i1, K2, j)==0:
+                        self.grid_insert(K1, i1, K2, j, "O", "conc2", collect_solution)
+                        break
+            if self.count_x_in_line(K2, i2, K1)==self.k-1 and not self.is_line_completed(K2, i2, K1):
+                for j in range(self.k):
+                    if self.get_grid_value(K2, i2, K1, j)==0:
+                        self.grid_insert(K2, i2, K1, j, "O", "conc2", collect_solution)
+                        break
 
 def print_grid(self):
     for K_row in range(self.K-1):
@@ -272,10 +291,10 @@ def grid_concile5(self, collect_solution=False):
 def grid_concile(self, collect_solution=False):
     #changed_copy = self.changed
     self.changed = True
-    while self.changed == True:
+    while self.changed:
         self.changed = False
-        self.grid_concile1(collect_solution)
-        self.grid_concile2(collect_solution)
+        #self.grid_concile1(collect_solution)
+        #self.grid_concile2(collect_solution)
         self.grid_concile3(collect_solution)
         self.grid_concile4(collect_solution)
         self.grid_concile5(collect_solution)

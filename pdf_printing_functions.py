@@ -734,7 +734,7 @@ def draw_solution(puzzle1, c, X=30, Y=30, puzzle_h=400):
         else:
             step2[0] = "X"
         #print(prev_val , step2[-1])
-        if step2[-1]!=prev_val:
+        if not(step2[-1] in ["conc1","conc2"] and prev_val in ["conc1","conc2"]) and step2[-1]!=prev_val:
             c.showPage()
             draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y)
             for step3 in signs_list:
@@ -751,9 +751,9 @@ def draw_solution(puzzle1, c, X=30, Y=30, puzzle_h=400):
         if code[:4]=='conc':
             text1 = " Wynika to z zasady:"
             if code[-1]=='1':
-                line2 = "\"Gdzieś w kolumnie/wierszu jest już znak \'O\'\""
+                line2 = "\"Gdzieś w kolumnie/wierszu jest już znak \'O\'\"\nlub też\n\"Jedyne wolne miejsce w wierszu/kolumnie\""
             elif code[-1]=='2':
-                line2 = "\"Jedyne wolne miejsce w wierszu/kolumnie\""
+                line2 = "\"Gdzieś w kolumnie/wierszu jest już znak \'O\'\"\nlub też\n\"Jedyne wolne miejsce w wierszu/kolumnie\""
             elif code[-1]=='3':
                 line2 = "\"Gdzieś na planszy jest \'O\'. Uzgodnienie znaków \'X\' dwóch połączonych obiektów.\""
             elif code[-1]=='4':
