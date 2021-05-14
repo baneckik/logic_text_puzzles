@@ -28,11 +28,24 @@ def grid_insert(self, K1, i1, K2, i2, val, solution_code=None, collect_solution=
     
     # if new value is being inserted:
     if self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2] != val2:
-        self.changed = True
+        # collect info for solution:
         if collect_solution:
             self.solution += str(val2)+","+str(K1)+","+str(i1)+","+str(K2)+","+str(i2)+","+solution_code+";"
+        # insertion:
+        self.changed = True
         self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2] = val2
         
+        # adding clues to that need to be checked after insertion to the self.clues_to_check list:
+        for i, clue_crit_squares in enumerate(self.critical_squares):
+            for crit_s in clue_crit_squares:
+                if crit_s[0]==K1 and crit_s[1]==i1 and crit_s[2]==K2 and crit_s[3]==i2:
+                    self.clues_to_check.append(i)
+                    break
+                if crit_s[0]==K2 and crit_s[1]==i2 and crit_s[2]==K1 and crit_s[3]==i1:
+                    self.clues_to_check.append(i)
+                    break
+                       
+        # further basic operation on the grid:
         if val2 == 1:
             for l in range(self.k):
                 if l!=i1:
@@ -404,7 +417,7 @@ def is_forbidden(self, clue_cand):
     
     # checking if critical squares do not repeat
     critical1 = self.get_critical_squares(clue_cand)
-    for clue in self.clues:
+    for clue_i, clue in enumerate(self.clues):
         critical2 = self.get_critical_squares(clue)
         for s1 in critical1:
             for s2 in critical2:
@@ -1289,6 +1302,9 @@ def use_clue6(self, c, collect_solution=False):
     K2 = clue["K2"]
     K6 = clue["K6"]
     
+    if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
+        self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue6_"+str(c), collect_solution)
+    
     for i in range(self.k):
         if "i1" in clue:
             if "i2" in clue:
@@ -1320,7 +1336,7 @@ def use_clue6(self, c, collect_solution=False):
     
 def use_clue(self, c, collect_solution=False):
     if len(self.clues)<=c or c<0:
-        raise Exception("Wrong clue id provided!") 
+        raise Exception("Wrong clue id provided: "+str(c)+"!") 
     if self.clues[c]["typ"] not in [1, 2, 3, 4, 5, 6]:
         raise Exception("Wrong clue type provided!") 
         
@@ -1732,10 +1748,18 @@ def draw_clues(self, trace=False):
             self.use_clue(j)
             self.grid_concile()
             if self.is_grid_completed() or self.is_grid_contradictory():
+                self.critical_squares = []
+                self.clues_to_check = []
+                for clue in self.clues:
+                    self.critical_squares.append(self.get_critical_squares(clue))
                 return
         if trace:
             self.print_grid()
             self.print_info()
+    
+    # if it fails to draw clues:
+    self.critical_squares = []
+    self.clues_to_check = []
             
 def try_to_solve2(self, collect_solution=False):
     clues1 = [ i for i,clue in enumerate(self.clues) if clue["typ"]==1 ]
@@ -1749,6 +1773,12 @@ def try_to_solve2(self, collect_solution=False):
     self.changed = True
     while self.changed:
         self.changed = False
+        for i in range(2):
+            clues_to_check = self.clues_to_check
+            self.clues_to_check = []
+            for clue_id in np.unique(clues_to_check):
+                self.use_clue(clue_id, collect_solution)
+                self.grid_concile(collect_solution)
         for c in clues2:
             self.use_clue(c, collect_solution)
             self.grid_concile(collect_solution)
@@ -1756,6 +1786,9 @@ def try_to_solve2(self, collect_solution=False):
                 #if changed_copy and not self.changed:
                 #    self.changed = changed_copy
                 return
+        
+        #for i in range(2):
+            
         #if self.changed:
         #    changed_copy = True
     #self.changed = changed_copy
@@ -1770,6 +1803,14 @@ def try_to_solve(self, max_iter=None, collect_solution=False):
     while self.changed:
         self.changed = False
         self.try_to_solve2(collect_solution)
+        if self.is_grid_contradictory():
+            self.contradictory = True
+            return
+        if self.is_grid_completed():
+            self.solved = True
+            return
+        
+        # if brute force guessing is needed:
         key_candidates = np.random.permutation(list(self.grid.keys()))
         for key in key_candidates:
             for i in range(self.k):
@@ -1804,13 +1845,17 @@ def try_to_restrict_clues(self, trace=False, max_iter=None):
         
     trace_i = 1
     trace_clue_count = len(self.clues)
-        
     clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
     clue_order = np.random.choice(clues1, len(clues1), replace=False)
     for i in clue_order:
         clues1_restricted = [ j for j in clues1 if j!=i ]
         self.clear_grid()
         self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues1_restricted or not j in clue_order ]
+        self.critical_squares = []
+        self.clues_to_check = []
+        for clue in self.clues:
+            self.critical_squares.append(self.get_critical_squares(clue))
+        
         self.try_to_solve(max_iter)
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
@@ -1828,6 +1873,11 @@ def try_to_restrict_clues(self, trace=False, max_iter=None):
         clues_restricted = [ j for j in clues_other if j!=i ]
         self.clear_grid()
         self.clues = [ clue for j, clue in enumerate(clues_copy) if j in clues_restricted or j in clues1 ]
+        self.critical_squares = []
+        self.clues_to_check = []
+        for clue in self.clues:
+            self.critical_squares.append(self.get_critical_squares(clue))
+        
         self.try_to_solve(max_iter)
         if self.is_grid_completed() and not self.is_grid_contradictory():
             to_restrict.append(i)
@@ -1840,6 +1890,10 @@ def try_to_restrict_clues(self, trace=False, max_iter=None):
             trace_i += 1
             
     self.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
+    self.critical_squares = []
+    self.clues_to_check = []
+    for clue in self.clues:
+        self.critical_squares.append(self.get_critical_squares(clue))
 
 def generate(self, seed=0, trace=False, max_iter=None):
     self.set_seed(seed)
@@ -1860,6 +1914,8 @@ def generate(self, seed=0, trace=False, max_iter=None):
         self.draw_clues()
         if self.is_grid_completed() and not self.is_grid_contradictory():
             break
+        self.critical_squares = []
+        self.clues_to_check = []
         if trace and i==i_max-1:
             print("Failed to draw clues!!!")
     if trace:
@@ -1905,7 +1961,11 @@ class puzzle:
         self.K = K
         self.k = k
         self.grid = { str(i)+","+str(j): np.zeros((k,k)) for i in range(K) for j in range(K) if i<j }
+        self.critical_squares = []
+        self.clues_to_check = []
         self.changed = False
+        self.changed2 = False
+        self.changed3 = False
         self.solved = False
         self.contradictory = False
         self.categories = []
@@ -1930,8 +1990,8 @@ class puzzle:
     count_x_in_line = count_x_in_line
     is_line_possible_for_group = is_line_possible_for_group
     
-    grid_concile1 = grid_concile1
-    grid_concile2 = grid_concile2
+    grid_concile1 = grid_concile1 # deprecated
+    grid_concile2 = grid_concile2 # deprecated
     grid_concile3 = grid_concile3
     grid_concile4 = grid_concile4
     grid_concile5 = grid_concile5
