@@ -33,6 +33,9 @@ def grid_insert(self, K1, i1, K2, i2, val, solution_code=None, collect_solution=
             self.solution += str(val2)+","+str(K1)+","+str(i1)+","+str(K2)+","+str(i2)+","+solution_code+";"
         # insertion:
         self.changed = True
+        self.changed2 = True
+        self.changed3 = True
+        
         self.grid[str(min(K1, K2))+","+str(max(K1, K2))][j1, j2] = val2
         
         # adding clues to that need to be checked after insertion to the self.clues_to_check list:
@@ -315,98 +318,185 @@ def grid_concile(self, collect_solution=False):
          #   changed_copy = True
     #self.changed = changed_copy
     
-def get_critical_squares(self, clue):
+def get_critical_squares_from_between(self, clue, K1, i1, K2, i2):
+    """
+    Arguments are expected in the string form of K1="1", i1="3" etc.
+    """
+    critical = []
+    # intersection between K1,i1 and K2,i2
+    if clue["K"+K1]!=clue["K"+K2]:
+        if "i"+i1 in clue and "i"+i2 in clue:
+            critical += [(clue["K"+K1], clue["i"+i1], clue["K"+K2], clue["i"+i2])]
+        elif "i"+i1 in clue:
+            for j in range(self.k):
+                if self.categories[clue["K"+K2]]["groups"][j]==clue["g"+i2]:
+                    critical += [(clue["K"+K1], clue["i"+i1], clue["K"+K2], j)]
+        elif "i"+i2 in clue:
+            for j in range(self.k):
+                if self.categories[clue["K"+K1]]["groups"][j]==clue["g"+i1]:
+                    critical += [(clue["K"+K1], j, clue["K"+K2], clue["i"+i2])]
+        else:
+            for i in range(self.k):
+                if self.categories[clue["K"+K1]]["groups"][i]==clue["g"+i1]:
+                    for j in range(self.k):
+                        if self.categories[clue["K"+K2]]["groups"][j]==clue["g"+i2]:
+                            critical += [(clue["K"+K1], i, clue["K"+K2], j)]
+    return critical
+
+def get_critical_squares_from_line(self, clue, K1, i1, K6):
+    """
+    Arguments are expected in the string form of K1="1", i1="3" etc.
+    """
+    critical = []
+    # intersection between K1,i1 and K6, or all lines from g1 with K6
+    if "i"+i1 in clue:
+        for i in range(self.k):
+            critical += [(clue["K"+K1], clue["i"+i1], clue["K"+K6], i)]
+    else:
+        for j in range(self.k):
+            if self.categories[clue["K"+K1]]["groups"][j]==clue["g"+i1]:
+                for i in range(self.k):
+                    critical += [(clue["K"+K1], j, clue["K"+K6], i)]
+    return critical
+
+    
+def get_critical_squares(self, clue, everything=False):
     """
     Function return critical squares of a certain clue. Critical squares are squares in which basing on 
     the clue one can immediately put 'X' there or if somoeone puts 'O' there some clue is completely/partially being solved.
+    Version with everything==False is for squares to exclude when drawing another clue.
+    Version with everything==True is for the solving algorithm to to know what clues are worth checking after insertion.
     """
     critical = []
     if clue["typ"]==1:
-        if "i1" in clue and "i2" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
-        if "i1" in clue and "i3" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i3"])]
-        if "i1" in clue and "i4" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i4"])]
+        if not everything:
+            if "i1" in clue and "i2" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+            if "i1" in clue and "i3" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i3"])]
+            if "i1" in clue and "i4" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i4"])]
+        else:
+            critical += self.get_critical_squares_from_between(clue, "1", "1", "2", "2")
+            if "i3" in clue or "g3" in clue:
+                critical += self.get_critical_squares_from_between(clue, "1", "1", "2", "3")
+                if "i4" in clue or "g4" in clue:
+                    critical += self.get_critical_squares_from_between(clue, "1", "1", "2", "4")
+            
     elif clue["typ"]==2:
-        if "i1" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K6"], 0)]
-            critical += [(clue["K1"], clue["i1"], clue["K6"], 1)]
-        if "i2" in clue:
-            critical += [(clue["K2"], clue["i2"], clue["K6"], 0)]
-            critical += [(clue["K2"], clue["i2"], clue["K6"], self.k-1)]
-        if "i3" in clue:
-            critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-2)]
-            critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-1)]
+        if not everything:
+            if "i1" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K6"], 0)]
+                critical += [(clue["K1"], clue["i1"], clue["K6"], 1)]
+            if "i2" in clue:
+                critical += [(clue["K2"], clue["i2"], clue["K6"], 0)]
+                critical += [(clue["K2"], clue["i2"], clue["K6"], self.k-1)]
+            if "i3" in clue:
+                critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-2)]
+                critical += [(clue["K3"], clue["i3"], clue["K6"], self.k-1)]
 
-        if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
-        if clue["K1"]!=clue["K3"] and "i1" in clue and "i3" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K3"], clue["i3"])]
-        if clue["K2"]!=clue["K3"] and "i2" in clue and "i3" in clue:
-            critical += [(clue["K2"], clue["i2"], clue["K3"], clue["i3"])]
+            if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+            if clue["K1"]!=clue["K3"] and "i1" in clue and "i3" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K3"], clue["i3"])]
+            if clue["K2"]!=clue["K3"] and "i2" in clue and "i3" in clue:
+                critical += [(clue["K2"], clue["i2"], clue["K3"], clue["i3"])]
+        else:
+            # crucial lines
+            critical += self.get_critical_squares_from_line(clue, "1", "1", "6")
+            critical += self.get_critical_squares_from_line(clue, "2", "2", "6")
+            critical += self.get_critical_squares_from_line(clue, "3", "3", "6")
+            # intersections
+            critical += self.get_critical_squares_from_between(clue, "1", "1", "2", "2")
+            critical += self.get_critical_squares_from_between(clue, "1", "1", "3", "3")                  
+            critical += self.get_critical_squares_from_between(clue, "2", "2", "3", "3")
+            
     elif clue["typ"]==3:
         operation = clue["oper"]
         diff = clue["diff"]
         values = self.categories[clue["K6"]]['names']
 
-        if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        if not everything:
+            if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
 
-        if operation=="+":
-            for i in range(self.k):
-                if values[i]-diff not in values and "i2" in clue:
-                    critical += [(clue["K2"], clue["i2"], clue["K6"], i)]
-                if values[i]+diff not in values and "i1" in clue:
-                    critical += [(clue["K1"], clue["i1"], clue["K6"], i)]
-        elif operation=="*":
-            for i in range(self.k):
-                if values[i]/diff not in values and "i2" in clue:
-                    critical += [(clue["K2"], clue["i2"], clue["K6"], i)]
-                if values[i]*diff not in values and "i1" in clue:
-                    critical += [(clue["K1"], clue["i1"], clue["K6"], i)]
+            if operation=="+":
+                for i in range(self.k):
+                    if values[i]-diff not in values and "i2" in clue:
+                        critical += [(clue["K2"], clue["i2"], clue["K6"], i)]
+                    if values[i]+diff not in values and "i1" in clue:
+                        critical += [(clue["K1"], clue["i1"], clue["K6"], i)]
+            elif operation=="*":
+                for i in range(self.k):
+                    if values[i]/diff not in values and "i2" in clue:
+                        critical += [(clue["K2"], clue["i2"], clue["K6"], i)]
+                    if values[i]*diff not in values and "i1" in clue:
+                        critical += [(clue["K1"], clue["i1"], clue["K6"], i)]
+        else:
+            # crucial lines
+            critical += self.get_critical_squares_from_line(clue, "1", "1", "6")
+            critical += self.get_critical_squares_from_line(clue, "2", "2", "6")
+            # intersections
+            critical += self.get_critical_squares_from_between(clue, "1", "1", "2", "2")
+            
     elif clue["typ"]==4:
-        if "i1" in clue and "i2" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
-        if "i3" in clue and "i4" in clue:    
-            critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
-        if "i5" in clue and "i6" in clue:
-            critical += [(clue["K5"], clue["i5"], clue["K6"], clue["i6"])]
-        
-        if clue["K3"]==clue["K5"] and clue["K4"]==clue["K6"] and "i3" in clue and "i4" in clue and "i5" in clue and "i6" in clue:
-            if clue["i3"]!=clue["i5"] and clue["i4"]!=clue["i6"]:
-                critical += [(clue["K3"], clue["i5"], clue["K4"], clue["i4"])]
-                critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i6"])]
-            elif clue["i3"]==clue["i5"]:
-                for i in range(self.k):
-                    if i!=clue["i4"] and i!=clue["i6"]:
-                        critical += [(clue["K3"], clue["i3"], clue["K4"], i)]
-            else:
-                for i in range(self.k):
-                    if i!=clue["i3"] and i!=clue["i5"]:
-                        critical += [(clue["K3"], i, clue["K4"], clue["i4"])]
+        if not everything:
+            if "i1" in clue and "i2" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+            if "i3" in clue and "i4" in clue:    
+                critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
+            if "i5" in clue and "i6" in clue:
+                critical += [(clue["K5"], clue["i5"], clue["K6"], clue["i6"])]
+
+            if clue["K3"]==clue["K5"] and clue["K4"]==clue["K6"] and "i3" in clue and "i4" in clue and "i5" in clue and "i6" in clue:
+                if clue["i3"]!=clue["i5"] and clue["i4"]!=clue["i6"]:
+                    critical += [(clue["K3"], clue["i5"], clue["K4"], clue["i4"])]
+                    critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i6"])]
+                elif clue["i3"]==clue["i5"]:
+                    for i in range(self.k):
+                        if i!=clue["i4"] and i!=clue["i6"]:
+                            critical += [(clue["K3"], clue["i3"], clue["K4"], i)]
+                else:
+                    for i in range(self.k):
+                        if i!=clue["i3"] and i!=clue["i5"]:
+                            critical += [(clue["K3"], i, clue["K4"], clue["i4"])]
+        else:
+            critical += self.get_critical_squares_from_between(clue, "1", "1", "2", "2")
+            critical += self.get_critical_squares_from_between(clue, "3", "3", "4", "4")
+            critical += self.get_critical_squares_from_between(clue, "5", "5", "6", "6")
 
     elif clue["typ"]==5:
-        if "i1" in clue and "i2" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
-        if "i3" in clue and "i4" in clue:
-            critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
-        
-        if clue["K1"]==clue["K3"] and clue["K2"]==clue["K4"] and "i1" in clue and "i2" in clue and "i3" in clue and "i4" in clue:
-            if clue["i1"]!=clue["i3"] and clue["i2"]!=clue["i4"]:
-                critical += [(clue["K1"], clue["i3"], clue["K2"], clue["i2"])]
-                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i4"])]
-            elif clue["i1"]==clue["i3"]:
-                for i in range(self.k):
-                    if i!=clue["i2"] and i!=clue["i4"]:
-                        critical += [(clue["K1"], clue["i1"], clue["K2"], i)]
-            else:
-                for i in range(self.k):
-                    if i!=clue["i1"] and i!=clue["i3"]:
-                        critical += [(clue["K1"], i, clue["K2"], clue["i2"])]
+        if not everything:
+            if "i1" in clue and "i2" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+            if "i3" in clue and "i4" in clue:
+                critical += [(clue["K3"], clue["i3"], clue["K4"], clue["i4"])]
+
+            if clue["K1"]==clue["K3"] and clue["K2"]==clue["K4"] and "i1" in clue and "i2" in clue and "i3" in clue and "i4" in clue:
+                if clue["i1"]!=clue["i3"] and clue["i2"]!=clue["i4"]:
+                    critical += [(clue["K1"], clue["i3"], clue["K2"], clue["i2"])]
+                    critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i4"])]
+                elif clue["i1"]==clue["i3"]:
+                    for i in range(self.k):
+                        if i!=clue["i2"] and i!=clue["i4"]:
+                            critical += [(clue["K1"], clue["i1"], clue["K2"], i)]
+                else:
+                    for i in range(self.k):
+                        if i!=clue["i1"] and i!=clue["i3"]:
+                            critical += [(clue["K1"], i, clue["K2"], clue["i2"])]
+        else:
+            critical += self.get_critical_squares_from_between(clue, "1", "1", "2", "2")
+            critical += self.get_critical_squares_from_between(clue, "3", "3", "4", "4")
+            
     elif clue["typ"]==6:
-        if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
-            critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        if not everything:
+            if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
+                critical += [(clue["K1"], clue["i1"], clue["K2"], clue["i2"])]
+        else:
+            critical += self.get_critical_squares_from_between(clue, "1", "1", "2", "2")
+            critical += self.get_critical_squares_from_line(clue, "1", "1", "6")
+            critical += self.get_critical_squares_from_line(clue, "2", "2", "6")
+            
     return critical
     
 def is_forbidden(self, clue_cand):
@@ -522,15 +612,15 @@ def propose_clue1_cand(self, clue_cand):
     Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
     (only if there are actually groups in this category).
     """
-    prob_of_group = 0.8
+    prob_of_group = 0.2
     
-    if "groups" in self.categories[clue_cand["K1"]] and len(np.unique(self.categories[clue_cand["K1"]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+    if "groups" in self.categories[clue_cand["K1"]] and not "i3" in clue_cand and len(np.unique(self.categories[clue_cand["K1"]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
         cnt = dict(Counter(self.categories[clue_cand["K1"]]["groups"]))
         possible_groups = [ k for k in cnt.keys() if cnt[k]<self.k-1 ] #excluding groups that will exclude too much options
         group = np.random.choice(possible_groups, 1)[0]
         del clue_cand["i1"]
         clue_cand["g1"] = group
-    elif "groups" in self.categories[clue_cand["K2"]] and len(np.unique(self.categories[clue_cand["K2"]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+    elif "groups" in self.categories[clue_cand["K2"]] and not "i3" in clue_cand and len(np.unique(self.categories[clue_cand["K2"]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
         cnt = dict(Counter(self.categories[clue_cand["K2"]]["groups"]))
         possible_groups = [ k for k in cnt.keys() if cnt[k]<self.k-1 ] #excluding groups that will exclude too much options
         group = np.random.choice(possible_groups, 1)[0]
@@ -544,7 +634,7 @@ def propose_clue2_cand(self, clue_cand):
     Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
     (only if there are actually groups in this category).
     """
-    prob_of_group = 0.8
+    prob_of_group = 0.2
     
     order = np.random.permutation(["1", "2", "3"])
     for i in order:
@@ -562,7 +652,7 @@ def propose_clue3_cand(self, clue_cand):
     Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
     (only if there are actually groups in this category).
     """
-    prob_of_group = 0.8
+    prob_of_group = 0.2
     order = np.random.permutation(["1", "2"])
     for i in order:
         if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
@@ -579,7 +669,7 @@ def propose_clue4_cand(self, clue_cand):
     Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
     (only if there are actually groups in this category).
     """
-    prob_of_group = 0.8
+    prob_of_group = 0.2
     order = np.random.permutation(["1", "2", "3", "4", "5", "6"])
     for i in order:
         if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
@@ -596,7 +686,7 @@ def propose_clue5_cand(self, clue_cand):
     Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
     (only if there are actually groups in this category).
     """
-    prob_of_group = 0.8
+    prob_of_group = 0.2
     order = np.random.permutation(["1", "2", "3", "4"])
     for i in order:
         if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
@@ -613,7 +703,7 @@ def propose_clue6_cand(self, clue_cand):
     Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
     (only if there are actually groups in this category).
     """
-    prob_of_group = 0.8
+    prob_of_group = 0.2
     order = np.random.permutation(["1", "2"])
     for i in order:
         if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
@@ -1082,28 +1172,38 @@ def use_clue2(self, c, collect_solution=False):
     if clue["K2"]!=clue["K3"] and "i2" in clue and "i3" in clue:
         self.grid_insert(clue["K2"], clue["i2"], clue["K3"], clue["i3"], "X", "clue2_"+str(c), collect_solution)
     
-    if "g1" not in clue and "g2" not in clue and "g3" not in clue:
+    if "i3" in clue:
         for j in range(self.k-2):
             if self.get_grid_value(clue["K3"], clue["i3"], clue["K6"], j)==2:
-                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
-                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X", "clue2_"+str(c), collect_solution)          
+                if "i2" in clue:
+                    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
+                if "i1" in clue:
+                    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+2, "X", "clue2_"+str(c), collect_solution)          
             else:
                 break
+    if "i2" in clue:
         for j in range(self.k-1):
             if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], j)==2:
-                self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
+                if "i1" in clue:
+                    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], j+1, "X", "clue2_"+str(c), collect_solution)
             else:
                 break
 
+    if "i1" in clue:
         for j in range(self.k-2):
             if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], self.k-j-1)==2:
-                self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
-                self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-3, "X", "clue2_"+str(c), collect_solution)
+                if "i2" in clue:
+                    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
+                if "i3" in clue:
+                    self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-3, "X", "clue2_"+str(c), collect_solution)
             else:
                 break
+
+    if "i2" in clue:
         for j in range(self.k-1):
             if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], self.k-j-1)==2:
-                self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
+                if "i3" in clue:
+                    self.grid_insert(clue["K3"], clue["i3"], clue["K6"], self.k-j-2, "X", "clue2_"+str(c), collect_solution)
             else:
                 break
             
@@ -1229,10 +1329,14 @@ def use_clue4(self, c, collect_solution=False):
     
     if condition34 and "i1" in clue and "i2" in clue:
         self.grid_insert(K1, clue["i1"], K2, clue["i2"], "X", "clue4_"+str(c), collect_solution)
+    if condition34 and "i5" in clue and "i6" in clue:
+        self.grid_insert(K5, clue["i5"], K6, clue["i6"], "O", "clue4_"+str(c), collect_solution)
         
     if condition56 and "i1" in clue and "i2" in clue:
         self.grid_insert(K1, clue["i1"], K2, clue["i2"], "O", "clue4_"+str(c), collect_solution)
-    
+    if condition56 and "i3" in clue and "i4" in clue:
+        self.grid_insert(K3, clue["i3"], K4, clue["i4"], "O", "clue4_"+str(c), collect_solution)
+        
     if condition12anti and "i3" in clue and "i4" in clue:
         self.grid_insert(K3, clue["i3"], K4, clue["i4"], "O", "clue4_"+str(c), collect_solution)
     elif condition12 and "i5" in clue and "i6" in clue:
@@ -1751,7 +1855,7 @@ def draw_clues(self, trace=False):
                 self.critical_squares = []
                 self.clues_to_check = []
                 for clue in self.clues:
-                    self.critical_squares.append(self.get_critical_squares(clue))
+                    self.critical_squares.append(self.get_critical_squares(clue, everything=True))
                 return
         if trace:
             self.print_grid()
@@ -1768,11 +1872,14 @@ def try_to_solve2(self, collect_solution=False):
     for c in clues1:
         self.use_clue1(c, collect_solution)
     self.grid_concile(collect_solution)
+    for c in clues2:
+        self.use_clue(c, collect_solution)
+        self.grid_concile(collect_solution)
     
     #changed_copy = self.changed
-    self.changed = True
-    while self.changed:
-        self.changed = False
+    self.changed2 = True
+    while self.changed2:
+        self.changed2 = False
         for i in range(2):
             clues_to_check = self.clues_to_check
             self.clues_to_check = []
@@ -1998,6 +2105,8 @@ class puzzle:
     grid_concile = grid_concile
     
     get_critical_squares = get_critical_squares
+    get_critical_squares_from_between = get_critical_squares_from_between
+    get_critical_squares_from_line = get_critical_squares_from_line
     is_forbidden = is_forbidden
     add_clue1 = add_clue1
     add_clue2 = add_clue2

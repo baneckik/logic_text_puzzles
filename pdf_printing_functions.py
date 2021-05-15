@@ -612,11 +612,11 @@ def draw_on_canvas(puzzle1, c, X = 30, Y = 30, puzzle_h = 400):
 
     # ------------ drawing stars
     
-    if puzzle1.diff<2:
+    if puzzle1.diff<1:
         n = 1
-    elif puzzle1.diff<5:
+    elif puzzle1.diff<3:
         n = 2
-    elif puzzle1.diff<10:
+    elif puzzle1.diff<5:
         n = 3
     else:
         n = 4

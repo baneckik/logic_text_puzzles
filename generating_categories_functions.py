@@ -97,7 +97,9 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
     poss_grouped_data = [gp for gp in grouped_data if len(gp[1])>=puzzle_k and len(gp[2])>=puzzle_k]
     
     # how many categorical categories are to be replaced by grouped categories (to_replace):
-    if ile==1:
+    if puzzle_k==3:
+        to_replace = 0 # no grouped categories allowed when k=3
+    elif ile==1:
         to_replace = np.random.choice([1,0,0,0,0])
     elif ile==2:
         to_replace = np.random.choice([2,1,1,0,0,0,0])
