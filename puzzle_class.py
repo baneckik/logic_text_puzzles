@@ -414,7 +414,10 @@ def get_critical_squares(self, clue, everything=False):
     elif clue["typ"]==3:
         operation = clue["oper"]
         diff = clue["diff"]
-        values = self.categories[clue["K6"]]['names']
+        if self.categories[clue["K6"]]["typ"]=="numerical":
+            values = self.categories[clue["K6"]]['names']
+        else:
+            values = list(range(1, self.k+1))
 
         if not everything:
             if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
@@ -888,9 +891,12 @@ def add_clue3(self):
     K = self.K
     k = self.k
     
-    K6_candidates = [ i for i, cat in enumerate(self.categories) if cat['typ']=='numerical' ]
+    K6_candidates = [ i for i, cat in enumerate(self.categories) if "pre_clues" in cat and len(cat["pre_clues"])>0 ]
     K6 = np.random.choice(K6_candidates, 1)[0]
-    values = self.categories[K6]['names']
+    if self.categories[K6]["typ"]=="numerical":
+        values = self.categories[K6]['names']
+    else:
+        values = list(range(1, self.k+1))
     
     possible_randomized = np.random.permutation(list(self.categories[K6]['pre_clues']))
     diff_list = [ float(diff_string.split("y")[-1][1:]) for diff_string in possible_randomized ]
@@ -1211,7 +1217,10 @@ def use_clue3(self, c, collect_solution=False):
     clue = self.clues[c]
     operation = clue["oper"]
     diff = clue["diff"]
-    values = self.categories[clue["K6"]]['names']
+    if self.categories[clue["K6"]]["typ"]=="numerical":
+        values = self.categories[clue["K6"]]['names']
+    else:
+        values = list(range(1, self.k+1))
     
     if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
         self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue3_"+str(c), collect_solution)
@@ -1517,8 +1526,11 @@ def is_grid_contradictory_with_clue3(self, c):
     clue = self.clues[c]
     operation = clue["oper"]
     diff = clue["diff"]
-    values = self.categories[clue["K6"]]['names']
-    
+    if self.categories[clue["K6"]]["typ"]=="numerical":
+        values = self.categories[clue["K6"]]['names']
+    else:
+        values = list(range(1, self.k+1))
+        
     if operation=="+":
         for i in range(self.k):
             if "i1" in clue:
@@ -1781,6 +1793,30 @@ def is_grid_contradictory(self):
             return True
     return False
 
+def remove_unused_groups(self):
+    for K, cat in enumerate(self.categories):
+        if cat["typ"]=="categorical" and len(np.unique(cat["groups"]))>1:
+            remove = True
+            for clue in self.clues:
+                if clue["typ"]==1 or clue["typ"]==3 or clue["typ"]==6:
+                    if ("g1" in clue and clue["K1"]==K) or ("g2" in clue and clue["K2"]==K):
+                        remove = False
+                        break
+                elif clue["typ"]==2:
+                    if ("g1" in clue and clue["K1"]==K) or ("g2" in clue and clue["K2"]==K) or ("g3" in clue and clue["K3"]==K):
+                        remove = False
+                        break
+                elif clue["typ"]==5:
+                    if ("g1" in clue and clue["K1"]==K) or ("g2" in clue and clue["K2"]==K) or ("g3" in clue and clue["K3"]==K) or ("g4" in clue and clue["K4"]==K):
+                        remove = False
+                        break
+                elif clue["typ"]==4:
+                    if ("g1" in clue and clue["K1"]==K) or ("g2" in clue and clue["K2"]==K) or ("g3" in clue and clue["K3"]==K) or ("g4" in clue and clue["K4"]==K) or ("g5" in clue and clue["K5"]==K) or ("g6" in clue and clue["K6"]==K):
+                        remove = False
+                        break
+            if remove:
+                cat["groups"] = [0]*self.k
+
 def set_seed(self, seed):
     self.seed = seed
     np.random.seed(self.seed)
@@ -1801,7 +1837,7 @@ def draw_clues(self, trace=False):
     non_1_clues = int(np.ceil(self.k*self.K/2.3))
     are_categoricals = any([cat['typ']=='categorical' for cat in self.categories ])
     are_ordinals = any([cat['typ']=='ordinal' for cat in self.categories ])
-    are_numericals = any([cat['typ']=='numerical' for cat in self.categories ])
+    are_numericals = any(["pre_clues" in cat and len(cat["pre_clues"])>0 for cat in self.categories ])
     for i in range(non_1_clues):
         if are_numericals:
             typ = np.random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
@@ -2088,7 +2124,8 @@ class puzzle:
     is_grid_completed = is_grid_completed
     is_grid_contradictory = is_grid_contradictory
     print_info = print_info
-   
+    remove_unused_groups = remove_unused_groups
+    
     set_seed = set_seed
     draw_categories = draw_categories
     draw_clues = draw_clues
