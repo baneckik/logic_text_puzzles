@@ -309,7 +309,7 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
                         stroke='black', stroke_width=2, fill='white')
                     )
                 else:
-                    dwg.add(dwg.rect((X, 870-Y-(K_cat-2)*box_size), (box_size/k_cat, box_size),
+                    dwg.add(dwg.rect((X, 870-Y-(K_cat-1)*box_size), (box_size/k_cat, box_size),
                         stroke='black', stroke_width=2, fill='white')
                     )
             # cross bar at the top
