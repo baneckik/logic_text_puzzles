@@ -457,11 +457,22 @@ def clicked_gen():
             l = Label(cat_frame, text="Category "+str(j)+code+":", font=(std_font, std_font_size//2, 'bold'))
             l.grid(row=0, column=len(cat_cats))
             entries.append(l)
+            object_frames = []
             for i in range(k):
-                v = StringVar(cat_frame, value=cat["names"][i])
-                e = Entry(cat_frame, textvariable=v)
-                e.grid(row=i+1, column=len(cat_cats))
+                object_frame = Frame(cat_frame)
+                object_frame.grid(row=i+1, column=len(cat_cats))
+                object_frames.append(object_frame)
+                
+                v = StringVar(object_frame, value=cat["names"][i])
+                e = Entry(object_frame, textvariable=v)
+                e.grid(row=0, column=0)
                 entries.append(e)
+                
+                if "groups" in cat and len(np.unique(cat["groups"]))>1:
+                    g_label = Label(object_frame, text="gr."+str(cat["groups"][i]), font=(std_font, std_font_size//2))
+                    g_label.grid(row=0, column=1)
+                    group_labels.append(g_label)
+                    
             l = Label(cat_frame, text="cross bar text (optional):", font=(std_font, std_font_size//2))
             l.grid(row=puzzle1.k+1, column=len(cat_cats))
             entries.append(l)
@@ -469,7 +480,10 @@ def clicked_gen():
             e = Entry(cat_frame, textvariable=v)
             e.grid(row=puzzle1.k+2, column=len(cat_cats))
             entries.append(e)
+            for o_f in object_frames:
+                entries.append(o_f)
             cat_cats.append(entries)
+            
             
         elif cat["typ"]=='numerical':
             l = Label(num_frame, text="Category "+str(j)+code+":", font=(std_font, std_font_size//2, 'bold'))
@@ -728,7 +742,9 @@ def clear_cat_entries():
     for cat in num_cats:
         for entry in cat:
             entry.grid_forget()
-            
+    for label in group_labels:
+        label.grid_forget()
+    
     cat_frame.grid_forget()
     num_frame.grid_forget()
     cat_frame.configure(pady=10)
@@ -954,6 +970,7 @@ bar['value'] = 0
 
 cat_cats = []
 num_cats = []
+group_labels = []
 
 lbl7 = Label(window, text="", font=font)
 
