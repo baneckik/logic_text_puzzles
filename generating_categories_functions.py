@@ -160,7 +160,24 @@ def draw_ord_scheme(ile=1, puzzle_k=5):
         names = list(kat.iloc[start:(start+puzzle_k),0])
         chosen_out.append(names)
     
-    return [ {'typ': "ordinal", 'names': chosen_out[i], 'cross_bar': ""} for i in range(len(chosen_out)) ]
+    final_categories = [ {'typ': "ordinal", 'names': chosen_out[i], 'cross_bar': ""} for i in range(len(chosen_out)) ]
+    
+    # numerical interpretation for ordinal categories like 'days of the week' or 'months':
+    for path_i, path in enumerate(chosen):
+        if path==Path("categories/ordinal/miesiace.txt") or path==Path("categories/ordinal/dni_tygodnia.txt"):
+            min_free = (puzzle_k-1)//2+1
+            clues_candidates = []
+            values = range(1,puzzle_k+1)
+            for i in range(1,4):
+                suma = 0
+                for val in values:
+                    if val+i in values:
+                        suma += 1
+                if suma>=min_free:
+                    clues_candidates.append("x=y+"+str(i))
+            final_categories[path_i]["pre_clues"] = clues_candidates
+                
+    return final_categories
 
 # ----------------------------------------- Drawing numerical categories ---------------------------------------------
 
@@ -452,7 +469,7 @@ def draw_category(K, k, diff=3, seed=0):
     if diff==2:
         distribution = [2, 0.5, 2]
     elif diff==3:
-        distribution = [2, 0.2, 2]
+        distribution = [2, 0.3, 2]
     elif diff==4:
         distribution = [2.5, 0.4, 1.5]
     else:
