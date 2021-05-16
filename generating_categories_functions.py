@@ -197,7 +197,7 @@ def draw_num_scheme(puzzle_k=5):
                 (7,2),(8,2),(9,2),(10,5),(20,5),(50,5),(100,6),(1000,6),(1500,4),(1920,1),(1950,1),(1980,1),(1990,1),(2000,4)]
     # limitations of the base value p
     if scheme=="geometric_sequence": 
-        base_weights = [ bw for bw in base_weights if abs(bw[0])<=10 and bw[0]!=0 ]
+        base_weights = [ bw for bw in base_weights if bw[0]<=10 and bw[0]>0 ]
     if scheme=="ascending_sequence": 
         base_weights = [ bw for bw in base_weights if bw[0]!=0 ]
         
