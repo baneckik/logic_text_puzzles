@@ -212,7 +212,7 @@ def clicked_ok():
                     if str(cat["names"][0]).endswith(".0"):
                         a = StringVar(eval_frame, value=str(cat["names"][0])[:-2])
                     else:
-                        a = StringVar(eval_frame, value=cat[1][0])
+                        a = StringVar(eval_frame, value=cat["names"][0])
                     if cat["seq_scheme"]=="geometric":
                         r = cat["names"][1]/cat["names"][0]
                     else:
