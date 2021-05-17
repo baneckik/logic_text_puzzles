@@ -1,38 +1,59 @@
-import drawSvg as draw
+import svgwrite
 import numpy as np
 from math import pi, cos, sin
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase.pdfmetrics import stringWidth
+pdfmetrics.registerFont(TTFont('default_font', 'DejaVuSans.ttf'))
 
 import generating_categories_functions as funs
 from puzzle_class import puzzle
+  
+# Coordinate center is in the top-left corner.
+# The size of the page is assumed: 616 x 870.
     
-def star(canvas, xcenter, ycenter, radius):
+def star(dwg, xcenter, ycenter, radius):
     angle = (2*pi)*2/5.0
     startangle = pi/2.0
     pre_x = xcenter
-    pre_y = ycenter+radius
+    pre_y = ycenter-radius
     for vertex in range(5):
         nextangle = angle*(vertex+1)+startangle
         x = xcenter + radius*cos(nextangle)
-        y = ycenter + radius*sin(nextangle)
-        canvas.append(draw.Lines(pre_x, pre_y, x, y, close=False, stroke='black'))
+        y = ycenter - radius*sin(nextangle)
+        dwg.add(dwg.line( (pre_x, pre_y), (x, y),
+            stroke="#000",
+            fill="none",
+            stroke_width=1)
+        )
         pre_x = x
         pre_y = y
 
-def draw_clues_on_canvas(categories, clue, canvas, X, Y, no, width):
+def draw_clues_on_canvas(categories, clue, dwg, X, Y, no, width):
     replace_polish = False
     if funs.do_categories_repeat(categories, with_bar=False):
         add_info = True    # additional (K0) with names in case of repeating names
     else:
         add_info = False
     text0 = str(no+1)+". "
+    text1 = "error"
     if clue["typ"]==1:
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "Zaden obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         if "i3" not in clue:
             text0 += " nie pasuje do "
-            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+            if "g2" in clue:
+                text0 += "zadnego obiektu z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+            else:
+                text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         else:
             text0 += " nie pasuje ani do "
-            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+            if "g2" in clue:
+                text0 += "zadnego obiektu z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+            else:
+                text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
             text0 += " ani do "
             text0 += funs.get_string_name(categories, clue["K2"], clue["i3"], replace_polish, add_info=add_info)
             if "i4" in clue:
@@ -42,18 +63,33 @@ def draw_clues_on_canvas(categories, clue, canvas, X, Y, no, width):
         text0 += "Pod względem "
         text0 += "Kategorii "+str(clue["K6"])
         text0 += " zachodzi: "
-        text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)    
+        if "g3" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K3"])+"gr."+str(clue["g3"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)    
         text0 += "<"
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         text0 += "<"
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
     elif clue["typ"]==3:
         text0 += "Pod względem "
         text0 += "Kategorii "+str(clue["K6"])
         text0 += " zachodzi: "
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         text0 += " = "
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         if str(clue["diff"]).endswith(".0"):
             diff = str(clue["diff"])[:-2]
         else:
@@ -61,27 +97,56 @@ def draw_clues_on_canvas(categories, clue, canvas, X, Y, no, width):
         text0 += " "+clue["oper"]+" "+diff
     elif clue["typ"]==4:
         text0 += "Jeśli "
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakiegos z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         text0 += ", to "
-        text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
+        if "g3" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K3"])+"gr."+str(clue["g3"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
         text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
-        text0 += "\n"
+        if "g4" in clue:
+            text0 += "jakiegos obiektu z Kat."+str(clue["K4"])+"gr."+str(clue["g4"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
         
-        text0 += "W przeciwnym przypadku "
-        text0 += funs.get_string_name(categories, clue["K5"], clue["i5"], replace_polish, add_info=add_info)
-        text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K6"], clue["i6"], replace_polish, add_info=add_info)
+        text1 = "W przeciwnym przypadku "
+        if "g5" in clue:
+            text1 += "jakis obiekt z Kat."+str(clue["K5"])+"gr."+str(clue["g5"])
+        else:
+            text1 += funs.get_string_name(categories, clue["K5"], clue["i5"], replace_polish, add_info=add_info)
+        text1 += " pasuje do "
+        if "g6" in clue:
+            text1 += "jakiegos obiektu z Kat."+str(clue["K6"])+"gr."+str(clue["g6"])
+        else:
+            text1 += funs.get_string_name(categories, clue["K6"], clue["i6"], replace_polish, add_info=add_info)
     elif clue["typ"]==5:
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+        if "g2" in clue:
+            text0 += "jakiegos obiektu z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
         text0 += " lub "
-        text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
+        if "g3" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K3"])+"gr."+str(clue["g3"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K3"], clue["i3"], replace_polish, add_info=add_info)
         text0 += " pasuje do "
-        text0 += funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
+        if "g4" in clue:
+            text0 += "jakiegos obiektu z Kat."+str(clue["K4"])+"gr."+str(clue["g4"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K4"], clue["i4"], replace_polish, add_info=add_info)
         text0 += "(alt. nierozł.)"
 #         text0 += "Albo "    
 #         text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
@@ -96,32 +161,46 @@ def draw_clues_on_canvas(categories, clue, canvas, X, Y, no, width):
         text0 += "Pod względem "
         text0 += "Kategorii "+str(clue["K6"])
         text0 += " obiekt "
-        text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
+        if "g1" in clue:
+            text0 += "jakis obiekt z Kat."+str(clue["K1"])+"gr."+str(clue["g1"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K1"], clue["i1"], replace_polish, add_info=add_info)
         text0 += " jest tuż obok "
-        text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
-    canvas.append(draw.Text(text0, width, X, Y, fill='black')) 
+        if "g2" in clue:
+            text0 += "jakiegos obiektu z Kat."+str(clue["K2"])+"gr."+str(clue["g2"])
+        else:
+            text0 += funs.get_string_name(categories, clue["K2"], clue["i2"], replace_polish, add_info=add_info)
+    dwg.add(dwg.text(text0,
+        insert=(X, Y),
+        stroke='none',
+        fill='black',
+        font_size=width)
+    )
+    if clue["typ"]==4:
+        dwg.add(dwg.text(text1,
+            insert=(X, Y+width),
+            stroke='none',
+            fill='black',
+            font_size=width)
+        )
 
 def textwidth(text, fontsize=14, fname="undefined.svg"):
-    try:
-        import cairo
-    except:
-        return len(text) * fontsize
-    surface = cairo.SVGSurface(fname, 1280, 200)
-    cr = cairo.Context(surface)
-    cr.select_font_face('Arial', cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-    cr.set_font_size(fontsize)
-    xbearing, ybearing, width, height, xadvance, yadvance = cr.text_extents(text)
-    return width
+    return stringWidth(text, 'default_font', fontsize)
     
-def draw_into_rectangle(c, X, Y, text, rec_h, rec_w, angle=0, fname="undefined.svg"):
+def draw_into_rectangle(dwg, X, Y, text, rec_h, rec_w, angle=0, fname="undefined.svg"):
     width = rec_h
     length = textwidth(text, width, fname=fname) 
     while length>rec_w*0.88:
         width -= rec_h/100
         length = textwidth(text, width, fname=fname) 
-    c.append(draw.Text(text, width, X, Y, fill='black', transform='rotate('+str(angle)+')')) 
+    dwg.add(dwg.text(text,
+        insert=(X, Y),
+        stroke='none',
+        font_size=width,
+        transform='rotate('+str(angle)+','+str(X)+','+str(Y)+')')
+    )
         
-def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg"):
+def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg"):
     categories = puzzle1.categories
     clues = puzzle1.clues
     seed = puzzle1.seed
@@ -137,12 +216,20 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg"):
     
     # ------------ drawing boxes
     for row in range(N_rows):
-        c.append(draw.Rectangle( X, Y+row*box_size, text_box_size+(row+1)*box_size, box_size, fill='none', stroke_width=2, stroke='black'))
-        c.append(draw.Rectangle( X+text_box_size+row*box_size, Y+row*box_size, box_size, text_box_size+(N_rows-row)*box_size, fill='none', stroke_width=2, stroke='black'))
+        dwg.add(dwg.rect((X, 870-Y-(row+1)*box_size), (text_box_size+(row+1)*box_size, box_size),
+            stroke='black', stroke_width=2, fill='none')
+        )
+        dwg.add(dwg.rect((X+text_box_size+row*box_size, 870-Y-(K_cat+0.5)*box_size), (box_size, text_box_size+(N_rows-row)*box_size),
+            stroke='black', stroke_width=2, fill='none')
+        )
     for row in range(N_rows):
         for k in range(k_cat):
-            c.append(draw.Rectangle( X, Y+row*box_size, text_box_size+(row+1)*box_size, k*box_size/k_cat, fill='none', stroke_width=1, stroke='black'))
-            c.append(draw.Rectangle( X+text_box_size+row*box_size, Y+row*box_size, k*box_size/k_cat, text_box_size+(N_rows-row)*box_size, fill='none', stroke_width=1, stroke='black'))
+            dwg.add(dwg.rect((X, 870-Y-(row+1)*box_size), (text_box_size+(row+1)*box_size, k*box_size/k_cat),
+                stroke='black', stroke_width=1, fill='none')
+            )
+            dwg.add(dwg.rect((X+text_box_size+row*box_size, 870-Y-(K_cat+0.5)*box_size), (k*box_size/k_cat, text_box_size+(N_rows-row)*box_size),
+                stroke='black', stroke_width=1, fill='none')
+            )
     
     # ------------- typing categories names
     width2 = 10
@@ -162,26 +249,47 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg"):
             text0 = "Kategoria "+str(i)+":\n"
         widths.append( textwidth(text0, width2, fname=fname) )
         
-        nazwy = [ funs.get_string_name(categories, i, j) for j in range(len(categories[i][1])) ]
+        nazwy = [ funs.get_string_name(categories, i, j) for j in range(len(categories[i]['names'])) ]
+        dwg.add(dwg.text(text0,
+            insert=(X+x_shift, 870-Ycat),
+            stroke='black',
+            font_size=width2
+        ))
         for col, name in enumerate(nazwy):
             if k_cat>5 and col>3:
-                text0 += "...\n"
+                dwg.add(dwg.text("...",
+                    insert=(X+x_shift, 870-Ycat+width2*(col+1)),
+                    stroke='none',
+                    font_size=width2
+                ))
                 widths.append( textwidth("...", width2, fname=fname) )
                 break
-            text0 += name+"\n"
-            widths.append( textwidth(name, width2, fname=fname) )
-        c.append(draw.Text( text0, width2, X+x_shift, Ycat ))
-        x_shift += int(np.max(widths))+10
+            if 'groups' in categories[i] and len(np.unique(categories[i]["groups"]))>1:
+                name2 = name+" (gr. "+str(categories[i]["groups"][col])+")"
+                dwg.add(dwg.text(name2,
+                    insert=(X+x_shift, 870-Ycat+width2*(col+1)),
+                    stroke='none',
+                    font_size=width2
+                ))
+                widths.append( textwidth(name2, width2, fname=fname) )
+            else:
+                dwg.add(dwg.text(name,
+                    insert=(X+x_shift, 870-Ycat+width2*(col+1)),
+                    stroke='none',
+                    font_size=width2
+                ))
+                widths.append( textwidth(name, width2, fname=fname) )
+        x_shift += int(max(widths))+10
         
     
     # ------------- typing categories names into boxes
     
     for i, category in enumerate(categories):
-        nazwy = [ str(k) for k in category[1] ]
-        if category[0]=='numerical':
+        nazwy = [ str(k) for k in category['names'] ]
+        if category['typ']=='numerical':
             nazwy = [ k[:-2] if k.endswith(".0") else k for k in nazwy ]
-            if "@" in category[3]:
-                a = category[3].split("@")
+            if "@" in category['interpretation']:
+                a = category['interpretation'].split("@")
                 nazwy = [ k.join(a) for k in nazwy ]
         
         miejsce = i+1
@@ -189,53 +297,54 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg"):
         odstep2 = 0 # only for categories with horizontal bars
         
         # if there is a horizontal bar to draw
-        if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
+        if category['cross_bar']!="":
             
-            if category[0]=='numerical':
-                text = category[4]
-            else:
-                text = category[2]
+            text = category['cross_bar']
             odstep2 = width
             
-            # horizontal bar on the left
+            # cross bar on the left
             if i!=1:
                 if i!=0:
-                    c.append(draw.Rectangle( X, Y+(i-2)*box_size, box_size/k_cat, box_size, fill='white', stroke_width=2, stroke='black'))
+                    dwg.add(dwg.rect((X, 870-Y-(i-1)*box_size), (box_size/k_cat, box_size),
+                        stroke='black', stroke_width=2, fill='white')
+                    )
                 else:
-                    c.append(draw.Rectangle( X, Y+(K_cat-2)*box_size, box_size/k_cat, box_size, fill='white', stroke_width=2, stroke='black'))
-            # horizontal bar at the top
+                    dwg.add(dwg.rect((X, 870-Y-(K_cat-1)*box_size), (box_size/k_cat, box_size),
+                        stroke='black', stroke_width=2, fill='white')
+                    )
+            # cross bar at the top
             if i!=0:
-                c.append(draw.Rectangle( X+text_box_size+box_size*(i-1), Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat, box_size, box_size/k_cat, fill='white', stroke_width=2, stroke='black'))
+                dwg.add(dwg.rect((X+text_box_size+box_size*(i-1), 870-Y-(K_cat-1)*box_size-text_box_size), (box_size, box_size/k_cat),
+                    stroke='black', stroke_width=2, fill='white')
+                )
             
             inter_width = textwidth(text, width, fname=fname) 
-            # horizontal bar text at the top
+            # cross bar text at the top
             if i!=0:
-                draw_into_rectangle(c, X+text_box_size+box_size*(i-1)+odstep*width, Y+(K_cat-1)*box_size+text_box_size-box_size/k_cat+odstep*width, text, width, box_size, fname=fname)
-            # horizontal bar text on the left
+                draw_into_rectangle(dwg, X+text_box_size+box_size*(i-1)+odstep*width, 870-Y-(K_cat-1)*box_size-text_box_size+box_size/k_cat-odstep*width, text.upper(), width, box_size, fname=fname)
+            # cross bar text on the left
             if i!=1:
                 if i!=0:
-                    draw_into_rectangle(c, Y+(i-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, width, box_size, angle=270, fname=fname)
+                    draw_into_rectangle(dwg, X+box_size/k_cat-odstep*width, 870-Y-(i-2)*box_size-odstep*width, text.upper(), width, box_size, angle=270, fname=fname)
                 else:
-                    draw_into_rectangle(c, Y+(K_cat-2)*box_size+odstep*width, -X+odstep*width-box_size/k_cat, text, width, box_size, angle=270, fname=fname)
+                    draw_into_rectangle(dwg, X+box_size/k_cat-odstep*width, 870-Y-(K_cat-2)*box_size-odstep*width, text.upper(), width, box_size, angle=270, fname=fname)
         
         for i, name in enumerate(nazwy):
-            if (category[0]=='numerical' and category[4]!="") or (category[0]!='numerical' and category[2]!=""):
+            if category['cross_bar']!="":
                 space_size = text_box_size-box_size/k_cat
             else:
                 space_size = text_box_size
             # rysowanie poziome:
             if miejsce==1:
-                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(K_cat-1)*box_size-(i+1)*width+odstep*width, name, width, space_size, fname=fname)
+                draw_into_rectangle(dwg, X+odstep*width+odstep2, 870-Y-(K_cat-1)*box_size+(i+1)*width-odstep*width, name.upper(), width, space_size, fname=fname)
             elif miejsce!=2:
-                draw_into_rectangle(c, X+odstep*width+odstep2, Y+(miejsce-2)*box_size-(i+1)*width+odstep*width, name, width, space_size, fname=fname)
+                draw_into_rectangle(dwg, X+odstep*width+odstep2, 870-Y-(miejsce-2)*box_size+(i+1)*width-odstep*width, name.upper(), width, space_size, fname=fname)
             # rysowanie pionowe:
-            if miejsce==2:
-                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(i+1)*width+odstep*width, name, width, space_size, angle=270, fname=fname)
-            elif miejsce!=1:
-                draw_into_rectangle(c, Y+(K_cat-1)*box_size+odstep*width, -X-text_box_size-(miejsce-2)*box_size-(i+1)*width+odstep*width, name, width, space_size, angle=270, fname=fname)
+            if miejsce!=1:
+                draw_into_rectangle(dwg, X+text_box_size+(i+1)*width-odstep*width+(miejsce-2)*box_size, 870-Y-(K_cat-1)*box_size-odstep*width, name.upper(), width, space_size, angle=270, fname=fname)
 
             
-def draw_on_canvas(puzzle1, c, fname="undefgewgwegined.svg", X = 30, Y = 30, puzzle_h = 400):
+def draw_on_canvas(puzzle1, dwg, fname="undefined.svg", X = 30, Y = 30, puzzle_h = 400):
     categories = puzzle1.categories
     clues = puzzle1.clues
     seed = puzzle1.seed
@@ -251,20 +360,20 @@ def draw_on_canvas(puzzle1, c, fname="undefgewgwegined.svg", X = 30, Y = 30, puz
     
     # ------------ drawing stars
     
-    if puzzle1.diff<2:
+    if puzzle1.diff<1:
         n = 1
-    elif puzzle1.diff<5:
+    elif puzzle1.diff<3:
         n = 2
-    elif puzzle1.diff<10:
+    elif puzzle1.diff<5:
         n = 3
     else:
         n = 4
         
     for i in range(n):
-        star(c, X+box_size*1.5-15-i*25, Y+puzzle_h-box_size*1.5+15, 10)
+        star(dwg, X+box_size*1.5-15-i*25, 870-Y-puzzle_h+text_box_size-15, 10)
     
     # ------------ drawing grid
-    draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y, puzzle_h=puzzle_h, fname=fname)
+    draw_grid(puzzle1=puzzle1, dwg=dwg, X=X, Y=Y, puzzle_h=puzzle_h, fname=fname)
     
     # ------------- drawing clues
     N_lines = len(puzzle1.clues)+len([c for c in puzzle1.clues if c["typ"]==4])
@@ -280,30 +389,55 @@ def draw_on_canvas(puzzle1, c, fname="undefgewgwegined.svg", X = 30, Y = 30, puz
     
     additional_rows = 0
     for i in range(len(clues)):
-        draw_clues_on_canvas(categories, clues[i], c, Xc+odstep*width_clue, Yc-width_clue*(i+additional_rows), i, width_clue)
+        draw_clues_on_canvas(categories, clues[i], dwg, Xc+odstep*width_clue, 840-Yc+width_clue*(i+additional_rows), i, width_clue)
         if clues[i]["typ"]==4:
             additional_rows += 1
     
     # ------------- drawing info
     width_foot = 8
-    
-    c.append(draw.Text( "diff: "+str(puzzle1.diff), width_foot, X+text_box_size+box_size+10, Y+3*width_foot ))
+    dwg.add(dwg.text("diff: "+str(puzzle1.diff),
+        insert=(X+text_box_size+box_size+10, 870-Y-3*width_foot ),
+        stroke='none',
+        font_size=width_foot
+    ))
     
     if puzzle1.is_grid_contradictory():
-        c.append(draw.Text( "Contradictory: "+str(puzzle1.is_grid_contradictory()), width_foot, X+text_box_size+box_size+10, Y+2*width_foot,  fill='red' ))
+        dwg.add(dwg.text("Contradictory: "+str(puzzle1.is_grid_contradictory()),
+            insert=(X+text_box_size+box_size+10, 870-Y-2*width_foot),
+            stroke='red',
+            font_size=width_foot
+        ))
     else:
-        c.append(draw.Text(  "Contradictory: "+str(puzzle1.is_grid_contradictory()), width_foot, X+text_box_size+box_size+10, Y+2*width_foot, fill='black' ))
-
+        dwg.add(dwg.text("Contradictory: "+str(puzzle1.is_grid_contradictory()),
+            insert=(X+text_box_size+box_size+10, 870-Y-2*width_foot),
+            stroke='none',
+            font_size=width_foot
+        ))
     
     if not puzzle1.is_grid_completed():
-        c.append(draw.Text( "Solvable: "+str(puzzle1.is_grid_completed()), width_foot, X+text_box_size+box_size+10, Y+width_foot, fill='red' ))
+        dwg.add(dwg.text("Solvable: "+str(puzzle1.is_grid_completed()),
+            insert=(X+text_box_size+box_size+10, 870-Y-width_foot),
+            stroke='red',
+            font_size=width_foot
+        ))
     else:
-        c.append(draw.Text( "Solvable: "+str(puzzle1.is_grid_completed()), width_foot, X+text_box_size+box_size+10, Y+width_foot, fill='black' ))
+        dwg.add(dwg.text("Solvable: "+str(puzzle1.is_grid_completed()),
+            insert=(X+text_box_size+box_size+10, 870-Y-width_foot),
+            stroke='none',
+            font_size=width_foot
+        ))
+    dwg.add(dwg.text("Seed: "+str(seed),
+        insert=(X+text_box_size+box_size+10, 870-Y),
+        stroke='none',
+        font_size=width_foot
+    ))
     
-    c.append(draw.Text( "seed: "+str(seed), width_foot, X+text_box_size+box_size+10, Y ))
-
-    c.append(draw.Text( "Krzysztof Banecki, all rights reserved ©", width_foot, 450, 10 ))
-    
+    dwg.add(dwg.text("Krzysztof Banecki, all rights reserved ©",
+        insert=(450, 870-10),
+        stroke='none',
+        font_size=width_foot
+    ))
+            
     # ------------- drawing solution
     X_sol = 450
     Y_sol = 350
@@ -314,7 +448,12 @@ def draw_on_canvas(puzzle1, c, fname="undefgewgwegined.svg", X = 30, Y = 30, puz
     else:
         add_info = False
     
-    sol_text = "Solution:\n"
+    sol_text = "Solution:"
+    dwg.add(dwg.text(sol_text,
+        insert=(X_sol, 870-Y_sol),
+        stroke='none',
+        font_size=width_sol
+    ))
     for i in range(k_cat):
         linijka = funs.get_string_name(categories, 0, i, replace_polish=False, add_info=add_info)
         for k2 in range(1, K_cat):
@@ -322,8 +461,11 @@ def draw_on_canvas(puzzle1, c, fname="undefgewgwegined.svg", X = 30, Y = 30, puz
                 if puzzle1.get_grid_value(0, i, k2, j)==1:
                     break
             linijka += " ~ "+funs.get_string_name(categories, k2, j, replace_polish=False)
-        sol_text += linijka+"\n"
-    c.append(draw.Text( sol_text, width_sol, X_sol, Y_sol-(i+1)*width_sol ))
+        dwg.add(dwg.text(linijka,
+            insert=(X_sol, 870-Y_sol+(i+1)*width_sol),
+            stroke='none',
+            font_size=width_sol
+        ))
     
     
     
