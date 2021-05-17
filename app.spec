@@ -2,11 +2,14 @@
 
 block_cipher = None
 
+added_files = [
+    ('C:\\Users\\banec\\OneDrive\\Documents\\text_puzzle_app\\v1_3\\categories','data')
+]
 
-a = Analysis(['app.py'],
-             pathex=['/home/baneckik/Documents/Github/logic_text_puzzles'],
+a = Analysis(['app_v1_3.py'],
+             pathex=['C:\\Users\\banec\\OneDrive\\Documents\\text_puzzle_app\\v1_3'],
              binaries=[],
-             datas=[],
+             datas=added_files,
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
