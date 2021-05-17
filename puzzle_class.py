@@ -672,7 +672,7 @@ def propose_clue4_cand(self, clue_cand):
     Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
     (only if there are actually groups in this category).
     """
-    prob_of_group = 0.2
+    prob_of_group = 0.8
     order = np.random.permutation(["1", "2", "3", "4", "5", "6"])
     for i in order:
         if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
@@ -689,7 +689,7 @@ def propose_clue5_cand(self, clue_cand):
     Function with probability prob_of_group changes some of the objects in clue of type 1 into gropus 
     (only if there are actually groups in this category).
     """
-    prob_of_group = 0.2
+    prob_of_group = 0.8
     order = np.random.permutation(["1", "2", "3", "4"])
     for i in order:
         if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
@@ -1225,19 +1225,76 @@ def use_clue3(self, c, collect_solution=False):
     if clue["K1"]!=clue["K2"] and "i1" in clue and "i2" in clue:
         self.grid_insert(clue["K1"], clue["i1"], clue["K2"], clue["i2"], "X", "clue3_"+str(c), collect_solution)
     
-    if "i1" in clue and "i2" in clue:
-        if operation=="+":
-            for i in range(self.k):
-                if values[i]-diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]-diff))==2:
-                    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
-                if values[i]+diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))==2:
-                    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
-        elif operation=="*":
-            for i in range(self.k):
-                if values[i]/diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]/diff))==2:
-                    self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
-                if values[i]*diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))==2:
-                    self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)            
+    if operation=="+":
+        if "i1" in clue:
+            if "i2" in clue:
+                for i in range(self.k):
+                    if values[i]-diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]-diff))==2:
+                        self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+            else:
+                for i in range(self.k):
+                    if values[i]+diff not in values:
+                        self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+                # if K1,i1 is already determined we can put some 'X's outside group K2,g2:
+                for i in range(self.k):
+                    if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)==1 and values[i]+diff in values:
+                        i6 = values.index(values[i]+diff)
+                        for j in range(self.k):
+                            if self.categories[clue["K2"]]["groups"][j]!=clue["g2"]:
+                                self.grid_insert(clue["K2"], j, clue["K6"], i6, "X", "clue3_"+str(c), collect_solution)
+                        break
+        if "i2" in clue:
+            if "i1" in clue:
+                for i in range(self.k):
+                    if values[i]+diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]+diff))==2:
+                        self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+            else:
+                for i in range(self.k):
+                    if values[i]-diff not in values:
+                        self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+                # if K1,i1 is already determined we can put some 'X's outside group K2,g2:
+                for i in range(self.k):
+                    if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], i)==1 and values[i]-diff in values:
+                        i6 = values.index(values[i]-diff)
+                        for j in range(self.k):
+                            if self.categories[clue["K1"]]["groups"][j]!=clue["g1"]:
+                                self.grid_insert(clue["K1"], j, clue["K6"], i6, "X", "clue3_"+str(c), collect_solution)
+                        break
+    elif operation=="*":
+        if "i1" in clue:
+            if "i2" in clue:
+                for i in range(self.k):
+                    if values[i]/diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]/diff))==2:
+                        self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+            else:
+                for i in range(self.k):
+                    if values[i]*diff not in values:
+                        self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+                # if K1,i1 is already determined we can put some 'X's outside group K2,g2:
+                for i in range(self.k):
+                    if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)==1 and values[i]*diff in values:
+                        i6 = values.index(values[i]*diff)
+                        for j in range(self.k):
+                            if self.categories[clue["K2"]]["groups"][j]!=clue["g2"]:
+                                self.grid_insert(clue["K2"], j, clue["K6"], i6, "X", "clue3_"+str(c), collect_solution)
+                        break
+        if "i2" in clue:
+            if "i1" in clue:
+                for i in range(self.k):
+                    if values[i]*diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))==2:
+                        self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+            else:
+                for i in range(self.k):
+                    if values[i]/diff not in values:
+                        self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
+                # if K1,i1 is already determined we can put some 'X's outside group K2,g2:
+                for i in range(self.k):
+                    if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], i)==1 and values[i]/diff in values:
+                        i6 = values.index(values[i]/diff)
+                        for j in range(self.k):
+                            if self.categories[clue["K1"]]["groups"][j]!=clue["g1"]:
+                                self.grid_insert(clue["K1"], j, clue["K6"], i6, "X", "clue3_"+str(c), collect_solution)
+                        break
             
 def use_clue4(self, c, collect_solution=False):
     clue = self.clues[c]    
@@ -1336,20 +1393,81 @@ def use_clue4(self, c, collect_solution=False):
                 condition56 = False
                 break
     
+    # if positive conclusion is false:
     if condition34 and "i1" in clue and "i2" in clue:
         self.grid_insert(K1, clue["i1"], K2, clue["i2"], "X", "clue4_"+str(c), collect_solution)
+    elif condition34 and "i1" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K2"]]["groups"][j]==clue["g2"]:
+                self.grid_insert(K1, clue["i1"], K2, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition34 and "i2" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K1"]]["groups"][j]==clue["g1"]:
+                self.grid_insert(K2, clue["i2"], K1, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition34:
+        for i in range(self.k):
+            if self.categories[clue["K1"]]["groups"][i]==clue["g1"]:
+                for j in range(self.k):
+                    if self.categories[clue["K2"]]["groups"][j]==clue["g2"]:
+                        self.grid_insert(K1, i, K2, j, "X", "clue4_"+str(c), collect_solution) 
+                        
     if condition34 and "i5" in clue and "i6" in clue:
         self.grid_insert(K5, clue["i5"], K6, clue["i6"], "O", "clue4_"+str(c), collect_solution)
-        
+    elif condition34 and "i5" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K6"]]["groups"][j]!=clue["g6"]:
+                self.grid_insert(K5, clue["i5"], K6, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition34 and "i6" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K5"]]["groups"][j]!=clue["g5"]:
+                self.grid_insert(K6, clue["i6"], K5, j, "X", "clue4_"+str(c), collect_solution)
+    
+    # if negative conclusion is false:
     if condition56 and "i1" in clue and "i2" in clue:
         self.grid_insert(K1, clue["i1"], K2, clue["i2"], "O", "clue4_"+str(c), collect_solution)
+    elif condition56 and "i1" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K2"]]["groups"][j]!=clue["g2"]:
+                self.grid_insert(K1, clue["i1"], K2, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition56 and "i2" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K1"]]["groups"][j]!=clue["g1"]:
+                self.grid_insert(K2, clue["i2"], K1, j, "X", "clue4_"+str(c), collect_solution)
+                
     if condition56 and "i3" in clue and "i4" in clue:
         self.grid_insert(K3, clue["i3"], K4, clue["i4"], "O", "clue4_"+str(c), collect_solution)
-        
+    elif condition56 and "i3" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K4"]]["groups"][j]!=clue["g4"]:
+                self.grid_insert(K3, clue["i3"], K4, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition56 and "i4" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K3"]]["groups"][j]!=clue["g3"]:
+                self.grid_insert(K4, clue["i4"], K3, j, "X", "clue4_"+str(c), collect_solution)
+    
+    # if premise is true:
     if condition12anti and "i3" in clue and "i4" in clue:
         self.grid_insert(K3, clue["i3"], K4, clue["i4"], "O", "clue4_"+str(c), collect_solution)
-    elif condition12 and "i5" in clue and "i6" in clue:
+    elif condition12anti and "i3" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K4"]]["groups"][j]!=clue["g4"]:
+                self.grid_insert(K3, clue["i3"], K4, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition12anti and "i4" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K3"]]["groups"][j]!=clue["g3"]:
+                self.grid_insert(K4, clue["i4"], K3, j, "X", "clue4_"+str(c), collect_solution)
+    
+    # if premise is false:            
+    if condition12 and "i5" in clue and "i6" in clue:
         self.grid_insert(K5, clue["i5"], K6, clue["i6"], "O", "clue4_"+str(c), collect_solution)
+    elif condition12 and "i5" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K6"]]["groups"][j]!=clue["g6"]:
+                self.grid_insert(K5, clue["i5"], K6, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition12 and "i6" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K5"]]["groups"][j]!=clue["g5"]:
+                self.grid_insert(K6, clue["i6"], K5, j, "X", "clue4_"+str(c), collect_solution)
         
 def use_clue5(self, c, collect_solution=False):
     clue = self.clues[c]    
@@ -1406,8 +1524,25 @@ def use_clue5(self, c, collect_solution=False):
     
     if condition12 and "i3" in clue and "i4" in clue:
         self.grid_insert(K3, clue["i3"], K4, clue["i4"], "O", "clue5_"+str(c), collect_solution)
-    elif condition34 and "i1" in clue and "i2" in clue:
+    elif condition12 and "i3" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K4"]]["groups"][j]!=clue["g4"]:
+                self.grid_insert(K3, clue["i3"], K4, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition12 and "i4" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K3"]]["groups"][j]!=clue["g3"]:
+                self.grid_insert(K4, clue["i4"], K3, j, "X", "clue4_"+str(c), collect_solution)
+                
+    if condition34 and "i1" in clue and "i2" in clue:
         self.grid_insert(K1, clue["i1"], K2, clue["i2"], "O", "clue5_"+str(c), collect_solution)
+    elif condition34 and "i1" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K2"]]["groups"][j]!=clue["g2"]:
+                self.grid_insert(K1, clue["i1"], K2, j, "X", "clue4_"+str(c), collect_solution)
+    elif condition34 and "i2" in clue:
+        for j in range(self.k):
+            if self.categories[clue["K1"]]["groups"][j]!=clue["g1"]:
+                self.grid_insert(K2, clue["i2"], K1, j, "X", "clue4_"+str(c), collect_solution)
     
 def use_clue6(self, c, collect_solution=False):
     clue = self.clues[c]
