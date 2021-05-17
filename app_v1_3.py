@@ -14,7 +14,7 @@ import numpy as np
 from puzzle_class import puzzle
 import generating_categories_functions as funs
 import pdf_printing_functions as pdf_funs
-import svg_printing_functions2 as svg_funs
+import svg_printing_functions as svg_funs
 
 window = Tk()
 window.geometry('680x900')
