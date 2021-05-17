@@ -1,5 +1,5 @@
 import svgwrite
-import numpy as np
+from numpy import unique
 from math import pi, cos, sin
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -264,7 +264,7 @@ def draw_grid(puzzle1, dwg, X = 30, Y = 30, puzzle_h=400, fname="undefined.svg")
                 ))
                 widths.append( textwidth("...", width2, fname=fname) )
                 break
-            if 'groups' in categories[i] and len(np.unique(categories[i]["groups"]))>1:
+            if 'groups' in categories[i] and len(unique(categories[i]["groups"]))>1:
                 name2 = name+" (gr. "+str(categories[i]["groups"][col])+")"
                 dwg.add(dwg.text(name2,
                     insert=(X+x_shift, 870-Ycat+width2*(col+1)),

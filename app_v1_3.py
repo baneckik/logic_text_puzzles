@@ -7,10 +7,9 @@ from os import path
 import copy
 from functools import partial
 from reportlab.pdfgen import canvas
-import drawSvg
 import svgwrite
 
-import numpy as np
+from numpy import random, unique, mean, floor
 from puzzle_class import puzzle
 import generating_categories_functions as funs
 import pdf_printing_functions as pdf_funs
@@ -264,7 +263,7 @@ def clicked_ok():
 def clicked_gen():
     choice_int = choice.get()
     if choice_int==1:
-        seed = np.random.randint(0,100000000)
+        seed = random.randint(0,100000000)
     elif choice_int==2:
         seed = int(seed1_entry.get())
     elif choice_int==3:
@@ -345,7 +344,7 @@ def clicked_gen():
     to_restrict = []
         
     clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
-    clue_order = np.random.choice(clues1, len(clues1), replace=False)
+    clue_order = random.choice(clues1, len(clues1), replace=False)
     trace_i = 1
     trace_clue_count = len(puzzle1.clues)
     for i in clue_order:
@@ -366,13 +365,13 @@ def clicked_gen():
         else:
             print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+" finished, type: 1")
             trace_i += 1
-        percent += int(np.floor(95/bar_N))
+        percent += int(floor(95/bar_N))
         lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
         bar['value'] = percent
         window.update()
     
     clues_other = [ i for i, clue in enumerate(clues_copy) if clue["typ"]!=1 ]
-    clue_order = np.random.permutation(clues_other)
+    clue_order = random.permutation(clues_other)
     for i in clue_order:
         clues_restricted = [ j for j in clues_other if j!=i ]
         puzzle1.clear_grid()
@@ -391,13 +390,13 @@ def clicked_gen():
         else:
             print("Restricting clue "+str(trace_i)+"/"+str(trace_clue_count)+" finished, type: "+str(clues_copy[i]["typ"]))
             trace_i += 1
-        percent += int(np.floor(95/bar_N))
+        percent += int(floor(95/bar_N))
         lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
         bar['value'] = percent
         window.update()
 
     puzzle1.clues = [ clue for j, clue in enumerate(clues_copy) if not j in to_restrict ]
-    puzzle1.clues = list(np.random.permutation(puzzle1.clues))
+    puzzle1.clues = list(random.permutation(puzzle1.clues))
     puzzle1.critical_squares = []
     puzzle1.clues_to_check = []
     for clue in puzzle1.clues:
@@ -422,12 +421,12 @@ def clicked_gen():
             lowest_diff = puzzle1.diff
         diffs.append(puzzle1.diff)
         
-        percent = int(np.floor(5+95/bar_N*(bar_N-4+n)))
+        percent = int(floor(5+95/bar_N*(bar_N-4+n)))
         lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
         bar['value'] = percent
         window.update()
     puzzle1.solution = best_solution
-    puzzle1.diff = round(np.mean(diffs),2)
+    puzzle1.diff = round(mean(diffs),2)
     
     puzzle1.print_info()
     
@@ -468,7 +467,7 @@ def clicked_gen():
                 e.grid(row=0, column=0)
                 entries.append(e)
                 
-                if "groups" in cat and len(np.unique(cat["groups"]))>1:
+                if "groups" in cat and len(unique(cat["groups"]))>1:
                     g_label = Label(object_frame, text="gr."+str(cat["groups"][i]), font=(std_font, std_font_size//2))
                     g_label.grid(row=0, column=1)
                     group_labels.append(g_label)

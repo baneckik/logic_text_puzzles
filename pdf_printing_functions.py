@@ -1,7 +1,5 @@
-import numpy as np
-import pandas as pd
+from numpy import unique
 from pathlib import Path
-import os
 from reportlab.pdfgen import canvas
 from math import pi, cos, sin
 
@@ -517,14 +515,14 @@ def draw_grid(puzzle1, c, X = 30, Y = 30, puzzle_h=400):
                 c.drawString(X+x_shift, Ycat-width2*(col+1), "...")
                 widths.append( stringWidth("...", normal_font, width2) )
                 break
-            if 'groups' in categories[i] and len(np.unique(categories[i]["groups"]))>1:
+            if 'groups' in categories[i] and len(unique(categories[i]["groups"]))>1:
                 name2 = name+" (gr. "+str(categories[i]["groups"][col])+")"
                 c.drawString(X+x_shift, Ycat-width2*(col+1), name2)
                 widths.append( stringWidth(name2, normal_font, width2) )
             else:
                 c.drawString(X+x_shift, Ycat-width2*(col+1), name)
                 widths.append( stringWidth(name, normal_font, width2) )
-        x_shift += int(np.max(widths))+10
+        x_shift += int(max(widths))+10
             
     
     # ------------- typing categories names into boxes

@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import random, unique, zeros, ceil, mean
 import copy
 import generating_categories_functions as funs
 from collections import Counter
@@ -86,7 +86,7 @@ def print_grid(self):
         
 def clear_grid(self):
     for key in self.grid:
-        self.grid[key] = np.zeros((self.k, self.k))
+        self.grid[key] = zeros((self.k, self.k))
             
 def get_grid_value(self, K1, i1, K2, i2):
         if K1>=self.K or K2>=self.K or K1<0 or K2<0 or K1==K2:
@@ -617,16 +617,16 @@ def propose_clue1_cand(self, clue_cand):
     """
     prob_of_group = 0.2
     
-    if "groups" in self.categories[clue_cand["K1"]] and not "i3" in clue_cand and len(np.unique(self.categories[clue_cand["K1"]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+    if "groups" in self.categories[clue_cand["K1"]] and not "i3" in clue_cand and len(unique(self.categories[clue_cand["K1"]]["groups"]))!=1 and random.uniform(0,1)<prob_of_group:
         cnt = dict(Counter(self.categories[clue_cand["K1"]]["groups"]))
         possible_groups = [ k for k in cnt.keys() if cnt[k]<self.k-1 ] #excluding groups that will exclude too much options
-        group = np.random.choice(possible_groups, 1)[0]
+        group = random.choice(possible_groups, 1)[0]
         del clue_cand["i1"]
         clue_cand["g1"] = group
-    elif "groups" in self.categories[clue_cand["K2"]] and not "i3" in clue_cand and len(np.unique(self.categories[clue_cand["K2"]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+    elif "groups" in self.categories[clue_cand["K2"]] and not "i3" in clue_cand and len(unique(self.categories[clue_cand["K2"]]["groups"]))!=1 and random.uniform(0,1)<prob_of_group:
         cnt = dict(Counter(self.categories[clue_cand["K2"]]["groups"]))
         possible_groups = [ k for k in cnt.keys() if cnt[k]<self.k-1 ] #excluding groups that will exclude too much options
-        group = np.random.choice(possible_groups, 1)[0]
+        group = random.choice(possible_groups, 1)[0]
         del clue_cand["i2"]
         clue_cand["g2"] = group
             
@@ -639,12 +639,12 @@ def propose_clue2_cand(self, clue_cand):
     """
     prob_of_group = 0.2
     
-    order = np.random.permutation(["1", "2", "3"])
+    order = random.permutation(["1", "2", "3"])
     for i in order:
-        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and random.uniform(0,1)<prob_of_group:
             cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
             possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
-            group = np.random.choice(possible_groups, 1)[0]
+            group = random.choice(possible_groups, 1)[0]
             del clue_cand["i"+i]
             clue_cand["g"+i] = group
             
@@ -656,12 +656,12 @@ def propose_clue3_cand(self, clue_cand):
     (only if there are actually groups in this category).
     """
     prob_of_group = 0.2
-    order = np.random.permutation(["1", "2"])
+    order = random.permutation(["1", "2"])
     for i in order:
-        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and random.uniform(0,1)<prob_of_group:
             cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
             possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
-            group = np.random.choice(possible_groups, 1)[0]
+            group = random.choice(possible_groups, 1)[0]
             del clue_cand["i"+i]
             clue_cand["g"+i] = group
             
@@ -673,12 +673,12 @@ def propose_clue4_cand(self, clue_cand):
     (only if there are actually groups in this category).
     """
     prob_of_group = 0.8
-    order = np.random.permutation(["1", "2", "3", "4", "5", "6"])
+    order = random.permutation(["1", "2", "3", "4", "5", "6"])
     for i in order:
-        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and random.uniform(0,1)<prob_of_group:
             cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
             possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
-            group = np.random.choice(possible_groups, 1)[0]
+            group = random.choice(possible_groups, 1)[0]
             del clue_cand["i"+i]
             clue_cand["g"+i] = group
             
@@ -690,12 +690,12 @@ def propose_clue5_cand(self, clue_cand):
     (only if there are actually groups in this category).
     """
     prob_of_group = 0.8
-    order = np.random.permutation(["1", "2", "3", "4"])
+    order = random.permutation(["1", "2", "3", "4"])
     for i in order:
-        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and random.uniform(0,1)<prob_of_group:
             cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
             possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
-            group = np.random.choice(possible_groups, 1)[0]
+            group = random.choice(possible_groups, 1)[0]
             del clue_cand["i"+i]
             clue_cand["g"+i] = group
             
@@ -707,12 +707,12 @@ def propose_clue6_cand(self, clue_cand):
     (only if there are actually groups in this category).
     """
     prob_of_group = 0.2
-    order = np.random.permutation(["1", "2"])
+    order = random.permutation(["1", "2"])
     for i in order:
-        if "groups" in self.categories[clue_cand["K"+i]] and len(np.unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and np.random.uniform(0,1)<prob_of_group:
+        if "groups" in self.categories[clue_cand["K"+i]] and len(unique(self.categories[clue_cand["K"+i]]["groups"]))!=1 and random.uniform(0,1)<prob_of_group:
             cnt = dict(Counter(self.categories[clue_cand["K"+i]]["groups"]))
             possible_groups = [ k for k in cnt.keys() if cnt[k]>1 ] #excluding groups with only one member
-            group = np.random.choice(possible_groups, 1)[0]
+            group = random.choice(possible_groups, 1)[0]
             del clue_cand["i"+i]
             clue_cand["g"+i] = group
             
@@ -723,12 +723,12 @@ def add_clue1(self):
     Adding clue of type 1:
     Single/double or triple 'X' in the grid.
     """
-    no_of_x = np.random.choice([1,2,3], 1, p=[0.8, 0.15, 0.05])
+    no_of_x = random.choice([1,2,3], 1, p=[0.8, 0.15, 0.05])
     K = self.K
     k = self.k
-    key_list = np.random.choice(range(K*(K-1)//2), K*(K-1)//2, replace=False)
-    i_list = np.random.choice(range(k), k, replace=False)
-    j_list = np.random.choice(range(k), k, replace=False)
+    key_list = random.choice(range(K*(K-1)//2), K*(K-1)//2, replace=False)
+    i_list = random.choice(range(k), k, replace=False)
+    j_list = random.choice(range(k), k, replace=False)
     
     boxes = []
     for key in self.grid:
@@ -763,8 +763,8 @@ def add_clue1(self):
                         self.clues.append(clue_cand)
                         return
                     elif len(other_i)>no_of_x-1 and len(other_j)>no_of_x-1:
-                        if np.random.randint(2)==0:
-                            to_fill = np.random.choice(other_i, no_of_x-1, replace=False)
+                        if random.randint(2)==0:
+                            to_fill = random.choice(other_i, no_of_x-1, replace=False)
                             if no_of_x==2:
                                 clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]}
                                 clue_cand = propose_clue1_cand(self, clue_cand)     
@@ -780,7 +780,7 @@ def add_clue1(self):
                                 self.clues.append(clue_cand)
                                 return
                         else:
-                            to_fill = np.random.choice(other_j, no_of_x-1, replace=False)
+                            to_fill = random.choice(other_j, no_of_x-1, replace=False)
                             if no_of_x==2:
                                 clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]}
                                 clue_cand = propose_clue1_cand(self, clue_cand)     
@@ -796,7 +796,7 @@ def add_clue1(self):
                                 self.clues.append(clue_cand)
                                 return
                     elif len(other_i)>no_of_x-1:
-                        to_fill = np.random.choice(other_i, no_of_x-1, replace=False)
+                        to_fill = random.choice(other_i, no_of_x-1, replace=False)
                         if no_of_x==2:
                             clue_cand = {"typ":1, "K1":K2, "i1":j, "K2":K1, "i2":i, "i3":to_fill[0]}
                             clue_cand = propose_clue1_cand(self, clue_cand)     
@@ -812,7 +812,7 @@ def add_clue1(self):
                             self.clues.append(clue_cand)
                             return
                     else:
-                        to_fill = np.random.choice(other_j, no_of_x-1, replace=False)
+                        to_fill = random.choice(other_j, no_of_x-1, replace=False)
                         if no_of_x==2:
                             clue_cand = {"typ":1, "K1":K1, "i1":i, "K2":K2, "i2":j, "i3":to_fill[0]}
                             clue_cand = propose_clue1_cand(self, clue_cand)     
@@ -837,12 +837,12 @@ def add_clue2(self):
     k = self.k
     
     K6_candidates = [ i for i, cat in enumerate(self.categories) if cat['typ'] in ['numerical','ordinal'] ]
-    K6 = np.random.choice(K6_candidates, 1)[0]
+    K6 = random.choice(K6_candidates, 1)[0]
     
     i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
-    i1_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
-    i2_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
-    i3_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
+    i1_list = random.choice(i_candidates, len(i_candidates), replace=False)
+    i2_list = random.choice(i_candidates, len(i_candidates), replace=False)
+    i3_list = random.choice(i_candidates, len(i_candidates), replace=False)
     
     for i1p in i1_list:
         for i2p in i2_list:
@@ -892,19 +892,19 @@ def add_clue3(self):
     k = self.k
     
     K6_candidates = [ i for i, cat in enumerate(self.categories) if "pre_clues" in cat and len(cat["pre_clues"])>0 ]
-    K6 = np.random.choice(K6_candidates, 1)[0]
+    K6 = random.choice(K6_candidates, 1)[0]
     if self.categories[K6]["typ"]=="numerical":
         values = self.categories[K6]['names']
     else:
         values = list(range(1, self.k+1))
     
-    possible_randomized = np.random.permutation(list(self.categories[K6]['pre_clues']))
+    possible_randomized = random.permutation(list(self.categories[K6]['pre_clues']))
     diff_list = [ float(diff_string.split("y")[-1][1:]) for diff_string in possible_randomized ]
     operations = [ diff_string.split("y")[-1][0] for diff_string in possible_randomized ]
     
     i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
-    i1_list = np.random.permutation(i_candidates)
-    i2_list = np.random.permutation(i_candidates)
+    i1_list = random.permutation(i_candidates)
+    i2_list = random.permutation(i_candidates)
     
     for i1p in i1_list:
         for i2p in i2_list:
@@ -963,22 +963,22 @@ def add_clue4(self):
     K = self.K
     k = self.k
     
-    K12_candidates = np.random.permutation([ key for key in self.grid ])
-    K34_candidates = np.random.permutation([ key for key in self.grid ])
-    K56_candidates = np.random.permutation([ key for key in self.grid ])
+    K12_candidates = random.permutation([ key for key in self.grid ])
+    K34_candidates = random.permutation([ key for key in self.grid ])
+    K56_candidates = random.permutation([ key for key in self.grid ])
     
     i_candidates = [ i for i in range(k) ]
-    i1_list = np.random.permutation(i_candidates)
-    i2_list = np.random.permutation(i_candidates)
-    i3_list = np.random.permutation(i_candidates)
-    i4_list = np.random.permutation(i_candidates)
-    i5_list = np.random.permutation(i_candidates)
-    i6_list = np.random.permutation(i_candidates)
+    i1_list = random.permutation(i_candidates)
+    i2_list = random.permutation(i_candidates)
+    i3_list = random.permutation(i_candidates)
+    i4_list = random.permutation(i_candidates)
+    i5_list = random.permutation(i_candidates)
+    i6_list = random.permutation(i_candidates)
     
     for K12 in K12_candidates:
         for K34 in K34_candidates:
             if K34!=K12:
-                los = np.random.randint(2)
+                los = random.randint(2)
                 if los==0:
                     K56 = K34
                 else:
@@ -1042,17 +1042,17 @@ def add_clue5(self):
     K = self.K
     k = self.k
     
-    K12_candidates = np.random.permutation([ key for key in self.grid ])
-    K34_candidates = np.random.permutation([ key for key in self.grid ])
+    K12_candidates = random.permutation([ key for key in self.grid ])
+    K34_candidates = random.permutation([ key for key in self.grid ])
     
     i_candidates = [ i for i in range(k) ]
-    i1_list = np.random.permutation(i_candidates)
-    i2_list = np.random.permutation(i_candidates)
-    i3_list = np.random.permutation(i_candidates)
-    i4_list = np.random.permutation(i_candidates)
+    i1_list = random.permutation(i_candidates)
+    i2_list = random.permutation(i_candidates)
+    i3_list = random.permutation(i_candidates)
+    i4_list = random.permutation(i_candidates)
     
     for K12 in K12_candidates:
-        los = np.random.randint(2)
+        los = random.randint(2)
         if los==0:
             K34 = K12
         else:
@@ -1113,11 +1113,11 @@ def add_clue6(self):
     k = self.k
     
     K6_candidates = [ i for i, cat in enumerate(self.categories) if cat['typ'] in ['numerical','ordinal'] ]
-    K6 = np.random.choice(K6_candidates, 1)[0]
+    K6 = random.choice(K6_candidates, 1)[0]
     
     i_candidates = [ i for i in range(K*k) if i//k!=K6 ]
-    i1_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
-    i2_list = np.random.choice(i_candidates, len(i_candidates), replace=False)
+    i1_list = random.choice(i_candidates, len(i_candidates), replace=False)
+    i2_list = random.choice(i_candidates, len(i_candidates), replace=False)
               
     for i1p in i1_list:
         for i2p in i2_list:
@@ -1930,7 +1930,7 @@ def is_grid_contradictory(self):
 
 def remove_unused_groups(self):
     for K, cat in enumerate(self.categories):
-        if cat["typ"]=="categorical" and len(np.unique(cat["groups"]))>1:
+        if cat["typ"]=="categorical" and len(unique(cat["groups"]))>1:
             remove = True
             for clue in self.clues:
                 if clue["typ"]==1 or clue["typ"]==3 or clue["typ"]==6:
@@ -1954,7 +1954,7 @@ def remove_unused_groups(self):
 
 def set_seed(self, seed):
     self.seed = seed
-    np.random.seed(self.seed)
+    random.seed(self.seed)
 
 def draw_categories(self, diff=3):
     if not diff in [2,3,4]:
@@ -1969,17 +1969,17 @@ def draw_categories(self, diff=3):
             raise Exception("Program couldn't draw non-repeating categories!")
 
 def draw_clues(self, trace=False):
-    non_1_clues = int(np.ceil(self.k*self.K/2.3))
+    non_1_clues = int(ceil(self.k*self.K/2.3))
     are_categoricals = any([cat['typ']=='categorical' for cat in self.categories ])
     are_ordinals = any([cat['typ']=='ordinal' for cat in self.categories ])
     are_numericals = any(["pre_clues" in cat and len(cat["pre_clues"])>0 for cat in self.categories ])
     for i in range(non_1_clues):
         if are_numericals:
-            typ = np.random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
+            typ = random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
         elif are_ordinals:
-            typ = np.random.choice([2, 4, 5, 6], 1, p=[0.25, 0.25, 0.25, 0.25])[0]
+            typ = random.choice([2, 4, 5, 6], 1, p=[0.25, 0.25, 0.25, 0.25])[0]
         else:
-            typ = np.random.choice([4, 5], 1, p=[0.5, 0.5])[0]
+            typ = random.choice([4, 5], 1, p=[0.5, 0.5])[0]
         if trace:
             print("Trying to fit clue of type "+str(typ))
         if typ==2:
@@ -2054,7 +2054,7 @@ def try_to_solve2(self, collect_solution=False):
         for i in range(2):
             clues_to_check = self.clues_to_check
             self.clues_to_check = []
-            for clue_id in np.unique(clues_to_check):
+            for clue_id in unique(clues_to_check):
                 self.use_clue(clue_id, collect_solution)
                 self.grid_concile(collect_solution)
         for c in clues2:
@@ -2089,7 +2089,7 @@ def try_to_solve(self, max_iter=None, collect_solution=False):
             return
         
         # if brute force guessing is needed:
-        key_candidates = np.random.permutation(list(self.grid.keys()))
+        key_candidates = random.permutation(list(self.grid.keys()))
         for key in key_candidates:
             for i in range(self.k):
                 for j in range(self.k):
@@ -2124,7 +2124,7 @@ def try_to_restrict_clues(self, trace=False, max_iter=None):
     trace_i = 1
     trace_clue_count = len(self.clues)
     clues1 = [ i for i, clue in enumerate(clues_copy) if clue["typ"]==1 ]
-    clue_order = np.random.choice(clues1, len(clues1), replace=False)
+    clue_order = random.choice(clues1, len(clues1), replace=False)
     for i in clue_order:
         clues1_restricted = [ j for j in clues1 if j!=i ]
         self.clear_grid()
@@ -2146,7 +2146,7 @@ def try_to_restrict_clues(self, trace=False, max_iter=None):
             trace_i += 1
             
     clues_other = [ i for i, clue in enumerate(clues_copy) if clue["typ"]!=1 ]
-    clue_order = np.random.permutation(clues_other)
+    clue_order = random.permutation(clues_other)
     for i in clue_order:
         clues_restricted = [ j for j in clues_other if j!=i ]
         self.clear_grid()
@@ -2201,7 +2201,7 @@ def generate(self, seed=0, trace=False, max_iter=None):
         print("No of clues drawn = "+str(len(self.clues))+str(clues_counts))
         print("Restricting clues...")
     self.try_to_restrict_clues(trace=trace, max_iter=max_iter) 
-    self.clues = list(np.random.permutation(self.clues))
+    self.clues = list(random.permutation(self.clues))
     
     if trace:
         print("Final difficulty assessment...")
@@ -2223,8 +2223,8 @@ def generate(self, seed=0, trace=False, max_iter=None):
         diffs.append(self.diff)
     self.solution = best_solution
     if trace:
-        print("Difficulty: "+str(np.mean(diffs))+str(diffs))
-    self.diff = round(np.mean(diffs),2)
+        print("Difficulty: "+str(mean(diffs))+str(diffs))
+    self.diff = round(mean(diffs),2)
 
 def print_info(self):
     print("Seed: "+str(self.seed)+", difficulty: "+str(self.diff))
@@ -2238,7 +2238,7 @@ class puzzle:
     def __init__(self, K, k):
         self.K = K
         self.k = k
-        self.grid = { str(i)+","+str(j): np.zeros((k,k)) for i in range(K) for j in range(K) if i<j }
+        self.grid = { str(i)+","+str(j): zeros((k,k)) for i in range(K) for j in range(K) if i<j }
         self.critical_squares = []
         self.clues_to_check = []
         self.changed = False

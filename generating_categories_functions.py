@@ -1,5 +1,5 @@
-import numpy as np
-import pandas as pd
+from numpy import random, unique, sort, ndarray
+from pandas import read_csv
 from pathlib import Path
 
 # ----------------------------------------- Drawing categorical categories ---------------------------------------------
@@ -16,20 +16,20 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
     weights_folder = [ w/sum(weights_folder) for w in weights_folder ]
     
     if ile<6:
-        if np.random.uniform(0,1)<0.75:
-            folders = np.random.choice(folder_names, ile, p=weights_folder, replace=False)
+        if random.uniform(0,1)<0.75:
+            folders = random.choice(folder_names, ile, p=weights_folder, replace=False)
         else:
-            folders = np.random.choice(folder_names, ile, p=weights_folder, replace=True)
+            folders = random.choice(folder_names, ile, p=weights_folder, replace=True)
     else:
-        folders = np.random.choice(folder_names, ile, p=weights_folder, replace=True)
+        folders = random.choice(folder_names, ile, p=weights_folder, replace=True)
       
     # drawing categories from folders
     chosen = []
-    for folder in np.unique(folders):
+    for folder in unique(folders):
         available_cats = []
         available_weights = []
         for path in Path('categories/categorical/'+folder).rglob('*.txt'):
-            kat = pd.read_csv(path, header=None)
+            kat = read_csv(path, header=None)
             if kat.shape[0]-1 >= puzzle_k:
                 available_cats.append(path)
                 available_weights.append(int(kat.iloc[0,0].split(" ")[-1]))
@@ -41,32 +41,32 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
             raise Exception("Cannot find "+str(ile)+" categorical categories for " \
                         +str(puzzle_k)+" objects in each category!")
 
-        chosen += list( np.random.choice(available_cats, ile_kat, p=available_weights, replace=False) )
+        chosen += list( random.choice(available_cats, ile_kat, p=available_weights, replace=False) )
         
     chosen_out = []
     for c in chosen:
         if c==Path("categories/categorical/special_names/zmysleni_superbohaterowie_ang.txt"):
-            kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
-            prenames = np.random.choice(kat.iloc[:,0], puzzle_k, replace=False)
+            kat = read_csv(c, header=None, skiprows=[0], sep=" ")
+            prenames = random.choice(kat.iloc[:,0], puzzle_k, replace=False)
             if puzzle_k<5:
                 n = 1
             else: 
                 n = 2
             counts = [0]*n+[1]*n
-            counts += list(np.random.choice([0,1], puzzle_k-len(counts), replace=True))
-            names_male = np.random.choice(kat.iloc[:,1], len([i for i in counts if i==0]), replace=False)
-            names_female = np.random.choice(kat.iloc[:,2], len([i for i in counts if i==1]), replace=False)
+            counts += list(random.choice([0,1], puzzle_k-len(counts), replace=True))
+            names_male = random.choice(kat.iloc[:,1], len([i for i in counts if i==0]), replace=False)
+            names_female = random.choice(kat.iloc[:,2], len([i for i in counts if i==1]), replace=False)
             names = list(names_male)+list(names_female)
             names = [prenames[i]+" "+names[i] for i in range(len(prenames))]
         elif c==Path("categories/categorical/special_names/zmysleni_superbohaterowie_pol.txt"):
-            kat = pd.read_csv(c, header=None, skiprows=[0], sep=" ")
-            rows = np.random.choice(range(kat.shape[0]), puzzle_k, replace=False)
+            kat = read_csv(c, header=None, skiprows=[0], sep=" ")
+            rows = random.choice(range(kat.shape[0]), puzzle_k, replace=False)
             if puzzle_k<5:
                 n = 1
             else: 
                 n = 2
             counts = [0]*n+[1]*n
-            counts += list(np.random.choice([0,1], puzzle_k-len(counts), replace=True))
+            counts += list(random.choice([0,1], puzzle_k-len(counts), replace=True))
             names = []
             for j, i in enumerate(rows):
                 if counts[j]==0:
@@ -74,9 +74,9 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
                 else:
                     names.append(kat.iloc[i,1]+" "+kat.iloc[i,3])
         else:
-            kat = pd.read_csv(c, header=None)
+            kat = read_csv(c, header=None)
             kat.drop(kat.head(1).index, inplace=True)
-            names = list(np.random.choice(kat.iloc[:,0], puzzle_k, replace=False))
+            names = list(random.choice(kat.iloc[:,0], puzzle_k, replace=False))
         chosen_out.append(names)
     
     chosen_out2 = [ {'typ': "categorical", 'names': chosen_out[i], 'cross_bar': "", 'groups': [0]*puzzle_k} for i in range(len(chosen_out)) ]
@@ -100,33 +100,33 @@ def draw_cat_scheme(ile=1, puzzle_k=5):
     if puzzle_k==3:
         to_replace = 0 # no grouped categories allowed when k=3
     elif ile==1:
-        to_replace = np.random.choice([1,0,0,0,0])
+        to_replace = random.choice([1,0,0,0,0])
     elif ile==2:
-        to_replace = np.random.choice([2,1,1,0,0,0,0])
+        to_replace = random.choice([2,1,1,0,0,0,0])
     else:
-        to_replace = np.random.choice([3,2,2,1,1,1,0,0,0,0,0])
+        to_replace = random.choice([3,2,2,1,1,1,0,0,0,0,0])
     
     if to_replace>0:
         weights = [p[0] for p in poss_grouped_data]
-        chosen_i = np.random.choice(range(len(poss_grouped_data)), to_replace, p=[w/sum(weights) for w in weights], replace=False)
+        chosen_i = random.choice(range(len(poss_grouped_data)), to_replace, p=[w/sum(weights) for w in weights], replace=False)
         chosen = [ poss_grouped_data[chosen_i[i]] for i in range(to_replace) ]
         
         replacements = []
         for ch in chosen:
             if puzzle_k==3:
-                ile0 = np.random.randint(1,3)
+                ile0 = random.randint(1,3)
                 ile1 = puzzle_k-ile0
             else:
-                ile0 = np.random.randint(2,puzzle_k-1)
+                ile0 = random.randint(2,puzzle_k-1)
                 ile1 = puzzle_k-ile0
-            group0_names = np.random.choice(ch[1], ile0, replace=False)
-            group1_names = np.random.choice(ch[2], ile1, replace=False)
-            rand_order = np.random.permutation( [(0,g0) for g0 in group0_names] + [(1,g1) for g1 in group1_names] )
+            group0_names = random.choice(ch[1], ile0, replace=False)
+            group1_names = random.choice(ch[2], ile1, replace=False)
+            rand_order = random.permutation( [(0,g0) for g0 in group0_names] + [(1,g1) for g1 in group1_names] )
             g_names = [ g[1] for g in rand_order ]
             g_groups = [ g[0] for g in rand_order ]
             replacements.append({'typ': "categorical", 'names': g_names, 'cross_bar': "", 'groups': g_groups})
             
-        cat_to_replace = np.random.choice(range(ile), to_replace)
+        cat_to_replace = random.choice(range(ile), to_replace)
         for i, j in enumerate(cat_to_replace):
             chosen_out2[j] = replacements[i]
     
@@ -142,7 +142,7 @@ def draw_ord_scheme(ile=1, puzzle_k=5):
     available_cats = []
     available_weights = []
     for path in Path('categories/ordinal').rglob('*.txt'):
-        kat = pd.read_csv(path, header=None)
+        kat = read_csv(path, header=None)
         if kat.shape[0]-1 >= puzzle_k:
             available_cats.append(path)
             available_weights.append(int(kat.iloc[0,0].split(" ")[-1]))
@@ -152,11 +152,11 @@ def draw_ord_scheme(ile=1, puzzle_k=5):
         raise Exception("Cannot find "+str(ile)+" ordinal categories for " \
                         +str(puzzle_k)+" objects in each category!")
     
-    chosen = np.random.choice(available_cats, ile, p=available_weights, replace=False)
+    chosen = random.choice(available_cats, ile, p=available_weights, replace=False)
     chosen_out = []
     for c in chosen:
-        kat = pd.read_csv(c, header=None)
-        start = int(np.random.choice(range(1,kat.shape[0]-puzzle_k+1), 1))
+        kat = read_csv(c, header=None)
+        start = int(random.choice(range(1,kat.shape[0]-puzzle_k+1), 1))
         names = list(kat.iloc[start:(start+puzzle_k),0])
         chosen_out.append(names)
     
@@ -190,7 +190,7 @@ def draw_num_scheme(puzzle_k=5):
     schemes = [ t[0] for t in schemes_weights ]
     weights = [ t[1] for t in schemes_weights ]
     weights = [ w/sum(weights) for w in weights ]
-    scheme = np.random.choice(schemes, 1, p=weights)
+    scheme = random.choice(schemes, 1, p=weights)
     
     # (base_value(p), its_weight)
     base_weights = [(-40,1),(-10,1),(-5,1),(0,1),(1,20),(1.50,5),(2,10),(2.50,5),(3,4),(4,4),(5,3),(6,3), \
@@ -204,14 +204,14 @@ def draw_num_scheme(puzzle_k=5):
     base_values = [ bw[0] for bw in base_weights ]
     weights = [ bw[1] for bw in base_weights ]
     weights = [ w/sum(weights) for w in weights ]
-    p = np.random.choice(base_values, 1, p=weights)[0]
+    p = random.choice(base_values, 1, p=weights)[0]
     
     # (times factor(n), its_weght)
     times_weights = [(1,10),(2,4),(3,1)]
     times_factors = [ k[0] for k in times_weights ]
     weights = [ k[1] for k in times_weights ]
     weights = [ w/sum(weights) for w in weights ]
-    n = np.random.choice(times_factors, 1, p=weights)[0]
+    n = random.choice(times_factors, 1, p=weights)[0]
     
     # ------------ choice of the multiplier/increment and counting the final numerical values --------------------
     
@@ -230,7 +230,7 @@ def draw_num_scheme(puzzle_k=5):
         increments = [ i[0] for i in increment_weights ]
         weights = [ i[1] for i in increment_weights ]
         weights = [ w/sum(weights) for w in weights ]
-        r = np.random.choice(increments, 1, p=weights)[0]
+        r = random.choice(increments, 1, p=weights)[0]
         values = [ n*p+k*r for k in range(puzzle_k) ]
         
     elif scheme=="geometric_sequence":
@@ -244,16 +244,16 @@ def draw_num_scheme(puzzle_k=5):
         multipliers = [ i[0] for i in multiplier_weights ]
         weights = [ i[1] for i in multiplier_weights ]
         weights = [ w/sum(weights) for w in weights ]
-        r = np.random.choice(multipliers, 1, p=weights)[0]
-        values = list(np.sort([ n*p*(r**k) for k in range(puzzle_k) ]))
+        r = random.choice(multipliers, 1, p=weights)[0]
+        values = list(sort([ n*p*(r**k) for k in range(puzzle_k) ]))
         
     elif scheme=="ascending_sequence":
         r = [n*p, 2*n*p]
-        r += list(np.random.choice([n*p, 2*n*p], puzzle_k-3, p=[0.8, 0.2]))
-        r = list(np.random.permutation(r))
-        values = list(np.sort([ n*p+sum(r[:k]) for k in range(puzzle_k) ]))
+        r += list(random.choice([n*p, 2*n*p], puzzle_k-3, p=[0.8, 0.2]))
+        r = list(random.permutation(r))
+        values = list(sort([ n*p+sum(r[:k]) for k in range(puzzle_k) ]))
         
-    if not isinstance(r, np.ndarray) and r==0:
+    if not isinstance(r, ndarray) and r==0:
         raise Exception("Cannot generate multiplier/increment r!\nParameters are: p="+str(p)+", n="+str(n)+", scheme="+str(schemat[0]))
         
     # -------------------- determinig possible clues of type 3 ----------------------------
@@ -451,7 +451,7 @@ def draw_num_interpretation(values):
     teksty = [ t[0] for t in interpretacje ]
     weights_text = [ t[1] for t in interpretacje ]
     weights_text = [ w/sum(weights_text) for w in weights_text ]
-    tekst = np.random.choice(teksty, 1, p=weights_text)
+    tekst = random.choice(teksty, 1, p=weights_text)
     
     return tekst[0], values
 
@@ -463,7 +463,7 @@ def draw_category(K, k, diff=3, seed=0):
     if k<3:
         raise Exception("Number of objects in each category (k) must be at least 3!")
     
-    np.random.seed(seed)
+    random.seed(seed)
     
     # determining probability distribution of categories types (categorical, ordinal, numerical) depending on diff
     if diff==2:
@@ -478,7 +478,7 @@ def draw_category(K, k, diff=3, seed=0):
     
     # determining the count of the category types
     cat_counts = ["cat", "num"] # always has to be at least one categorical and one numerical category
-    cat_counts += list(np.random.choice(["cat", "ord", "num"], K-2, p=distribution))
+    cat_counts += list(random.choice(["cat", "ord", "num"], K-2, p=distribution))
     cat_counts = [ sum([l==kat for l in cat_counts]) for kat in ["cat", "ord", "num"] ]
     
     # drawing specific categories
