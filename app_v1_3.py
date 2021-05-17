@@ -809,8 +809,8 @@ def clicked_eval(j):
     if final_puzzle.categories[j]["typ"]=="numerical" and final_puzzle.categories[j]["seq_scheme"]=="arithmetic" and float(num_cats[n][10].get())<=0:
         messagebox.showwarning('Warning', 'Sequence increment has to be greater than zero!')
         return
-    if final_puzzle.categories[j]["typ"]=="numerical" and final_puzzle.categories[j]["seq_scheme"]=="geometric" and float(num_cats[n][10].get())<=0:
-        messagebox.showwarning('Warning', 'Sequence multiplier has to be greater than zero!')
+    if final_puzzle.categories[j]["typ"]=="numerical" and final_puzzle.categories[j]["seq_scheme"]=="geometric" and float(num_cats[n][10].get())<=1:
+        messagebox.showwarning('Warning', 'Sequence multiplier has to be greater than one!')
         return
     
     new_r = float(num_cats[n][10].get())
