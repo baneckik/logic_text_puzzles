@@ -721,10 +721,14 @@ def draw_sign(puzzle1, c, sign, K1, i1, K2, i2, X=30, Y=30, red=False, puzzle_h=
     c.setFillColorRGB(0,0,0)
     
 def draw_solution(puzzle1, c, X=30, Y=30, puzzle_h=400):
-    
+    width_krok = 20
     signs_list = []
     prev_val = puzzle1.solution.split(";")[0].split(",")[-1]
     draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y)
+    krok = 1
+    c.setFont("default_font", width_krok)
+    c.drawString(30, 800, "Krok "+str(krok)+":")
+    
     for step in puzzle1.solution.split(";")[:-1]:
         step2 = step.split(",")
         if step2[0]=='1':
@@ -734,6 +738,10 @@ def draw_solution(puzzle1, c, X=30, Y=30, puzzle_h=400):
         #print(prev_val , step2[-1])
         if not(step2[-1] in ["conc1","conc2"] and prev_val in ["conc1","conc2"]) and step2[-1]!=prev_val:
             c.showPage()
+            krok += 1
+            c.setFont("default_font", width_krok)
+            c.drawString(30, 800, "Krok "+str(krok)+":")
+            
             draw_grid(puzzle1=puzzle1, c=c, X=X, Y=Y)
             for step3 in signs_list:
                 draw_sign(puzzle1, c, step3[0], int(step3[1]), int(step3[2]), int(step3[3]), int(step3[4]), X=X, Y=Y, red=False)
