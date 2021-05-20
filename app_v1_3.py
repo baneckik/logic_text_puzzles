@@ -661,6 +661,7 @@ def check_and_save_categories():
             names = []
             for i in range(final_puzzle.k):
                 names.append(cat_cats[n][i+1].get())
+            
             cross_text = cat_cats[n][final_puzzle.k+2].get()
             cat["names"] = names
             cat["cross_bar"] = cross_text
@@ -672,7 +673,9 @@ def check_and_save_categories():
     n = 0
     for j, cat in enumerate(final_puzzle.categories):
         if cat["typ"]=='numerical':
+            interpretation = num_cats[n][1].get()
             cross_text = num_cats[n][2].get()
+            cat["interpretation"] = interpretation
             cat["cross_bar"] = cross_text
             input_categories.append( cat )
             n += 1
