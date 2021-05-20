@@ -936,9 +936,9 @@ def add_clue3(self):
                     elif operation=="*":
                         vals_for_X = []
                         for i in range(k):
-                            if values[i]/diff not in values:
+                            if round(values[i]/diff, 12) not in values:
                                 vals_for_X.append(self.get_grid_value(K2, i2, K6, i))
-                            if values[i]*diff not in values:
+                            if round(values[i]*diff, 12) not in values:
                                 vals_for_X.append(self.get_grid_value(K1, i1, K6, i))
                         if K1!=K2:
                             vals_for_X.append(self.get_grid_value(K1, i1, K2, i2))
@@ -1264,16 +1264,16 @@ def use_clue3(self, c, collect_solution=False):
         if "i1" in clue:
             if "i2" in clue:
                 for i in range(self.k):
-                    if values[i]/diff not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]/diff))==2:
+                    if round(values[i]/diff, 12) not in values or self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], values.index(values[i]/diff))==2:
                         self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
             else:
                 for i in range(self.k):
-                    if values[i]*diff not in values:
+                    if round(values[i]*diff, 12) not in values:
                         self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
                 # if K1,i1 is already determined we can put some 'X's outside group K2,g2:
                 for i in range(self.k):
-                    if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)==1 and values[i]*diff in values:
-                        i6 = values.index(values[i]*diff)
+                    if self.get_grid_value(clue["K1"], clue["i1"], clue["K6"], i)==1 and round(values[i]*diff, 12) in values:
+                        i6 = values.index(round(values[i]*diff, 12))
                         for j in range(self.k):
                             if self.categories[clue["K2"]]["groups"][j]!=clue["g2"]:
                                 self.grid_insert(clue["K2"], j, clue["K6"], i6, "X", "clue3_"+str(c), collect_solution)
@@ -1281,16 +1281,16 @@ def use_clue3(self, c, collect_solution=False):
         if "i2" in clue:
             if "i1" in clue:
                 for i in range(self.k):
-                    if values[i]*diff not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))==2:
+                    if round(values[i]*diff, 12) not in values or self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))==2:
                         self.grid_insert(clue["K1"], clue["i1"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
             else:
                 for i in range(self.k):
-                    if values[i]/diff not in values:
+                    if round(values[i]/diff, 12) not in values:
                         self.grid_insert(clue["K2"], clue["i2"], clue["K6"], i, "X", "clue3_"+str(c), collect_solution)
                 # if K1,i1 is already determined we can put some 'X's outside group K2,g2:
                 for i in range(self.k):
-                    if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], i)==1 and values[i]/diff in values:
-                        i6 = values.index(values[i]/diff)
+                    if self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], i)==1 and round(values[i]/diff, 12) in values:
+                        i6 = values.index(round(values[i]/diff, 12))
                         for j in range(self.k):
                             if self.categories[clue["K1"]]["groups"][j]!=clue["g1"]:
                                 self.grid_insert(clue["K1"], j, clue["K6"], i6, "X", "clue3_"+str(c), collect_solution)
@@ -1686,9 +1686,9 @@ def is_grid_contradictory_with_clue3(self, c):
             else:
                 condition1 = self.is_line_possible_for_group(clue["K6"], i, clue["K1"], clue["g1"])
             if "i2" in clue:
-                condition2 = values[i]*diff in values and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(values[i]*diff))!=2
+                condition2 = round(values[i]*diff, 12) in values and self.get_grid_value(clue["K2"], clue["i2"], clue["K6"], values.index(round(values[i]*diff, 12)))!=2
             else:
-                condition2 = values[i]*diff in values and self.is_line_possible_for_group(clue["K6"], values.index(values[i]*diff), clue["K2"], clue["g2"])
+                condition2 = round(values[i]*diff, 12) in values and self.is_line_possible_for_group(clue["K6"], values.index(round(values[i]*diff, 12)), clue["K2"], clue["g2"])
             
             if condition1 and condition2:
                 return False

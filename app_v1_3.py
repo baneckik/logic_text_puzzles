@@ -429,6 +429,7 @@ def clicked_gen():
     puzzle1.diff = round(mean(diffs),2)
     
     puzzle1.print_info()
+    print("Final categories: ", puzzle1.categories)
     
     percent = 100
     lbl6.configure(text="Generating puzzle...("+str(percent)+"%)")
@@ -520,9 +521,9 @@ def clicked_gen():
             elif cat["seq_scheme"]=="geometric" and all(multiplicatives):
                 can_first_el_be_changed = True
                 can_increment_be_changed = True
-            elif cat["seq_scheme"]=="geometric" and all(additives):
-                can_first_el_be_changed = True
-                can_increment_be_changed = False
+#             elif cat["seq_scheme"]=="geometric" and all(additives):
+#                 can_first_el_be_changed = False
+#                 can_increment_be_changed = False
             else:
                 can_first_el_be_changed = False
                 can_increment_be_changed = False
@@ -780,6 +781,18 @@ def clicked_new():
     
     clear_cat_entries()
 
+def count_digits_after_comma(x):
+    try:
+        float(x)
+    except:
+        raise(Exception("x must be a number!"))
+        
+    length = len(str(x))
+    if "." in str(x):
+        comma = length-str(x).index(".")-1
+    else:
+        comma = 0
+    return comma
     
 def clicked_eval(j):
     if len(num_cats)<1:
@@ -802,6 +815,21 @@ def clicked_eval(j):
         messagebox.showwarning('Warning', 'Increment/multiplier must be a number!')
         return
     
+    digits_a = count_digits_after_comma(num_cats[n][8].get())
+    digits_r = count_digits_after_comma(num_cats[n][10].get())
+    if digits_a>3:
+        messagebox.showwarning('Warning', 'Maximum number of digits after the decimal point in the first element is 3!')
+        return
+    if digits_r>3:
+        messagebox.showwarning('Warning', 'Maximum number of digits after the decimal point in the increment/multiplier is 3!')
+        return
+    if final_puzzle.categories[j]["typ"]=="numerical" and final_puzzle.categories[j]["seq_scheme"]=="geometric" and digits_r>2:
+        messagebox.showwarning('Warning', 'Maximum number of digits after the decimal point in the multiplier is 2!')
+        return
+    if final_puzzle.categories[j]["typ"]=="numerical" and final_puzzle.categories[j]["seq_scheme"]=="geometric" and digits_a+digits_r*(final_puzzle.k-1)>9:
+        messagebox.showwarning('Warning', 'Numbers generated could potentianlly have more than maximum number of digits after the decimal pointwhich is 10! Please specify numbers with less digits after comma.')
+        return
+    
     if final_puzzle.categories[j]["typ"]=="numerical" and final_puzzle.categories[j]["seq_scheme"]=="geometric" and float(num_cats[n][8].get())<=0:
         messagebox.showwarning('Warning', 'First element in geometric sequence has to be greater than zero!')
         return
@@ -812,36 +840,71 @@ def clicked_eval(j):
         messagebox.showwarning('Warning', 'Sequence multiplier has to be greater than one!')
         return
     
+    # replacement of values in category:
+    new_a = float(num_cats[n][8].get())
     new_r = float(num_cats[n][10].get())
     
     old_vals = final_puzzle.categories[j]["names"]
-    new_vals = [float(num_cats[n][8].get())]
+    new_vals = [new_a]
     for i in range(final_puzzle.k-1):
         if final_puzzle.categories[j]["seq_scheme"]=="geometric":
-            new_vals.append(float(new_vals[-1])*new_r)
+            new_vals.append(round(float(new_vals[-1])*new_r, 12))
         elif final_puzzle.categories[j]["seq_scheme"]=="arithmetic":
-            new_vals.append(float(new_vals[-1])+new_r)
+            new_vals.append(round(float(new_vals[-1])+new_r, 10))
         else:
-            new_vals.append( float(new_vals[-1])+new_r/(old_vals[1]-old_vals[0])*(old_vals[i+1]-old_vals[i]) )
+            new_vals.append( round(float(new_vals[-1])+new_r/(old_vals[1]-old_vals[0])*(old_vals[i+1]-old_vals[i]), 10) )
+    
+    # replacement of values in the pre_clues of this category:
     
     old_possible_clues_of_type_3 = final_puzzle.categories[j]["pre_clues"]
     new_possible_clues_of_type_3 = []
     for pc in old_possible_clues_of_type_3:
-        old_a = float(pc[4:])
+        old_r2 = float(pc[4:])
+        old_r = final_puzzle.categories[j]["r"]
         if final_puzzle.categories[j]["seq_scheme"]=="geometric":
-            old_r = old_vals[1]/old_vals[0]
+            # the assumption is there are only multiplicative clues for this category
+            if old_r2==old_r:
+                new_r2 = round(new_r, 10)
+            elif old_r2==round(old_r**2, 10):
+                new_r2 = round(new_r**2, 10)
+            elif old_r2==round(old_r**3, 10):
+                new_r2 = round(new_r**3, 10)
+            else:
+                messagebox.showwarning('Warning', "Numerical error occured when calculating new geometric multiplier!")
+                return
         else:
-            old_r = old_vals[1]-old_vals[0]
-        new_a = old_a/old_r*new_r
-        new_possible_clues_of_type_3.append(pc[:4]+str(new_a))
-    
+            #old_r = old_vals[1]-old_vals[0]
+            new_r2 = round(old_r2/old_r*new_r, 10)
+        
+        new_possible_clues_of_type_3.append(pc[:4]+str(new_r2))
+        
+    # replacement of values in the clues of type 3:
     for clue in final_puzzle.clues:
         if clue["typ"]==3 and clue["K6"]==j:
-            clue["diff"] = clue["diff"]/old_r*new_r
+            old_r2 = clue["diff"]
+            old_r = final_puzzle.categories[j]["r"]
+            if final_puzzle.categories[j]["seq_scheme"]=="geometric":
+                # the assumption is there are only multiplicative clues for this category
+                if old_r2==old_r:
+                    new_r2 = round(new_r, 10)
+                elif old_r2==round(old_r**2, 10):
+                    new_r2 = round(new_r**2, 10)
+                elif old_r2==round(old_r**3, 10):
+                    new_r2 = round(new_r**3, 10)
+                else:
+                    messagebox.showwarning('Warning', "Numerical error occured when calculating new geometric multiplier!")
+                    return
+            else:
+                #old_r = old_vals[1]-old_vals[0]
+                new_r2 = round(old_r2/old_r*new_r, 10)
+            clue["diff"] = round(old_r2/old_r*new_r, 10)
     
+    # final replacement:
     final_puzzle.categories[j]["names"] = new_vals
+    final_puzzle.categories[j]["r"] = new_r
     final_puzzle.categories[j]["pre_clues"] = new_possible_clues_of_type_3
     
+    # string for printing:
     vals = [ str(val)[:-2] if str(val).endswith(".0") else str(val) for val in new_vals ]
     if len(vals)>5:
         vals = vals[:3]+["..."]+[vals[-1]]

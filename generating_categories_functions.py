@@ -234,10 +234,8 @@ def draw_num_scheme(puzzle_k=5):
         values = [ n*p+k*r for k in range(puzzle_k) ]
         
     elif scheme=="geometric_sequence":
-        multiplier_weights = [ (0.5,10), (2,10), (3,5), (4,4), (5,3), (10,2)]
+        multiplier_weights = [ (2,15), (3,5), (4,4), (5,3), (10,2)]
         # limitation on the multiplier value (r)
-        if (n*p)%(2**(puzzle_k-1))!=0: 
-            multiplier_weights = [ mw for mw in multiplier_weights if mw[0]>=2 ]
         if (n*p)>=50 and (n*p)%100!=0: 
             multiplier_weights = [ mw for mw in multiplier_weights if mw[0]==2 or mw[0]==10 ]
         
@@ -305,7 +303,7 @@ def draw_num_scheme(puzzle_k=5):
                         suma += 1
                 if suma>=min_free:
                     clues_candidates.append("x=y*"+str(r**i))
-        if r!=2:
+        if r!=2 and scheme=="arithmetic_sequence":
             for i in range(1,4):
                 suma = 0
                 for val in values:
@@ -315,7 +313,7 @@ def draw_num_scheme(puzzle_k=5):
                     clues_candidates.append("x=y*"+str(2**i))
 
     #return schemat[0], values, clues_candidates
-    return {'typ': "numerical", 'names': values, 'pre_clues': clues_candidates, 'seq_scheme': scheme[0].split("_")[0]}
+    return {'typ': "numerical", 'names': values, 'pre_clues': clues_candidates, 'seq_scheme': scheme[0].split("_")[0], "r": r}
 
 # ----------------------------- drawing numerical interpretations ---------------------------------------------
 
