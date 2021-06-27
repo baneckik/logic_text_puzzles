@@ -1579,7 +1579,7 @@ def use_clue6(self, c, collect_solution=False):
                             self.grid_insert(K1, clue["i1"], K6, j, "X", "clue6_"+str(c), collect_solution)
             else:
                 if self.get_grid_value(K2, clue["i2"], K6, i)==0:
-                    if (i==0 or self.is_line_possible_for_group(K6, i-1, K1, clue["g1"])) and (i==self.k-1 or self.is_line_possible_for_group(K6, i+1, K1, clue["g1"])):
+                    if (i==0 or not self.is_line_possible_for_group(K6, i-1, K1, clue["g1"])) and (i==self.k-1 or not self.is_line_possible_for_group(K6, i+1, K1, clue["g1"])):
                         self.grid_insert(K2, clue["i2"], K6, i, "X", "clue6_"+str(c), collect_solution)
     
 def use_clue(self, c, collect_solution=False):
