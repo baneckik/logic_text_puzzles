@@ -2122,7 +2122,7 @@ def set_seed(self, seed):
 
 def draw_categories(self, diff=3, seed=None):
     if diff not in [2, 3, 4]:
-        raise Exception("Można losować zagadki tylko o liczbie gwiazdek równej 2, 3 albo 4!")
+        raise Exception("Difficulty must be either 2, 3 or 4!")
     if seed is None:
         self.categories = funs.draw_category(self.K, self.k, diff, self.seed)
     else:
@@ -2138,13 +2138,12 @@ def draw_categories(self, diff=3, seed=None):
 
 def draw_clues(self, trace=False):
     non_1_clues = int(ceil(self.k * self.K / 2.3))
-    are_categoricals = any([cat['typ'] == 'categorical' for cat in self.categories])
-    are_ordinals = any([cat['typ'] == 'ordinal' for cat in self.categories])
-    are_numericals = any(["pre_clues" in cat and len(cat["pre_clues"]) > 0 for cat in self.categories])
+    are_ordinal = any([cat['typ'] == 'ordinal' for cat in self.categories])
+    are_numerical = any(["pre_clues" in cat and len(cat["pre_clues"]) > 0 for cat in self.categories])
     for i in range(non_1_clues):
-        if are_numericals:
+        if are_numerical:
             typ = random.choice([2, 3, 4, 5, 6], 1, p=[0.2, 0.2, 0.2, 0.2, 0.2])[0]
-        elif are_ordinals:
+        elif are_ordinal:
             typ = random.choice([2, 4, 5, 6], 1, p=[0.25, 0.25, 0.25, 0.25])[0]
         else:
             typ = random.choice([4, 5], 1, p=[0.5, 0.5])[0]
