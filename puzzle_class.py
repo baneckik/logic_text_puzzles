@@ -2570,6 +2570,7 @@ class puzzle:
     is_line_completed = is_line_completed
     count_x_in_line = count_x_in_line
     is_line_possible_for_group = is_line_possible_for_group
+    is_o_in_line_for_group = is_o_in_line_for_group
 
     grid_concile1 = grid_concile1  # deprecated
     grid_concile2 = grid_concile2  # deprecated
