@@ -40,3 +40,4 @@ kapary
 karczoch
 kukurydza
 oliwka
+pomidor
