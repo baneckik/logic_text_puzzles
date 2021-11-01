@@ -153,7 +153,6 @@ def count_x_in_line(self, K1, i1, K2):
 def is_line_possible_for_group(self, K1, i1, K2, group):
     box = self.grid[str(min(K1, K2)) + "," + str(max(K1, K2))]
     groups = self.categories[K2]["groups"]
-    x_count = 0
     if K1 < K2:
         for j in range(self.k):
             if groups[j] == group and box[i1, j] != 2:
@@ -161,6 +160,20 @@ def is_line_possible_for_group(self, K1, i1, K2, group):
     else:
         for j in range(self.k):
             if groups[j] == group and box[j, i1] != 2:
+                return True
+    return False
+
+
+def is_o_in_line_for_group(self, K1, i1, K2, group):
+    box = self.grid[str(min(K1, K2)) + "," + str(max(K1, K2))]
+    groups = self.categories[K2]["groups"]
+    if K1 < K2:
+        for j in range(self.k):
+            if groups[j] == group and box[i1, j] == 1:
+                return True
+    else:
+        for j in range(self.k):
+            if groups[j] == group and box[j, i1] == 1:
                 return True
     return False
 
@@ -1612,55 +1625,125 @@ def use_clue5(self, c, collect_solution=False):
                     if i != i1 and i != i3:
                         self.grid_insert(K1, i, K2, i2, "X", "clue5_" + str(c), collect_solution)
 
+    # false12 - objects 1 and 2 cannot fit
     if "i1" in clue and "i2" in clue:
-        condition12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"]) == 2
+        false12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"]) == 2
     elif "i1" in clue:
-        condition12 = not self.is_line_possible_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
+        false12 = not self.is_line_possible_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
     elif "i2" in clue:
-        condition12 = not self.is_line_possible_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
+        false12 = not self.is_line_possible_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
     else:  # both are group type
-        condition12 = True
+        false12 = True
         for i in range(self.k):
             if self.categories[clue["K1"]]["groups"][i] == clue["g1"]:
                 if self.is_line_possible_for_group(clue["K1"], i, clue["K2"], clue["g2"]):
-                    condition12 = False
+                    false12 = False
                     break
 
+    # false34 - objects 3 and 4 cannot fit
     if "i3" in clue and "i4" in clue:
-        condition34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"]) == 2
+        false34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"]) == 2
     elif "i3" in clue:
-        condition34 = not self.is_line_possible_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
+        false34 = not self.is_line_possible_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
     elif "i4" in clue:
-        condition34 = not self.is_line_possible_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
+        false34 = not self.is_line_possible_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
     else:  # both are group type
-        condition34 = True
+        false34 = True
         for i in range(self.k):
             if self.categories[clue["K3"]]["groups"][i] == clue["g3"]:
                 if self.is_line_possible_for_group(clue["K3"], i, clue["K4"], clue["g4"]):
-                    condition34 = False
+                    false34 = False
                     break
 
-    if condition12 and "i3" in clue and "i4" in clue:
+    if clue["exclusive"]:
+        # true12 - objects 1 and 2 are already connected
+        if "i1" in clue and "i2" in clue:
+            true12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"]) == 1
+        elif "i1" in clue:
+            true12 = self.is_o_in_line_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
+        elif "i2" in clue:
+            true12 = self.is_o_in_line_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
+        else:  # both are group type
+            true12 = False
+            for i in range(self.k):
+                if self.categories[clue["K1"]]["groups"][i] == clue["g1"]:
+                    if self.is_o_in_line_for_group(clue["K1"], i, clue["K2"], clue["g2"]):
+                        true12 = True
+                        break
+        # true34 - objects 1 and 2 are already connected
+        if "i3" in clue and "i4" in clue:
+            true34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"]) == 1
+        elif "i3" in clue:
+            true34 = self.is_o_in_line_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
+        elif "i4" in clue:
+            true34 = self.is_o_in_line_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
+        else:  # both are group type
+            true34 = False
+            for i in range(self.k):
+                if self.categories[clue["K3"]]["groups"][i] == clue["g3"]:
+                    if self.is_o_in_line_for_group(clue["K3"], i, clue["K4"], clue["g4"]):
+                        true34 = True
+                        break
+
+    # if condition 1,2 is not fulfilled then the other one must be
+    if false12 and "i3" in clue and "i4" in clue:
         self.grid_insert(K3, clue["i3"], K4, clue["i4"], "O", "clue5_" + str(c), collect_solution)
-    elif condition12 and "i3" in clue:
+    elif false12 and "i3" in clue:
         for j in range(self.k):
             if self.categories[clue["K4"]]["groups"][j] != clue["g4"]:
-                self.grid_insert(K3, clue["i3"], K4, j, "X", "clue4_" + str(c), collect_solution)
-    elif condition12 and "i4" in clue:
+                self.grid_insert(K3, clue["i3"], K4, j, "X", "clue5_" + str(c), collect_solution)
+    elif false12 and "i4" in clue:
         for j in range(self.k):
             if self.categories[clue["K3"]]["groups"][j] != clue["g3"]:
-                self.grid_insert(K4, clue["i4"], K3, j, "X", "clue4_" + str(c), collect_solution)
-
-    if condition34 and "i1" in clue and "i2" in clue:
+                self.grid_insert(K4, clue["i4"], K3, j, "X", "clue5_" + str(c), collect_solution)
+    # if condition 3,4 is not fulfilled then the other one must be
+    if false34 and "i1" in clue and "i2" in clue:
         self.grid_insert(K1, clue["i1"], K2, clue["i2"], "O", "clue5_" + str(c), collect_solution)
-    elif condition34 and "i1" in clue:
+    elif false34 and "i1" in clue:
         for j in range(self.k):
             if self.categories[clue["K2"]]["groups"][j] != clue["g2"]:
-                self.grid_insert(K1, clue["i1"], K2, j, "X", "clue4_" + str(c), collect_solution)
-    elif condition34 and "i2" in clue:
+                self.grid_insert(K1, clue["i1"], K2, j, "X", "clue5_" + str(c), collect_solution)
+    elif false34 and "i2" in clue:
         for j in range(self.k):
             if self.categories[clue["K1"]]["groups"][j] != clue["g1"]:
-                self.grid_insert(K2, clue["i2"], K1, j, "X", "clue4_" + str(c), collect_solution)
+                self.grid_insert(K2, clue["i2"], K1, j, "X", "clue5_" + str(c), collect_solution)
+
+    if clue["exclusive"]:
+        # if condition 1,2 is fulfilled then the other one must not be
+        if true12 and "i3" in clue and "i4" in clue:
+            self.grid_insert(K3, clue["i3"], K4, clue["i4"], "X", "clue5_" + str(c), collect_solution)
+        elif true12 and "i3" in clue:
+            for j in range(self.k):
+                if self.categories[clue["K4"]]["groups"][j] == clue["g4"]:
+                    self.grid_insert(K3, clue["i3"], K4, j, "X", "clue5_" + str(c), collect_solution)
+        elif true12 and "i4" in clue:
+            for j in range(self.k):
+                if self.categories[clue["K3"]]["groups"][j] == clue["g3"]:
+                    self.grid_insert(K4, clue["i4"], K3, j, "X", "clue5_" + str(c), collect_solution)
+        elif true12:
+            for i in range(self.k):
+                for j in range(self.k):
+                    if self.categories[clue["K3"]]["groups"][i] == clue["g3"] and \
+                            self.categories[clue["K4"]]["groups"][j] == clue["g4"]:
+                        self.grid_insert(K3, i, K4, j, "X", "clue5_" + str(c), collect_solution)
+
+        # if condition 3,4 is fulfilled then the other one must not be
+        if true34 and "i1" in clue and "i2" in clue:
+            self.grid_insert(K1, clue["i1"], K2, clue["i2"], "X", "clue5_" + str(c), collect_solution)
+        elif true34 and "i1" in clue:
+            for j in range(self.k):
+                if self.categories[clue["K2"]]["groups"][j] == clue["g2"]:
+                    self.grid_insert(K1, clue["i1"], K2, j, "X", "clue5_" + str(c), collect_solution)
+        elif true34 and "i2" in clue:
+            for j in range(self.k):
+                if self.categories[clue["K1"]]["groups"][j] == clue["g1"]:
+                    self.grid_insert(K2, clue["i2"], K1, j, "X", "clue5_" + str(c), collect_solution)
+        elif true34:
+            for i in range(self.k):
+                for j in range(self.k):
+                    if self.categories[clue["K1"]]["groups"][i] == clue["g1"] and \
+                            self.categories[clue["K2"]]["groups"][j] == clue["g2"]:
+                        self.grid_insert(K1, i, K2, j, "X", "clue5_" + str(c), collect_solution)
 
 
 def use_clue6(self, c, collect_solution=False):
@@ -1921,36 +2004,72 @@ def is_grid_contradictory_with_clue4(self, c):
 
 def is_grid_contradictory_with_clue5(self, c):
     clue = self.clues[c]
+
+    # false12 - objects 1 and 2 cannot fit
     if "i1" in clue and "i2" in clue:
-        condition12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"]) == 2
+        false12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"]) == 2
     elif "i1" in clue:
-        condition12 = not self.is_line_possible_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
+        false12 = not self.is_line_possible_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
     elif "i2" in clue:
-        condition12 = not self.is_line_possible_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
+        false12 = not self.is_line_possible_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
     else:  # both are group type
-        condition12 = True
+        false12 = True
         for i in range(self.k):
             if self.categories[clue["K1"]]["groups"][i] == clue["g1"]:
                 if self.is_line_possible_for_group(clue["K1"], i, clue["K2"], clue["g2"]):
-                    condition12 = False
+                    false12 = False
                     break
 
+    # false34 - objects 3 and 4 cannot fit
     if "i3" in clue and "i4" in clue:
-        condition34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"]) == 2
+        false34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"]) == 2
     elif "i3" in clue:
-        condition34 = not self.is_line_possible_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
+        false34 = not self.is_line_possible_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
     elif "i4" in clue:
-        condition34 = not self.is_line_possible_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
+        false34 = not self.is_line_possible_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
     else:  # both are group type
-        condition34 = True
+        false34 = True
         for i in range(self.k):
             if self.categories[clue["K3"]]["groups"][i] == clue["g3"]:
                 if self.is_line_possible_for_group(clue["K3"], i, clue["K4"], clue["g4"]):
-                    condition34 = False
+                    false34 = False
                     break
 
-    if condition12 and condition34:
+    if clue["exclusive"]:
+        # true12 - objects 1 and 2 are already connected
+        if "i1" in clue and "i2" in clue:
+            true12 = self.get_grid_value(clue["K1"], clue["i1"], clue["K2"], clue["i2"]) == 1
+        elif "i1" in clue:
+            true12 = self.is_o_in_line_for_group(clue["K1"], clue["i1"], clue["K2"], clue["g2"])
+        elif "i2" in clue:
+            true12 = self.is_o_in_line_for_group(clue["K2"], clue["i2"], clue["K1"], clue["g1"])
+        else:  # both are group type
+            true12 = False
+            for i in range(self.k):
+                if self.categories[clue["K1"]]["groups"][i] == clue["g1"]:
+                    if self.is_o_in_line_for_group(clue["K1"], i, clue["K2"], clue["g2"]):
+                        true12 = True
+                        break
+        # true34 - objects 1 and 2 are already connected
+        if "i3" in clue and "i4" in clue:
+            true34 = self.get_grid_value(clue["K3"], clue["i3"], clue["K4"], clue["i4"]) == 1
+        elif "i3" in clue:
+            true34 = self.is_o_in_line_for_group(clue["K3"], clue["i3"], clue["K4"], clue["g4"])
+        elif "i4" in clue:
+            true34 = self.is_o_in_line_for_group(clue["K4"], clue["i4"], clue["K3"], clue["g3"])
+        else:  # both are group type
+            true34 = False
+            for i in range(self.k):
+                if self.categories[clue["K3"]]["groups"][i] == clue["g3"]:
+                    if self.is_o_in_line_for_group(clue["K3"], i, clue["K4"], clue["g4"]):
+                        true34 = True
+                        break
+
+    if false12 and false34:
         return True
+    if clue["exclusive"]:
+        if true12 and true34:
+            return True
     return False
 
 
@@ -2357,7 +2476,7 @@ def generate(self, seed=0, trace=False, max_iter=None):
     i_max = 20
     j_max = 5
     for j in range(j_max):
-        self.draw_categories(seed=self.seed+123456*j)
+        self.draw_categories(seed=self.seed + 123456 * j)
         for i in range(i_max):
             self.clear_grid()
             self.clues = []
@@ -2367,12 +2486,13 @@ def generate(self, seed=0, trace=False, max_iter=None):
             self.critical_squares = []
             self.clues_to_check = []
 
+            if trace and i == i_max - 1 and j == j_max - 1:
+                print("Failed to draw clues!!!")
+
     if trace:
         print("Categories drawn:")
         for c in self.categories:
             print(c)
-    if trace and i == i_max - 1 and j == j_max-1:
-        print("Failed to draw clues!!!")
 
     if trace:
         clues_counts = [len([i for i in self.clues if i["typ"] == j]) for j in range(1, 7)]
