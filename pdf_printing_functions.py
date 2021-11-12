@@ -354,7 +354,7 @@ def draw_clues_on_canvas(categories, clue, c, X, Y, no, width):
             x += text_width + 1
 
             text9 = " (alt. rozł.)"
-            c.setFont(normal_font, width)
+            c.setFont(normal_font, width * 0.7)
             c.drawString(x, Y, text9)
             text_width = stringWidth(text9, normal_font, width)
             x += text_width + 1
