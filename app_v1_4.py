@@ -9,7 +9,7 @@ from functools import partial
 from reportlab.pdfgen import canvas
 import svgwrite
 
-from numpy import random, unique, mean, floor
+from numpy import random, unique, mean, floor, min
 from puzzle_class import puzzle
 import generating_categories_functions as funs
 import pdf_printing_functions as pdf_funs
@@ -438,7 +438,12 @@ def clicked_gen():
     puzzle1.diff = round(mean(diffs), 2)
 
     puzzle1.print_info()
-    print("Final categories: ", puzzle1.categories)
+    print("Final categories: ")
+    for category in puzzle1.categories:
+        print(category)
+    print("Final clues: ")
+    for clue in puzzle1.clues:
+        print(clue)
 
     percent = 100
     lbl6.configure(text="Generating puzzle...(" + str(percent) + "%)")
@@ -446,7 +451,8 @@ def clicked_gen():
 
     lbl7.grid(row=8, column=0)
     lbl7.configure(text="You drew a puzzle from seed=" + str(seed) + " with estimated difficulty: " + str(
-        puzzle1.diff) + ".\nYou may now alter object names if you wish.\n@ is a special symbol for the place where numerical data will be inserted.")
+        puzzle1.diff) + ".\nYou may now alter object names if you wish.\n"
+                        "@ is a special symbol for the place where numerical data will be inserted.")
 
     # -------------------- writing categories out -------------------
 
@@ -672,7 +678,6 @@ def check_and_save_categories():
     global final_puzzle
 
     input_categories = []
-    input_cross_bars = []
     n = 0
     for j, cat in enumerate(final_puzzle.categories):
         if cat["typ"] == 'categorical' or cat["typ"] == 'ordinal':
@@ -881,6 +886,7 @@ def clicked_eval(j):
     # replacement of values in category:
     new_a = float(num_cats[n][8].get())
     new_r = float(num_cats[n][10].get())
+    old_r = final_puzzle.categories[j]["r"]
 
     old_vals = final_puzzle.categories[j]["names"]
     new_vals = [new_a]
@@ -889,17 +895,21 @@ def clicked_eval(j):
             new_vals.append(round(float(new_vals[-1]) * new_r, 12))
         elif final_puzzle.categories[j]["seq_scheme"] == "arithmetic":
             new_vals.append(round(float(new_vals[-1]) + new_r, 10))
-        else:
+        elif final_puzzle.categories[j]["seq_scheme"] == "ascending":
             new_vals.append(
-                round(float(new_vals[-1]) + new_r / (old_vals[1] - old_vals[0]) * (old_vals[i + 1] - old_vals[i]), 10))
+                round(float(new_vals[-1]) + new_r * (old_vals[i + 1] - old_vals[i]) / min(old_r), 10))
+        else:
+            messagebox.showwarning('Warning', "Unrecognised type of numerical sequence: "
+                                   + final_puzzle.categories[j]["seq_scheme"])
+            return
 
     # replacement of values in the pre_clues of this category:
 
-    old_possible_clues_of_type_3 = final_puzzle.categories[j]["pre_clues"]
-    new_possible_clues_of_type_3 = []
-    for pc in old_possible_clues_of_type_3:
+    old_pre_clues_of_type_3 = final_puzzle.categories[j]["pre_clues"]
+    new_pre_clues_of_type_3 = []
+    for pc in old_pre_clues_of_type_3:
         old_r2 = float(pc[4:])
-        old_r = final_puzzle.categories[j]["r"]
+
         if final_puzzle.categories[j]["seq_scheme"] == "geometric":
             # the assumption is there are only multiplicative clues for this category
             if old_r2 == old_r:
@@ -911,38 +921,50 @@ def clicked_eval(j):
             else:
                 messagebox.showwarning('Warning', "Numerical error occurred when calculating new geometric multiplier!")
                 return
-        else:
-            # old_r = old_vals[1]-old_vals[0]
+        elif final_puzzle.categories[j]["seq_scheme"] == "arithmetic":
             new_r2 = round(old_r2 / old_r * new_r, 10)
+        elif final_puzzle.categories[j]["seq_scheme"] == "ascending":
+            new_r2 = round(old_r2 / min(old_r) * new_r, 10)
+        else:
+            messagebox.showwarning('Warning', "Unrecognised type of numerical sequence: "
+                                   + final_puzzle.categories[j]["seq_scheme"])
+            return
 
-        new_possible_clues_of_type_3.append(pc[:4] + str(new_r2))
+        new_pre_clues_of_type_3.append(pc[:4] + str(new_r2))
 
     # replacement of values in the clues of type 3:
     for clue in final_puzzle.clues:
         if clue["typ"] == 3 and clue["K6"] == j:
             old_r2 = clue["diff"]
-            old_r = final_puzzle.categories[j]["r"]
+
             if final_puzzle.categories[j]["seq_scheme"] == "geometric":
                 # the assumption is there are only multiplicative clues for this category
                 if old_r2 == old_r:
-                    new_r2 = round(new_r, 10)
+                    clue["diff"] = round(new_r, 10)
                 elif old_r2 == round(old_r ** 2, 10):
-                    new_r2 = round(new_r ** 2, 10)
+                    clue["diff"] = round(new_r ** 2, 10)
                 elif old_r2 == round(old_r ** 3, 10):
-                    new_r2 = round(new_r ** 3, 10)
+                    clue["diff"] = round(new_r ** 3, 10)
                 else:
                     messagebox.showwarning('Warning',
                                            "Numerical error occurred when calculating new geometric multiplier!")
                     return
+            elif final_puzzle.categories[j]["seq_scheme"] == "arithmetic":
+                clue["diff"] = round(old_r2 / old_r * new_r, 10)
+            elif final_puzzle.categories[j]["seq_scheme"] == "ascending":
+                clue["diff"] = round(old_r2 / min(old_r) * new_r, 10)
             else:
-                # old_r = old_vals[1]-old_vals[0]
-                new_r2 = round(old_r2 / old_r * new_r, 10)
-            clue["diff"] = round(old_r2 / old_r * new_r, 10)
+                messagebox.showwarning('Warning', "Unrecognised type of numerical sequence: "
+                                       + final_puzzle.categories[j]["seq_scheme"])
+                return
 
     # final replacement:
     final_puzzle.categories[j]["names"] = new_vals
-    final_puzzle.categories[j]["r"] = new_r
-    final_puzzle.categories[j]["pre_clues"] = new_possible_clues_of_type_3
+    if final_puzzle.categories[j]["seq_scheme"] in ["geometric", "arithmetic"]:
+        final_puzzle.categories[j]["r"] = new_r
+    else:
+        final_puzzle.categories[j]["r"] = [round(old_r2 / min(old_r) * new_r, 10) for old_r2 in old_r]
+    final_puzzle.categories[j]["pre_clues"] = new_pre_clues_of_type_3
 
     # string for printing:
     vals = [str(val)[:-2] if str(val).endswith(".0") else str(val) for val in new_vals]
